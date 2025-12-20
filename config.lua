@@ -2,7 +2,7 @@ local config = {}
 
 config.game = {
     title = "Molvolution",
-    version = "December 2025 Build 0.1.14783",
+    version = "December 2025 Build 0.1.14897",
     window = {
         width = 1200,
         height = 800,
@@ -261,6 +261,25 @@ config.molecules = {
         charge = 1,
         acid = true
     },
+	uranyl = {
+        health = 120,
+        radius = 22,
+        spawnKey = "u",
+        speedMultiplier = 0.85,
+        ion = true,
+        charge = 2,
+        radioactive = true,
+        damage = 45
+    },
+    uranium_hexafluoride = {
+        health = 180,
+        radius = 32,
+        spawnKey = "6",
+        speedMultiplier = 0.75,
+        radioactive = true,
+        damage = 60,
+        detectionMultiplier = 1.8
+    },
     helium = {
         health = 20,
         radius = 8,
@@ -301,6 +320,16 @@ config.molecules = {
         atom = true,
         valence = 3
     },
+	nitrogen_positive1_atom = {
+        health = 12,
+        radius = 7,
+        speedMultiplier = 1.2,
+        peaceful = true,
+        atom = true,
+        ion = true,
+        charge = 1,
+        valence = 3
+    },
     fluorine_atom = {
         health = 12,
         radius = 6,
@@ -308,6 +337,15 @@ config.molecules = {
         peaceful = true,
         atom = true,
         valence = 1
+    },
+	uranium_atom = {
+        health = 40,
+        radius = 12,
+        speedMultiplier = 0.8,
+        peaceful = true,
+        atom = true,
+        valence = 6,
+        radioactive = true
     }
 }
 
@@ -343,15 +381,16 @@ config.initialSpawns = {
     co2 = 15,
     hydroxide = 12,
     hydronium = 12,
-    helium = 9
+    helium = 9,
+	uranyl = 3,
+	uranium_hexafluoride = 2
 }
 
 config.visual = {
     backgroundColor = {0.05, 0.05, 0.08},
     gridColor = {0.1, 0.1, 0.15},
     gridSize = 100,
-    bondWidth = 2,
-    showHealthBars = true
+    bondWidth = 2
 }
 
 config.controls = {
