@@ -2,7 +2,7 @@ local config = {}
 
 config.game = {
     title = "Molvolution",
-    version = "December 2025 Build 0.1.15050",
+    version = "December 2025 Build 0.1.15051",
     window = {
         width = 1200,
         height = 800,
@@ -278,7 +278,7 @@ config.molecules = {
     },
     squaric_acid = {
         health = 110,
-        radius = 21,
+        radius = 35,
         speedMultiplier = 0.9,
         aromatic = true,
         acidic = true

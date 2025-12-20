@@ -163,6 +163,7 @@ local fragmentationRules = {
         {type = "uranium_atom", count = 1},
         {type = "oxygen", count = 1}
     },
+	
     -- Halomethane fragmentations
     fluoromethane = {
         {type = "carbon_atom", count = 1},
@@ -256,12 +257,11 @@ local ELEMENT_COLORS = {
     P = {0.9, 0.5, 0.2},
     S = {0.9, 0.9, 0.2},
     Cl = {0.3, 0.9, 0.6},
-    Br = {0.6, 0.2, 0.1},  -- Reddish-brown
-    I = {0.5, 0.0, 0.5},   -- Purple
+    Br = {0.6, 0.2, 0.1},
+    I = {0.5, 0.0, 0.5},
     U = {0.0, 0.8, 0.0}
 }
 
--- Molecular structures (adding halomethanes!)
 local structures = {
     -- FLUOROMETHANES
     fluoromethane = {
@@ -584,6 +584,7 @@ local structures = {
         atoms = {{element = "I", x = 0, y = 0, color = ELEMENT_COLORS.I}},
         bonds = {}
     },
+	
     -- MIXED HALOMETHANES
     chlorofluoromethane = {
         atoms = {
@@ -848,6 +849,7 @@ local structures = {
         bonds = {},
         radioactive = true
     },
+	
     -- MORE MISSING MOLECULES
     acetylcarnitine = {
         atoms = {
@@ -1018,19 +1020,19 @@ local structures = {
     },
     squaric_acid = {
         atoms = {
-            {element = "C", x = -10, y = -10, color = ELEMENT_COLORS.C},
-            {element = "C", x = 10, y = -10, color = ELEMENT_COLORS.C},
-            {element = "C", x = 10, y = 10, color = ELEMENT_COLORS.C},
             {element = "C", x = -10, y = 10, color = ELEMENT_COLORS.C},
-            {element = "O", x = -18, y = -18, color = ELEMENT_COLORS.O},
-            {element = "O", x = 18, y = 18, color = ELEMENT_COLORS.O},
-            {element = "O", x = 18, y = -18, color = ELEMENT_COLORS.O},
-            {element = "O", x = -18, y = 18, color = ELEMENT_COLORS.O},
-            {element = "H", x = -25, y = -25, color = ELEMENT_COLORS.H},
-            {element = "H", x = 25, y = 25, color = ELEMENT_COLORS.H}
+            {element = "C", x = -10, y = -10, color = ELEMENT_COLORS.C},
+            {element = "O", x = -25, y = -25, color = ELEMENT_COLORS.O},
+			{element = "O", x = -25, y = 25, color = ELEMENT_COLORS.O},
+			{element = "H", x = -32.5, y = 17.5, color = ELEMENT_COLORS.H},
+			{element = "H", x = -32.5, y = -17.5, color = ELEMENT_COLORS.H},
+			{element = "C", x = 10, y = 10, color = ELEMENT_COLORS.C},
+			{element = "C", x = 10, y = -10, color = ELEMENT_COLORS.C},
+			{element = "O", x = 20, y = -20, color = ELEMENT_COLORS.O},
+			{element = "O", x = 20, y = 20, color = ELEMENT_COLORS.O},
         },
-        bonds = {{1, 2}, {2, 3}, {3, 4}, {4, 1}, {1, 5}, {3, 6}, {2, 7}, {4, 8}, {5, 9}, {6, 10}},
-        aromatic = true,
+        bonds = {{1, 2, double = true}, {2, 3}, {1, 4}, {3, 6}, {4, 5}, {1, 7}, {2, 8}, {7, 8}, {9, 8, double = true}, {10, 7, double = true}},
+		aromantic = true,
         acidic = true
     }
 }
@@ -1086,7 +1088,6 @@ function Molecule:update(dt)
 
     self.rotation = self.rotation + self.rotationSpeed * dt
 
-    -- Predator/prey AI (keeping original logic + halomethanes)
     local molConfig = config.molecules[self.type]
     
     -- Halomethanes flee from halogens and oxidizers
