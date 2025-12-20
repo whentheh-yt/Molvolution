@@ -1,9 +1,9 @@
---      _     ___   ____ 
+--      _     ___   ____
 --     | |   / _ \ / ___|
---     | |  | | | | |  _ 
+--     | |  | | | | |  _
 --     | |__| |_| | |_| |
 --     |_____\___/ \____|
---                       
+--
 -- --------------------------
 -- December 20 2025 12:52 - Started. Finally. Hooray. (December 2025 Build 0.1.14779)
 -- December 20 2025 13:39 - Fixed subscript bug for hydroxide. (December 2025 Build 0.1.14783)
@@ -15,10 +15,10 @@ local config = require("config")
 local molecules = {}
 local hoveredMolecule = nil
 local camera = {
-    x = 0, 
-    y = 0, 
-    zoom = config.camera.defaultZoom, 
-    minZoom = config.camera.minZoom, 
+    x = 0,
+    y = 0,
+    zoom = config.camera.defaultZoom,
+    minZoom = config.camera.minZoom,
     maxZoom = config.camera.maxZoom,
     followTarget = nil
 }
@@ -46,9 +46,9 @@ local ELEMENT_ATTRACTION = {
 local fragmentationRules = {
     acetylcarnitine = {
         {type = "co2", count = 2},
-		{type = "oxygen_atom", count = 1},
-		{type = "carbon_atom", count = 7},
-		{type = "nitrogen_positive1_atom", count = 1}
+        {type = "oxygen_atom", count = 1},
+        {type = "carbon_atom", count = 7},
+        {type = "nitrogen_positive1_atom", count = 1}
     },
     benzene = {
         {type = "ethylene", count = 3}
@@ -152,7 +152,7 @@ local fragmentationRules = {
         {type = "oxygen_atom", count = 1},
         {type = "hydrogen_atom", count = 3}
     },
-	uranium_hexafluoride = {
+    uranium_hexafluoride = {
         {type = "uranium_atom", count = 1},
         {type = "fluorine", count = 3}
     },
@@ -677,8 +677,7 @@ local structures = {
         radioactive = true,
         octahedral = true
     },
-  
-  	uranium_atom = {
+    uranium_atom = {
         atoms = {
             {element = "U", x = 0, y = 0, color = ELEMENT_COLORS.U}
         },
@@ -709,13 +708,13 @@ local structures = {
         },
         bonds = {}
     },
-	nitrogen_positive1_atom = {
+    nitrogen_positive1_atom = {
         atoms = {
             {element = "N", x = 0, y = 0, color = ELEMENT_COLORS.N}
         },
         bonds = {},
-		ion = true,
-		charge = 1
+        ion = true,
+        charge = 1
     },
     fluorine_atom = {
         atoms = {
@@ -734,23 +733,22 @@ local bondingRules = {
     {atoms = {O = 2}, product = "oxygen", priority = 2},
     {atoms = {F = 2}, product = "fluorine", priority = 2},
     {atoms = {N = 2}, product = "ammonia", priority = 1},
-
-  -- Small atom formation
+    -- Small atom formation
     {atoms = {H = 2, O = 1}, product = "water", priority = 10},
     {atoms = {C = 1, O = 2}, product = "co2", priority = 8},
     {atoms = {N = 1, H = 3}, product = "ammonia", priority = 7},
     {atoms = {C = 1, H = 4}, product = "methane", priority = 9},
     {atoms = {U = 1, F = 6}, product = "uranium_hexafluoride", priority = 8},
-  
-  -- Small ion formation
+    {atoms = {hydroxide = 1, H = 1}, product = "water", priority = 5},
+    -- Small ion formation
     {atoms = {H = 1, O = 1}, product = "hydroxide", priority = 12},
     {atoms = {O = 1, H = 3}, product = "hydronium", priority = 12},
-    {atoms = {U = 1, O = 2}, product = "uranyl", priority = 9},
+    {atoms = {U = 1, O = 2}, product = "uranyl", priority = 9}
 }
 
 function Molecule:new(type, x, y)
     local molConfig = config.molecules[type]
-    
+
     local mol = {
         type = type,
         x = x,
@@ -765,7 +763,7 @@ function Molecule:new(type, x, y)
         alive = true,
         rotation = math.random() * math.pi * 2,
         rotationSpeed = (math.random() - 0.5) * 0.5,
-        element = type:match("^(%w+)_atom$") or nil,  -- Extract element if atom
+        element = type:match("^(%w+)_atom$") or nil, -- Extract element if atom
         attractionForce = 0
     }
     setmetatable(mol, Molecule)
@@ -773,19 +771,20 @@ function Molecule:new(type, x, y)
 end
 
 function Molecule:attemptBonding(nearbyAtoms)
-    if not self.element or not self.alive then return end
-    
-    -- Create atom counts
+    if not self.element or not self.alive then
+        return
+    end
+
     local atomCounts = {}
     local allAtoms = {self}
-    
-    -- Add self to the list
+
+    -- Count this atom
     local selfElement = self.element
     if selfElement then
         atomCounts[selfElement] = (atomCounts[selfElement] or 0) + 1
     end
-    
-    -- Add nearby atoms
+
+    -- Count nearby atoms
     for _, atom in ipairs(nearbyAtoms) do
         if atom.alive and atom.element then
             table.insert(allAtoms, atom)
@@ -793,81 +792,75 @@ function Molecule:attemptBonding(nearbyAtoms)
             atomCounts[element] = (atomCounts[element] or 0) + 1
         end
     end
-    
-    -- Normalize element names for bonding rules
-    local normalizedCounts = {}
-    for element, count in pairs(atomCounts) do
-        local normElement = element:sub(1, 1):upper()
-        if element == "hydrogen" then normElement = "H"
-        elseif element == "carbon" then normElement = "C"
-        elseif element == "oxygen" then normElement = "O"
-        elseif element == "nitrogen" then normElement = "N"
-        elseif element == "fluorine" then normElement = "F"
+
+    -- Sort bonding rules by priority
+    table.sort(
+        bondingRules,
+        function(a, b)
+            return a.priority > b.priority
         end
-        normalizedCounts[normElement] = (normalizedCounts[normElement] or 0) + count
-    end
-    
-    -- Check bonding rules (sorted by priority)
-    table.sort(bondingRules, function(a, b) return a.priority > b.priority end)
-    
+    )
+
+    -- Try each bonding rule
     for _, rule in ipairs(bondingRules) do
         local canBond = true
-        
-        -- Check if we have enough of each atom
+
+        -- Check if we have enough of each required element
         for element, needed in pairs(rule.atoms) do
-            if (normalizedCounts[element] or 0) < needed then
+            if (atomCounts[element] or 0) < needed then
                 canBond = false
                 break
             end
         end
-        
+
         if canBond then
             -- Calculate center position
             local centerX, centerY = 0, 0
             for _, atom in ipairs(allAtoms) do
                 centerX = centerX + atom.x
                 centerY = centerY + atom.y
-                atom.alive = false  -- Mark atoms for removal
+                atom.alive = false -- Mark for removal
             end
             centerX = centerX / #allAtoms
             centerY = centerY / #allAtoms
-            
+
             -- Create new molecule
             local newMolecule = Molecule:new(rule.product, centerX, centerY)
-            
-            -- Give it some velocity from the bond formation
+
+            -- Give it some momentum from the bonding
             newMolecule.vx = (math.random() - 0.5) * 40
             newMolecule.vy = (math.random() - 0.5) * 40
-            
+
             table.insert(molecules, newMolecule)
-            break
+            return -- Successfully bonded, exit
         end
     end
 end
-
 function Molecule:update(dt)
-    if not self.alive then return end
-    
+    if not self.alive then
+        return
+    end
+
     if self.element then
         local totalForceX, totalForceY = 0, 0
         local atomCount = 0
-        
+
         for _, other in ipairs(molecules) do
             if other ~= self and other.alive and other.element then
                 local dx = other.x - self.x
                 local dy = other.y - self.y
-                local distance = math.sqrt(dx*dx + dy*dy)
-                
+                local distance = math.sqrt(dx * dx + dy * dy)
+
                 if distance < ATTRACTION_RANGE and distance > 1 then
                     local attractionStrength = ELEMENT_ATTRACTION[self.element] and 
                                               ELEMENT_ATTRACTION[self.element][other.element] or 0.5
                     
                     if attractionStrength > 0 then
                         local force = (ATTRACTION_FORCE * attractionStrength) / (distance * distance * 0.1)
-                        
+
                         local dirX = dx / distance
                         local dirY = dy / distance
-                        
+
                         totalForceX = totalForceX + dirX * force
                         totalForceY = totalForceY + dirY * force
                         atomCount = atomCount + 1
@@ -875,40 +868,40 @@ function Molecule:update(dt)
                 end
             end
         end
-        
+
         -- Average the force if we have multiple attractions
         if atomCount > 0 then
             totalForceX = totalForceX / atomCount
             totalForceY = totalForceY / atomCount
-            
+
             self.vx = self.vx + totalForceX * dt
             self.vy = self.vy + totalForceY * dt
-            
+
             self.attractionForce = math.sqrt(totalForceX * totalForceX + totalForceY * totalForceY)
         else
             self.attractionForce = 0
         end
-        
+
         local nearbyAtoms = {}
         for _, other in ipairs(molecules) do
             if other ~= self and other.alive and other.element then
                 local dx = other.x - self.x
                 local dy = other.y - self.y
-                local distance = math.sqrt(dx*dx + dy*dy)
-                
+                local distance = math.sqrt(dx * dx + dy * dy)
+
                 if distance < BONDING_DISTANCE then
                     table.insert(nearbyAtoms, other)
                 end
             end
         end
-        
+
         if #nearbyAtoms >= 1 then
             self:attemptBonding(nearbyAtoms)
         end
     end
-    
+
     self.rotation = self.rotation + self.rotationSpeed * dt
-    
+
     -- Predator behaviors
     if self.type == "oxygen" or self.type == "ozone" or self.type == "chlorine" 
        or self.type == "fluorine" or self.type == "hydrogen_peroxide" or self.type == "sulfuric_acid" 
@@ -941,18 +934,18 @@ function Molecule:update(dt)
                         "cyclopropane", "cyclobutane", "cyclopentane", "acetone", "benzene",
                         "cyclopropenylidene", "cyclobutene", "caffeine", "tnt", "acetylcarnitine", "helium_dimer", "tetrafluoroethylene"}
         end
-        
+
         local closest = nil
         local detectionMult = molConfig.detectionMultiplier or 1
         local closestDist = DETECTION_RANGE * detectionMult
-        
+
         for _, mol in ipairs(molecules) do
             for _, preyType in ipairs(preyTypes) do
                 if mol.type == preyType and mol.alive then
                     local dx = mol.x - self.x
                     local dy = mol.y - self.y
-                    local dist = math.sqrt(dx*dx + dy*dy)
-                    
+                    local dist = math.sqrt(dx * dx + dy * dy)
+
                     if dist < closestDist then
                         closest = mol
                         closestDist = dist
@@ -961,18 +954,18 @@ function Molecule:update(dt)
                 end
             end
         end
-        
+
         if closest then
             local dx = closest.x - self.x
             local dy = closest.y - self.y
-            local dist = math.sqrt(dx*dx + dy*dy)
+            local dist = math.sqrt(dx * dx + dy * dy)
             local speedMult = molConfig.speedMultiplier or 1
             local speed = HUNT_SPEED * speedMult
-            self.vx = (dx/dist) * speed
-            self.vy = (dy/dist) * speed
-            
+            self.vx = (dx / dist) * speed
+            self.vy = (dy / dist) * speed
+
             self.rotationSpeed = 2
-            
+
             -- Attack if close enough
             local damage = molConfig.damage or 50
             if dist < self.radius + closest.radius then
@@ -988,23 +981,20 @@ function Molecule:update(dt)
             self.vy = math.sin(self.wanderAngle) * WANDER_SPEED
             self.rotationSpeed = 0.3
         end
-        
-    -- Cleaner behaviors (hunt CO2 and water)
-    elseif self.type == "lithium_hydroxide" or self.type == "sodium_hydroxide"
-        or self.type == "hydroxide" then
+    elseif self.type == "lithium_hydroxide" or self.type == "sodium_hydroxide" or self.type == "hydroxide" then
         local molConfig = config.molecules[self.type]
         local targetTypes = {"co2", "water"}
         local closest = nil
         local detectionMult = molConfig.detectionMultiplier or 1
         local closestDist = DETECTION_RANGE * detectionMult
-        
+
         for _, mol in ipairs(molecules) do
             for _, targetType in ipairs(targetTypes) do
                 if mol.type == targetType and mol.alive then
                     local dx = mol.x - self.x
                     local dy = mol.y - self.y
-                    local dist = math.sqrt(dx*dx + dy*dy)
-                    
+                    local dist = math.sqrt(dx * dx + dy * dy)
+
                     if dist < closestDist then
                         closest = mol
                         closestDist = dist
@@ -1013,18 +1003,18 @@ function Molecule:update(dt)
                 end
             end
         end
-        
+
         if closest then
             local dx = closest.x - self.x
             local dy = closest.y - self.y
-            local dist = math.sqrt(dx*dx + dy*dy)
+            local dist = math.sqrt(dx * dx + dy * dy)
             local speedMult = molConfig.speedMultiplier or 1
             local speed = HUNT_SPEED * speedMult
-            self.vx = (dx/dist) * speed
-            self.vy = (dy/dist) * speed
-      
+            self.vx = (dx / dist) * speed
+            self.vy = (dy / dist) * speed
+
             self.rotationSpeed = 1.5
-            
+
             -- "Consume" CO2 or water if close enough
             local damage = molConfig.damage or 40
             if dist < self.radius + closest.radius then
@@ -1039,19 +1029,18 @@ function Molecule:update(dt)
             self.vy = math.sin(self.wanderAngle) * WANDER_SPEED
             self.rotationSpeed = 0.5
         end
-
     elseif self.type == "hydroxide" then
         local targetTypes = {"hydronium", "hydrochloric_acid", "sulfuric_acid"}
         local closest = nil
         local closestDist = DETECTION_RANGE * 1.5
-        
+
         for _, mol in ipairs(molecules) do
             for _, targetType in ipairs(targetTypes) do
                 if mol.type == targetType and mol.alive then
                     local dx = mol.x - self.x
                     local dy = mol.y - self.y
-                    local dist = math.sqrt(dx*dx + dy*dy)
-                    
+                    local dist = math.sqrt(dx * dx + dy * dy)
+
                     if dist < closestDist then
                         closest = mol
                         closestDist = dist
@@ -1060,14 +1049,14 @@ function Molecule:update(dt)
                 end
             end
         end
-        
+
         if closest then
             local dx = closest.x - self.x
             local dy = closest.y - self.y
-            local dist = math.sqrt(dx*dx + dy*dy)
+            local dist = math.sqrt(dx * dx + dy * dy)
             local speed = HUNT_SPEED * 1.1
-            self.vx = (dx/dist) * speed
-            self.vy = (dy/dist) * speed
+            self.vx = (dx / dist) * speed
+            self.vy = (dy / dist) * speed
             self.rotationSpeed = 3
         else
             self.wanderAngle = self.wanderAngle + (math.random() - 0.5) * 0.08
@@ -1075,19 +1064,19 @@ function Molecule:update(dt)
             self.vy = math.sin(self.wanderAngle) * WANDER_SPEED
             self.rotationSpeed = 1.5
         end
-        
     elseif self.type == "hydronium" then
+        -- UF6 is highly aggressive and radioactive
         local targetTypes = {"hydroxide", "lithium_hydroxide", "sodium_hydroxide", "ammonia"}
         local closest = nil
         local closestDist = DETECTION_RANGE * 1.3
-        
+
         for _, mol in ipairs(molecules) do
             for _, targetType in ipairs(targetTypes) do
                 if mol.type == targetType and mol.alive then
                     local dx = mol.x - self.x
                     local dy = mol.y - self.y
-                    local dist = math.sqrt(dx*dx + dy*dy)
-                    
+                    local dist = math.sqrt(dx * dx + dy * dy)
+
                     if dist < closestDist then
                         closest = mol
                         closestDist = dist
@@ -1096,27 +1085,27 @@ function Molecule:update(dt)
                 end
             end
         end
-        
+
         if closest then
             local dx = closest.x - self.x
             local dy = closest.y - self.y
-            local dist = math.sqrt(dx*dx + dy*dy)
+            local dist = math.sqrt(dx * dx + dy * dy)
             local speed = HUNT_SPEED * 1.2
-            self.vx = (dx/dist) * speed
-            self.vy = (dy/dist) * speed
+            self.vx = (dx / dist) * speed
+            self.vy = (dy / dist) * speed
             self.rotationSpeed = 2.5
         else
             local preyTypes = {"ammonia", "ethanol", "acetone"}
             local nearestPrey = nil
             local nearestPreyDist = DETECTION_RANGE
-            
+
             for _, mol in ipairs(molecules) do
                 for _, preyType in ipairs(preyTypes) do
                     if mol.type == preyType and mol.alive then
                         local dx = mol.x - self.x
                         local dy = mol.y - self.y
-                        local dist = math.sqrt(dx*dx + dy*dy)
-                        
+                        local dist = math.sqrt(dx * dx + dy * dy)
+
                         if dist < nearestPreyDist then
                             nearestPrey = mol
                             nearestPreyDist = dist
@@ -1124,7 +1113,7 @@ function Molecule:update(dt)
                     end
                 end
             end
-            
+
             if nearestPrey then
                 local dx = nearestPrey.x - self.x
                 local dy = nearestPrey.y - self.y
@@ -1139,20 +1128,18 @@ function Molecule:update(dt)
                 self.rotationSpeed = 1
             end
         end
-		
- -- UF6 is highly aggressive and radioactive
     elseif self.type == "uranium_hexafluoride" then
         local preyTypes = {"water", "methane", "ethanol", "ammonia", "ethylene", "propane"}
         local closest = nil
         local closestDist = DETECTION_RANGE * 2
-        
+
         for _, mol in ipairs(molecules) do
             for _, preyType in ipairs(preyTypes) do
                 if mol.type == preyType and mol.alive then
                     local dx = mol.x - self.x
                     local dy = mol.y - self.y
-                    local dist = math.sqrt(dx*dx + dy*dy)
-                    
+                    local dist = math.sqrt(dx * dx + dy * dy)
+
                     if dist < closestDist then
                         closest = mol
                         closestDist = dist
@@ -1160,17 +1147,17 @@ function Molecule:update(dt)
                 end
             end
         end
-        
+
         if closest then
             local dx = closest.x - self.x
             local dy = closest.y - self.y
-            local dist = math.sqrt(dx*dx + dy*dy)
+            local dist = math.sqrt(dx * dx + dy * dy)
             local speed = HUNT_SPEED * 0.9
-            self.vx = (dx/dist) * speed
-            self.vy = (dy/dist) * speed
+            self.vx = (dx / dist) * speed
+            self.vy = (dy / dist) * speed
             self.rotationSpeed = 1.2
-            
-         -- Radiation damage if close
+
+            -- Radiation damage if close
             if dist < self.radius + closest.radius + 20 then
                 closest.health = closest.health - 25 * dt
             end
@@ -1180,20 +1167,19 @@ function Molecule:update(dt)
             self.vy = math.sin(self.wanderAngle) * (WANDER_SPEED * 0.7)
             self.rotationSpeed = 0.8
         end
-        
     elseif self.type == "uranyl" then
-     -- Uranyl ion seeks hydroxide for neutralization
+        -- Uranyl ion seeks hydroxide for neutralization
         local targetTypes = {"hydroxide", "lithium_hydroxide", "sodium_hydroxide"}
         local closest = nil
         local closestDist = DETECTION_RANGE * 1.5
-        
+
         for _, mol in ipairs(molecules) do
             for _, targetType in ipairs(targetTypes) do
                 if mol.type == targetType and mol.alive then
                     local dx = mol.x - self.x
                     local dy = mol.y - self.y
-                    local dist = math.sqrt(dx*dx + dy*dy)
-                    
+                    local dist = math.sqrt(dx * dx + dy * dy)
+
                     if dist < closestDist then
                         closest = mol
                         closestDist = dist
@@ -1201,14 +1187,14 @@ function Molecule:update(dt)
                 end
             end
         end
-        
+
         if closest then
             local dx = closest.x - self.x
             local dy = closest.y - self.y
-            local dist = math.sqrt(dx*dx + dy*dy)
+            local dist = math.sqrt(dx * dx + dy * dy)
             local speed = HUNT_SPEED * 0.95
-            self.vx = (dx/dist) * speed
-            self.vy = (dy/dist) * speed
+            self.vx = (dx / dist) * speed
+            self.vy = (dy / dist) * speed
             self.rotationSpeed = 1.5
         else
             self.wanderAngle = self.wanderAngle + (math.random() - 0.5) * 0.08
@@ -1216,9 +1202,9 @@ function Molecule:update(dt)
             self.vy = math.sin(self.wanderAngle) * (WANDER_SPEED * 0.8)
             self.rotationSpeed = 1.0
         end
-        
     elseif self.type == "uranium_atom" then
-     -- Slow, heavy uranium atom that can bond
+        -- Prey behaviors
+        -- Slow, heavy uranium atom that can bond
         self.wanderAngle = self.wanderAngle + (math.random() - 0.5) * 0.05
         self.vx = math.cos(self.wanderAngle) * (WANDER_SPEED * 0.6)
         self.vy = math.sin(self.wanderAngle) * (WANDER_SPEED * 0.6)
@@ -1236,7 +1222,7 @@ function Molecule:update(dt)
         local threats = {"oxygen", "ozone", "chlorine", "fluorine", "hydrogen_peroxide", "sulfuric_acid", "hydrochloric_acid"}
         local nearestThreat = nil
         local nearestDist = DETECTION_RANGE
-        
+
         for _, mol in ipairs(molecules) do
             for _, threat in ipairs(threats) do
                 if mol.type == threat and mol.alive then
@@ -1251,16 +1237,16 @@ function Molecule:update(dt)
                 end
             end
         end
-        
+
         if nearestThreat then
             local dx = self.x - nearestThreat.x
             local dy = self.y - nearestThreat.y
-            local dist = math.sqrt(dx*dx + dy*dy)
+            local dist = math.sqrt(dx * dx + dy * dy)
             local speedMult = molConfig.speedMultiplier or 1
             local speed = FLEE_SPEED * speedMult
-            self.vx = (dx/dist) * speed
-            self.vy = (dy/dist) * speed
-            
+            self.vx = (dx / dist) * speed
+            self.vy = (dy / dist) * speed
+
             -- Spin faster when fleeing (strained rings spin REALLY fast)
             if self.type == "cyclopropane" or self.type == "cyclopropenylidene" then
                 self.rotationSpeed = 5
@@ -1277,7 +1263,7 @@ function Molecule:update(dt)
             self.wanderAngle = self.wanderAngle + (math.random() - 0.5) * 0.05
             self.vx = math.cos(self.wanderAngle) * WANDER_SPEED
             self.vy = math.sin(self.wanderAngle) * WANDER_SPEED
-            
+
             if self.type == "benzene" then
                 self.rotationSpeed = 0.3
             elseif self.type == "tetrafluoroethylene" then
@@ -1296,27 +1282,27 @@ function Molecule:update(dt)
                 self.rotationSpeed = 0.5
             end
         end
-        
     elseif self.type == "water" or self.type == "co2" or self.type == "helium" then
+        -- Atom behaviors - wander and try to bond
         local molConfig = config.molecules[self.type]
         
         if self.type == "helium" then
             local nearestFluorine = nil
             local nearestDist = DETECTION_RANGE
-            
+
             for _, mol in ipairs(molecules) do
                 if mol.type == "fluorine" and mol.alive then
                     local dx = mol.x - self.x
                     local dy = mol.y - self.y
-                    local dist = math.sqrt(dx*dx + dy*dy)
-                    
+                    local dist = math.sqrt(dx * dx + dy * dy)
+
                     if dist < nearestDist then
                         nearestFluorine = mol
                         nearestDist = dist
                     end
                 end
             end
-            
+
             if nearestFluorine then
                 local dx = self.x - nearestFluorine.x
                 local dy = self.y - nearestFluorine.y
@@ -1350,7 +1336,7 @@ function Molecule:update(dt)
         self.vy = math.sin(self.wanderAngle) * (WANDER_SPEED * speedMult)
         self.rotationSpeed = 4
     end
-    
+
     self.x = self.x + self.vx * dt
     self.y = self.y + self.vy * dt
     
@@ -1370,25 +1356,25 @@ function Molecule:draw()
         love.graphics.setColor(1, 1, 0, 0.3)
         love.graphics.circle("fill", self.x, self.y, self.radius + 10)
     end
-    
+
     -- Draw attraction field for atoms
     if self.element and self.attractionForce > 0 then
         local intensity = math.min(self.attractionForce / 50, 0.3)
         love.graphics.setColor(0.3, 0.8, 1, intensity * 0.3)
         love.graphics.circle("line", self.x, self.y, ATTRACTION_RANGE)
-        
+
         -- Draw attraction lines to nearby atoms
         love.graphics.setColor(0.5, 0.8, 1, intensity)
         for _, other in ipairs(molecules) do
             if other ~= self and other.alive and other.element then
                 local dx = other.x - self.x
                 local dy = other.y - self.y
-                local distance = math.sqrt(dx*dx + dy*dy)
-                
+                local distance = math.sqrt(dx * dx + dy * dy)
+
                 if distance < ATTRACTION_RANGE then
-                    local attractionStrength = ELEMENT_ATTRACTION[self.element] and 
-                                              ELEMENT_ATTRACTION[self.element][other.element] or 0
-                    
+                    local attractionStrength =
+                        ELEMENT_ATTRACTION[self.element] and ELEMENT_ATTRACTION[self.element][other.element] or 0
+
                     if attractionStrength > 0.1 then
                         love.graphics.setLineWidth(1)
                         love.graphics.line(self.x, self.y, other.x, other.y)
@@ -1397,24 +1383,25 @@ function Molecule:draw()
             end
         end
     end
-    
+
     love.graphics.push()
     love.graphics.translate(self.x, self.y)
     love.graphics.rotate(self.rotation)
-    
+
     -- Draw bonds first (so they appear behind atoms)
     love.graphics.setLineWidth(2)
     for _, bond in ipairs(struct.bonds) do
         local atom1 = struct.atoms[bond[1]]
         local atom2 = struct.atoms[bond[2]]
-    
-     -- Double bond (like O=O or C=C)
+
+        -- Double bond (like O=O or C=C)
         if bond.double then
+            -- Resonance bond (like in ozone) - dashed style
             love.graphics.setColor(0.6, 0.6, 0.6)
             love.graphics.line(atom1.x, atom1.y - 2, atom2.x, atom2.y - 2)
             love.graphics.line(atom1.x, atom1.y + 2, atom2.x, atom2.y + 2)
-     -- Resonance bond (like in ozone) - dashed style
         elseif bond.resonance then
+            -- Weak bond (like in helium dimer) - dotted style
             love.graphics.setColor(0.7, 0.5, 0.9, 0.8)
             local steps = 5
             local dx = (atom2.x - atom1.x) / steps
@@ -1422,12 +1409,13 @@ function Molecule:draw()
             for i = 0, steps - 1 do
                 if i % 2 == 0 then
                     love.graphics.line(
-                        atom1.x + dx * i, atom1.y + dy * i,
-                        atom1.x + dx * (i + 1), atom1.y + dy * (i + 1)
+                        atom1.x + dx * i,
+                        atom1.y + dy * i,
+                        atom1.x + dx * (i + 1),
+                        atom1.y + dy * (i + 1)
                     )
                 end
             end
-    -- Weak bond (like in helium dimer) - dotted style
         elseif bond.weak then
             love.graphics.setColor(0.8, 0.9, 1, 0.5)
             local steps = 12
@@ -1439,57 +1427,49 @@ function Molecule:draw()
                 end
             end
         else
-         -- Single bond
+            -- Single bond
             love.graphics.setColor(0.5, 0.5, 0.5)
             love.graphics.line(atom1.x, atom1.y, atom2.x, atom2.y)
         end
     end
-    
+
     -- Draw atoms with special glow effect
     for _, atom in ipairs(struct.atoms) do
         love.graphics.setColor(atom.color)
         local atomSize = atom.element == "H" and 4 or 6
-        
-        -- Atoms get a glow... only if the molecule IS an atom
-        if self.type:match("_atom$") then
-            love.graphics.setColor(atom.color[1], atom.color[2], atom.color[3], 0.3)
-            love.graphics.circle("fill", atom.x, atom.y, atomSize + 3)
-        end
-		
-		if struct.radioactive then
+
+        if struct.radioactive then
             local pulse = (math.sin(love.timer.getTime() * 3) + 1) * 0.5
             love.graphics.setColor(0, 1, 0, 0.1 + pulse * 0.1)
             for i = 1, 3 do
                 love.graphics.circle("line", self.x, self.y, self.radius + i * 5)
             end
         end
-        
+
         love.graphics.setColor(atom.color)
         love.graphics.circle("fill", atom.x, atom.y, atomSize)
         love.graphics.setColor(1, 1, 1, 0.3)
         love.graphics.circle("line", atom.x, atom.y, atomSize)
     end
-	
-	
 
     if struct.ion then
         local chargeText = struct.charge > 0 and "+" .. tostring(struct.charge) or tostring(struct.charge)
         local chargeColor = struct.charge > 0 and {1, 0.5, 0.5} or {0.5, 0.5, 1}
-        
+
         love.graphics.setColor(chargeColor)
         love.graphics.print(chargeText, -8, -25)
-        
+
         love.graphics.setColor(chargeColor[1], chargeColor[2], chargeColor[3], 0.2)
         love.graphics.circle("fill", 0, 0, self.radius + 5)
     end
-    
+
     love.graphics.pop()
-    
+
     if love.keyboard.isDown("d") then
         love.graphics.setColor(1, 1, 1, 0.1)
         love.graphics.circle("line", self.x, self.y, DETECTION_RANGE)
-	end
-	
+    end
+
     if self.element then
         love.graphics.setColor(0, 1, 0, 0.1)
         love.graphics.circle("line", self.x, self.y, BONDING_DISTANCE)
@@ -1506,7 +1486,7 @@ function love.load()
                 math.random(100, WORLD_HEIGHT-100)))
         end
     end
-    
+
     -- Center camera
     camera.x = WORLD_WIDTH / 2 - love.graphics.getWidth() / 2
     camera.y = WORLD_HEIGHT / 2 - love.graphics.getHeight() / 2
@@ -1516,57 +1496,36 @@ function love.update(dt)
     local mouseX, mouseY = love.mouse.getPosition()
     local worldX = camera.x + mouseX / camera.zoom
     local worldY = camera.y + mouseY / camera.zoom
-    
+
     hoveredMolecule = nil
     local closestDist = 30 / camera.zoom
-    
+
     for _, mol in ipairs(molecules) do
         if mol.alive then
             local dx = mol.x - worldX
             local dy = mol.y - worldY
-            local dist = math.sqrt(dx*dx + dy*dy)
-            
+            local dist = math.sqrt(dx * dx + dy * dy)
+
             if dist < mol.radius + closestDist then
                 hoveredMolecule = mol
                 closestDist = dist
             end
         end
     end
+    
+    -- Update all molecules
     for _, mol in ipairs(molecules) do
         mol:update(dt)
     end
-    
-    -- Check if nearby atoms can form molecules
+
+    -- Check for atom bonding - only for atoms
     for i = 1, #molecules do
         local mol1 = molecules[i]
-     -- Find nearby atoms within bonding distance
-        if mol1.alive and mol1.type:match("_atom$") then
-            local nearbyAtoms = {mol1}
-            local bondingDistance = 25
+        
+        -- Only process atoms that are alive
+        if mol1.alive and mol1.element then
+            local nearbyAtoms = {}
             
-            for j = i + 1, #molecules do
-                local mol2 = molecules[j]
-                if mol2.alive and mol2.type:match("_atom$") then
-                    local dx = mol2.x - mol1.x
-                    local dy = mol2.y - mol1.y
-                    local dist = math.sqrt(dx*dx + dy*dy)
-                    
-                    if dist < bondingDistance then
-                        table.insert(nearbyAtoms, mol2)
-                    end
-                end
-            end
-            
-            -- If we have multiple atoms nearby, try to bond them
-            if #nearbyAtoms >= 2 then
-                local atomCounts = {}
-                for _, atom in ipairs(nearbyAtoms) do
-                    local element = atom.type:match("^(%w+)_atom$")
-                    if element then
-                        element = element:sub(1, 1):upper() .. element:sub(2)
-                        element = element:gsub("Hydrogen", "H"):gsub("Carbon", "C")
-                                        :gsub("Oxygen", "O"):gsub("Nitrogen", "N")
-                                        :gsub("Fluorine", "F")
                         atomCounts[element] = (atomCounts[element] or 0) + 1
                     end
                 end
@@ -1579,8 +1538,6 @@ function love.update(dt)
                     local atomsToRemove = {}
                     
                     for element, count in pairs(rule.atoms) do
-                        if (atomCounts[element] or 0) < count then
-                            canBond = false
                             break
                         end
                     end
@@ -1610,8 +1567,6 @@ function love.update(dt)
                         local avgX, avgY = 0, 0
                         for _, atom in ipairs(atomsToRemove) do
                             avgX = avgX + atom.x
-                            avgY = avgY + atom.y
-                            atom.alive = false
                         end
                         avgX = avgX / #atomsToRemove
                         avgY = avgY / #atomsToRemove
@@ -1621,9 +1576,15 @@ function love.update(dt)
                     end
                 end
             end
+
+            -- If we have nearby atoms, try to bond
+            if #nearbyAtoms >= 1 then
+                mol1:attemptBonding(nearbyAtoms)
+            end
         end
     end
 
+    -- Neutralization reactions between hydroxide and hydronium
     for i = #molecules, 1, -1 do
         local mol1 = molecules[i]
         if mol1.alive and (mol1.type == "hydroxide" or mol1.type == "hydronium") then
@@ -1635,31 +1596,31 @@ function love.update(dt)
                     
                     local dx = mol2.x - mol1.x
                     local dy = mol2.y - mol1.y
-                    local dist = math.sqrt(dx*dx + dy*dy)
+                    local dist = math.sqrt(dx * dx + dy * dy)
                     local neutralizationRange = 30
-                    
+
                     if dist < neutralizationRange then
                         local waterX = (mol1.x + mol2.x) / 2
                         local waterY = (mol1.y + mol2.y) / 2
-                        
+
                         -- Spawn water
                         table.insert(molecules, Molecule:new("water", waterX, waterY))
-                        
+
                         -- Remove the ions
                         mol1.alive = false
                         mol2.alive = false
-                        
+
                         local waterMol = molecules[#molecules]
                         waterMol.vx = (math.random() - 0.5) * 50
                         waterMol.vy = (math.random() - 0.5) * 50
-                        
+
                         break
                     end
                 end
             end
         end
     end
-    
+
     -- Remove dead molecules and spawn fragments
     for i = #molecules, 1, -1 do
         if not molecules[i].alive then
@@ -1667,12 +1628,12 @@ function love.update(dt)
             if camera.followTarget == molecules[i] then
                 camera.followTarget = nil
             end
-            
+
             spawnFragments(molecules[i])
             table.remove(molecules, i)
         end
     end
-    
+
     -- Camera following
     if camera.followTarget and camera.followTarget.alive then
         local targetX = camera.followTarget.x - love.graphics.getWidth() / (2 * camera.zoom)
@@ -1686,7 +1647,7 @@ function love.update(dt)
         if love.keyboard.isDown(config.controls.moveUp) then camera.y = camera.y - camSpeed * dt end
         if love.keyboard.isDown(config.controls.moveDown) then camera.y = camera.y + camSpeed * dt end
     end
-    
+
     if love.keyboard.isDown(config.controls.zoomIn) or love.keyboard.isDown("=") then
         camera.zoom = math.min(camera.zoom + 1 * dt, camera.maxZoom)
     end
@@ -1694,14 +1655,13 @@ function love.update(dt)
         camera.zoom = math.max(camera.zoom - 1 * dt, camera.minZoom)
     end
 end
-
 function love.draw()
     -- Draw world with camera transformation
     drawWorld()
-    
+
     -- Draw UI overlay
     drawUI()
-    
+
     -- Draw hover tooltip if needed
     if hoveredMolecule then
         drawMoleculeTooltip(hoveredMolecule)
@@ -1712,11 +1672,11 @@ function drawWorld()
     love.graphics.push()
     love.graphics.translate(-camera.x * camera.zoom, -camera.y * camera.zoom)
     love.graphics.scale(camera.zoom, camera.zoom)
-    
+
     -- Draw background
     love.graphics.setColor(config.visual.backgroundColor)
     love.graphics.rectangle("fill", 0, 0, WORLD_WIDTH, WORLD_HEIGHT)
-    
+
     -- Draw grid
     love.graphics.setColor(config.visual.gridColor)
     for x = 0, WORLD_WIDTH, config.visual.gridSize do
@@ -1725,33 +1685,33 @@ function drawWorld()
     for y = 0, WORLD_HEIGHT, config.visual.gridSize do
         love.graphics.line(0, y, WORLD_WIDTH, y)
     end
-    
+
     -- Draw all molecules
     for _, mol in ipairs(molecules) do
         mol:draw()
     end
-    
+
     love.graphics.pop()
 end
 
 function drawUI()
     local y = 10
-    
+
     -- Title and version
     love.graphics.setColor(1, 1, 1)
     love.graphics.print(config.game.title .. " " .. config.game.version, 10, y, 0, 1.5, 1.5)
     y = y + 40
-    
+
     -- FPS counter
     if config.debug.showFPS then
         love.graphics.print("FPS: " .. love.timer.getFPS(), 10, y)
         y = y + 25
     end
-    
+
     -- Zoom level
     love.graphics.print("Zoom: " .. string.format("%.1f", camera.zoom) .. "x", 10, y)
     y = y + 25
-    
+
     -- Following indicator
     if camera.followTarget and camera.followTarget.alive then
         love.graphics.setColor(1, 1, 0)
@@ -1759,7 +1719,7 @@ function drawUI()
         love.graphics.setColor(1, 1, 1)
         y = y + 20
     end
-    
+
     -- Controls help
     love.graphics.print("Arrow keys: Move  |  +/- : Zoom  |  ESC: Unfollow", 10, y)
     y = y + 20
@@ -1769,11 +1729,11 @@ end
 function drawMoleculeTooltip(molecule)
     local mouseX, mouseY = love.mouse.getPosition()
     local lines = {}
-    
+
     -- Basic info
     table.insert(lines, "Type: " .. molecule.type)
     table.insert(lines, "Health: " .. math.floor(molecule.health) .. "/" .. molecule.maxHealth)
-    
+
     -- Determine behavior info
     local behaviorInfo = getMoleculeBehaviorInfo(molecule)
     if behaviorInfo.hunts and #behaviorInfo.hunts > 0 then
@@ -1785,12 +1745,12 @@ function drawMoleculeTooltip(molecule)
     if behaviorInfo.huntedBy and #behaviorInfo.huntedBy > 0 then
         table.insert(lines, "Hunted by: " .. table.concat(behaviorInfo.huntedBy, ", "))
     end
-    
+
     -- Special properties
     if molecule.type:match("_atom$") then
         table.insert(lines, "Status: Free atom - can bond!")
     end
-    
+
     if molecule.type == "hydroxide" then
         table.insert(lines, "Charge: -1 (base)")
         table.insert(lines, "Neutralizes with hydronium")
@@ -1798,8 +1758,8 @@ function drawMoleculeTooltip(molecule)
         table.insert(lines, "Charge: +1 (acid)")
         table.insert(lines, "Neutralizes with hydroxide")
     end
-    
-  -- Uranium-specific info
+
+    -- Uranium-specific info
     if molecule.type:match("uranium") or molecule.type:match("uranyl") then
         table.insert(lines, "[!] RADIOACTIVE [!]")
         if molecule.type == "uranium_hexafluoride" then
@@ -1808,34 +1768,36 @@ function drawMoleculeTooltip(molecule)
             table.insert(lines, "Soluble ion: seeks hydroxide")
         end
     end
-    
-  -- Calculate tooltip size and position
+
+    -- Calculate tooltip size and position
     local maxWidth = 0
     for _, line in ipairs(lines) do
         local w = love.graphics.getFont():getWidth(line)
-        if w > maxWidth then maxWidth = w end
+        if w > maxWidth then
+            maxWidth = w
+        end
     end
-    
+
     local tooltipWidth = maxWidth + 20
     local tooltipHeight = #lines * 20 + 10
     local tooltipX = mouseX + 15
     local tooltipY = mouseY + 15
-    
-  -- Adjust position if tooltip goes off-screen
+
+    -- Adjust position if tooltip goes off-screen
     if tooltipX + tooltipWidth > love.graphics.getWidth() then
         tooltipX = mouseX - tooltipWidth - 15
     end
     if tooltipY + tooltipHeight > love.graphics.getHeight() then
         tooltipY = mouseY - tooltipHeight - 15
     end
-    
-  -- Draw tooltip background
+
+    -- Draw tooltip background
     love.graphics.setColor(0.1, 0.1, 0.15, 0.95)
     love.graphics.rectangle("fill", tooltipX, tooltipY, tooltipWidth, tooltipHeight, 5, 5)
     love.graphics.setColor(0.3, 0.3, 0.4)
     love.graphics.rectangle("line", tooltipX, tooltipY, tooltipWidth, tooltipHeight, 5, 5)
-    
-  -- Draw tooltip text
+
+    -- Draw tooltip text
     love.graphics.setColor(1, 1, 1)
     for i, line in ipairs(lines) do
         love.graphics.print(line, tooltipX + 10, tooltipY + 5 + (i - 1) * 20)
@@ -1857,31 +1819,27 @@ function getMoleculeBehaviorInfo(molecule)
         table.insert(info.hunts, "benzene")
         table.insert(info.hunts, "ammonia")
         table.insert(info.hunts, "etc.")
-        
     elseif molecule.type == "hydronium" then
         table.insert(info.hunts, "hydroxide")
         table.insert(info.hunts, "ammonia")
         table.insert(info.hunts, "ethanol")
         table.insert(info.hunts, "acetone")
         table.insert(info.hunts, "bases")
-        
+
         table.insert(info.huntedBy, "hydroxide")
         table.insert(info.huntedBy, "bases")
-        
     elseif molecule.type == "hydroxide" then
         table.insert(info.hunts, "hydronium")
         table.insert(info.hunts, "hydrochloric_acid")
         table.insert(info.hunts, "sulfuric_acid")
         table.insert(info.hunts, "acids")
-        
+
         table.insert(info.huntedBy, "hydronium")
         table.insert(info.huntedBy, "uranyl")
         table.insert(info.huntedBy, "acids")
-        
     elseif molecule.type == "lithium_hydroxide" or molecule.type == "sodium_hydroxide" then
         table.insert(info.consumes, "CO2")
         table.insert(info.consumes, "water")
-        
     elseif molecule.type == "uranium_hexafluoride" then
         table.insert(info.hunts, "water")
         table.insert(info.hunts, "methane")
@@ -1889,7 +1847,6 @@ function getMoleculeBehaviorInfo(molecule)
         table.insert(info.hunts, "ammonia")
         table.insert(info.hunts, "ethylene")
         table.insert(info.hunts, "propane")
-        
     elseif molecule.type == "uranyl" then
         table.insert(info.hunts, "hydroxide")
         table.insert(info.hunts, "lithium_hydroxide")
@@ -1912,44 +1869,44 @@ function getMoleculeBehaviorInfo(molecule)
         table.insert(info.huntedBy, "H2O2")
         table.insert(info.huntedBy, "acids")
         table.insert(info.huntedBy, "UF6")
-        
     elseif molecule.type == "water" or molecule.type == "co2" then
         table.insert(info.huntedBy, "LiOH")
         table.insert(info.huntedBy, "NaOH")
         table.insert(info.huntedBy, "UF6")
-        
     elseif molecule.type == "helium" then
         table.insert(info.huntedBy, "F2 (only!)")
     end
-    
+
     return info
 end
 
 spawnFragments = function(molecule)
     local rules = fragmentationRules[molecule.type]
-    if not rules then return end
-    
+    if not rules then
+        return
+    end
+
     local fragmentCount = 0
     for _, rule in ipairs(rules) do
         fragmentCount = fragmentCount + rule.count
     end
-    
+
     local angleStep = (math.pi * 2) / fragmentCount
     local currentAngle = math.random() * math.pi * 2
-    
+
     for _, rule in ipairs(rules) do
         for i = 1, rule.count do
             local distance = 30 + math.random() * 20
             local x = molecule.x + math.cos(currentAngle) * distance
             local y = molecule.y + math.sin(currentAngle) * distance
-            
+
             local fragment = Molecule:new(rule.type, x, y)
-            
+
             -- Give it explosion velocity
             local explosionSpeed = 80 + math.random() * 40
             fragment.vx = math.cos(currentAngle) * explosionSpeed
             fragment.vy = math.sin(currentAngle) * explosionSpeed
-            
+
             table.insert(molecules, fragment)
             currentAngle = currentAngle + angleStep
         end
@@ -1957,20 +1914,20 @@ spawnFragments = function(molecule)
 end
 
 function love.keypressed(key)
-    local spawnX = camera.x + (love.graphics.getWidth()/2) / camera.zoom + math.random(-50, 50)
-    local spawnY = camera.y + (love.graphics.getHeight()/2) / camera.zoom + math.random(-50, 50)
-    
+    local spawnX = camera.x + (love.graphics.getWidth() / 2) / camera.zoom + math.random(-50, 50)
+    local spawnY = camera.y + (love.graphics.getHeight() / 2) / camera.zoom + math.random(-50, 50)
+
     for molType, molConfig in pairs(config.molecules) do
         if molConfig.spawnKey and key == molConfig.spawnKey then
             table.insert(molecules, Molecule:new(molType, spawnX, spawnY))
             return
         end
     end
-    
+
     if key == config.controls.resetZoom then
         camera.zoom = config.camera.defaultZoom
     end
-    
+
     if key == "escape" then
         camera.followTarget = nil
     end
@@ -1980,24 +1937,24 @@ function love.mousepressed(x, y, button)
     if button == 3 then
         local worldX = camera.x + x / camera.zoom
         local worldY = camera.y + y / camera.zoom
-        
+
         -- Find closest molecule to click
         local closest = nil
         local closestDist = 50 / camera.zoom
-        
+
         for _, mol in ipairs(molecules) do
             if mol.alive then
                 local dx = mol.x - worldX
                 local dy = mol.y - worldY
-                local dist = math.sqrt(dx*dx + dy*dy)
-                
+                local dist = math.sqrt(dx * dx + dy * dy)
+
                 if dist < closestDist and dist < mol.radius + 20 then
                     closest = mol
                     closestDist = dist
                 end
             end
         end
-        
+
         if closest then
             if camera.followTarget == closest then
                 camera.followTarget = nil
