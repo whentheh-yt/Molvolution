@@ -7,6 +7,7 @@
 -- --------------------------
 -- December 20 2025 12:52 - Started. Finally. Hooray. (December 2025 Build 0.1.14779)
 -- December 20 2025 13:39 - Fixed subscript bug for hydroxide. (December 2025 Build 0.1.14783)
+-- December 20 2025 - Added uranium compounds, fixed love:draw and fragmentationRules, and other stuff. (December 2025 Build 0.1.14897)
 
 local config = require("config")
 
@@ -31,10 +32,10 @@ local WANDER_SPEED = config.gameplay.wanderSpeed
 -- What molecules break into
 local fragmentationRules = {
     acetylcarnitine = {
-        {type = "ethanol", count = 1},
-        {type = "ammonia", count = 1},
         {type = "co2", count = 2},
-        {type = "water", count = 1}
+		{type = "oxygen_atom", count = 1},
+		{type = "carbon_atom", count = 7},
+		{type = "nitrogen_positive1_atom", count = 1}
     },
     benzene = {
         {type = "ethylene", count = 3}
@@ -68,8 +69,8 @@ local fragmentationRules = {
         {type = "co2", count = 1}
     },
     tetrafluoroethylene = {
-        {type = "fluorine", count = 2},
-        {type = "co2", count = 2}
+        {type = "fluorine_atom", count = 4},
+        {type = "carbon_atom", count = 2}
     },
     cyclobutane = {
         {type = "ethylene", count = 2}
@@ -137,6 +138,14 @@ local fragmentationRules = {
     hydronium = {
         {type = "oxygen_atom", count = 1},
         {type = "hydrogen_atom", count = 3}
+    },
+	uranium_hexafluoride = {
+        {type = "uranium_atom", count = 1},
+        {type = "fluorine", count = 3}
+    },
+    uranyl = {
+        {type = "uranium_atom", count = 1},
+        {type = "oxygen", count = 1}
     }
 }
 
@@ -152,10 +161,11 @@ local ELEMENT_COLORS = {
     N = {0.2, 0.4, 0.9},   -- Blue
     O = {0.9, 0.2, 0.2},   -- Red
     F = {0.3, 0.9, 0.3},   -- Green
-    Na = {1.0, 0.8, 0.2},   -- Gold/orange
+    Na = {1.0, 0.8, 0.2},  -- Gold/orange
     P = {0.9, 0.5, 0.2},   -- Orange
     S = {0.9, 0.9, 0.2},   -- Yellow
-    Cl = {0.3, 0.9, 0.6}  -- Cyan/light green
+    Cl = {0.3, 0.9, 0.6},   -- Cyan/light green
+	U = {0.0, 0.8, 0.0}    -- Slightly darkish green
 }
 
 -- Molecular structures
@@ -624,7 +634,44 @@ local structures = {
             {1, 2}, {2, 3}
         }
     },
+    uranyl = {
+        atoms = {
+            {element = "U", x = 0, y = 0, color = ELEMENT_COLORS.U},
+            {element = "O", x = -15, y = 0, color = ELEMENT_COLORS.O},
+            {element = "O", x = 15, y = 0, color = ELEMENT_COLORS.O}
+        },
+        bonds = {
+            {1, 2, double = true},
+            {1, 3, double = true}
+        },
+        ion = true,
+        charge = 2,
+        radioactive = true
+    },
+    uranium_hexafluoride = {
+        atoms = {
+            {element = "U", x = 0, y = 0, color = ELEMENT_COLORS.U},
+            {element = "F", x = 0, y = -20, color = ELEMENT_COLORS.F},
+            {element = "F", x = 0, y = 20, color = ELEMENT_COLORS.F},
+            {element = "F", x = 20, y = 0, color = ELEMENT_COLORS.F},
+            {element = "F", x = -20, y = 0, color = ELEMENT_COLORS.F},
+            {element = "F", x = 14, y = 14, color = ELEMENT_COLORS.F},
+            {element = "F", x = -14, y = -14, color = ELEMENT_COLORS.F}
+        },
+        bonds = {
+            {1, 2}, {1, 3}, {1, 4}, {1, 5}, {1, 6}, {1, 7}
+        },
+        radioactive = true,
+        octahedral = true
+    },
   
+  	uranium_atom = {
+        atoms = {
+            {element = "U", x = 0, y = 0, color = ELEMENT_COLORS.U}
+        },
+        bonds = {},
+        radioactive = true
+    },
     hydrogen_atom = {
         atoms = {
             {element = "H", x = 0, y = 0, color = ELEMENT_COLORS.H}
@@ -649,6 +696,14 @@ local structures = {
         },
         bonds = {}
     },
+	nitrogen_positive1_atom = {
+        atoms = {
+            {element = "N", x = 0, y = 0, color = ELEMENT_COLORS.N}
+        },
+        bonds = {},
+		ion = true,
+		charge = 1
+    },
     fluorine_atom = {
         atoms = {
             {element = "F", x = 0, y = 0, color = ELEMENT_COLORS.F}
@@ -672,10 +727,12 @@ local bondingRules = {
     {atoms = {C = 1, O = 2}, product = "co2", priority = 8},
     {atoms = {N = 1, H = 3}, product = "ammonia", priority = 7},
     {atoms = {C = 1, H = 4}, product = "methane", priority = 9},
+    {atoms = {U = 1, F = 6}, product = "uranium_hexafluoride", priority = 8},
   
   -- Small ion formation
     {atoms = {H = 1, O = 1}, product = "hydroxide", priority = 12},
-    {atoms = {O = 1, H = 3}, product = "hydronium", priority = 12}
+    {atoms = {O = 1, H = 3}, product = "hydronium", priority = 12},
+    {atoms = {U = 1, O = 2}, product = "uranyl", priority = 9},
 }
 
 function Molecule:new(type, x, y)
@@ -940,6 +997,90 @@ function Molecule:update(dt)
                 self.rotationSpeed = 1
             end
         end
+		
+ -- UF6 is highly aggressive and radioactive
+    elseif self.type == "uranium_hexafluoride" then
+        local preyTypes = {"water", "methane", "ethanol", "ammonia", "ethylene", "propane"}
+        local closest = nil
+        local closestDist = DETECTION_RANGE * 2
+        
+        for _, mol in ipairs(molecules) do
+            for _, preyType in ipairs(preyTypes) do
+                if mol.type == preyType and mol.alive then
+                    local dx = mol.x - self.x
+                    local dy = mol.y - self.y
+                    local dist = math.sqrt(dx*dx + dy*dy)
+                    
+                    if dist < closestDist then
+                        closest = mol
+                        closestDist = dist
+                    end
+                end
+            end
+        end
+        
+        if closest then
+            local dx = closest.x - self.x
+            local dy = closest.y - self.y
+            local dist = math.sqrt(dx*dx + dy*dy)
+            local speed = HUNT_SPEED * 0.9
+            self.vx = (dx/dist) * speed
+            self.vy = (dy/dist) * speed
+            self.rotationSpeed = 1.2
+            
+         -- Radiation damage if close
+            if dist < self.radius + closest.radius + 20 then
+                closest.health = closest.health - 25 * dt
+            end
+        else
+            self.wanderAngle = self.wanderAngle + (math.random() - 0.5) * 0.07
+            self.vx = math.cos(self.wanderAngle) * (WANDER_SPEED * 0.7)
+            self.vy = math.sin(self.wanderAngle) * (WANDER_SPEED * 0.7)
+            self.rotationSpeed = 0.8
+        end
+        
+    elseif self.type == "uranyl" then
+     -- Uranyl ion seeks hydroxide for neutralization
+        local targetTypes = {"hydroxide", "lithium_hydroxide", "sodium_hydroxide"}
+        local closest = nil
+        local closestDist = DETECTION_RANGE * 1.5
+        
+        for _, mol in ipairs(molecules) do
+            for _, targetType in ipairs(targetTypes) do
+                if mol.type == targetType and mol.alive then
+                    local dx = mol.x - self.x
+                    local dy = mol.y - self.y
+                    local dist = math.sqrt(dx*dx + dy*dy)
+                    
+                    if dist < closestDist then
+                        closest = mol
+                        closestDist = dist
+                    end
+                end
+            end
+        end
+        
+        if closest then
+            local dx = closest.x - self.x
+            local dy = closest.y - self.y
+            local dist = math.sqrt(dx*dx + dy*dy)
+            local speed = HUNT_SPEED * 0.95
+            self.vx = (dx/dist) * speed
+            self.vy = (dy/dist) * speed
+            self.rotationSpeed = 1.5
+        else
+            self.wanderAngle = self.wanderAngle + (math.random() - 0.5) * 0.08
+            self.vx = math.cos(self.wanderAngle) * (WANDER_SPEED * 0.8)
+            self.vy = math.sin(self.wanderAngle) * (WANDER_SPEED * 0.8)
+            self.rotationSpeed = 1.0
+        end
+        
+    elseif self.type == "uranium_atom" then
+     -- Slow, heavy uranium atom that can bond
+        self.wanderAngle = self.wanderAngle + (math.random() - 0.5) * 0.05
+        self.vx = math.cos(self.wanderAngle) * (WANDER_SPEED * 0.6)
+        self.vy = math.sin(self.wanderAngle) * (WANDER_SPEED * 0.6)
+        self.rotationSpeed = 0.5
         
     -- Prey behaviors
     elseif self.type == "methane" or self.type == "ethylene" or self.type == "propane" 
@@ -1145,12 +1286,22 @@ function Molecule:draw()
             love.graphics.setColor(atom.color[1], atom.color[2], atom.color[3], 0.3)
             love.graphics.circle("fill", atom.x, atom.y, atomSize + 3)
         end
+		
+		if struct.radioactive then
+            local pulse = (math.sin(love.timer.getTime() * 3) + 1) * 0.5
+            love.graphics.setColor(0, 1, 0, 0.1 + pulse * 0.1)
+            for i = 1, 3 do
+                love.graphics.circle("line", self.x, self.y, self.radius + i * 5)
+            end
+        end
         
         love.graphics.setColor(atom.color)
         love.graphics.circle("fill", atom.x, atom.y, atomSize)
         love.graphics.setColor(1, 1, 1, 0.3)
         love.graphics.circle("line", atom.x, atom.y, atomSize)
     end
+	
+	
 
     if struct.ion then
         local chargeText = struct.charge > 0 and "+" .. tostring(struct.charge) or tostring(struct.charge)
@@ -1371,13 +1522,28 @@ function love.update(dt)
 end
 
 function love.draw()
+    -- Draw world with camera transformation
+    drawWorld()
+    
+    -- Draw UI overlay
+    drawUI()
+    
+    -- Draw hover tooltip if needed
+    if hoveredMolecule then
+        drawMoleculeTooltip(hoveredMolecule)
+    end
+end
+
+function drawWorld()
     love.graphics.push()
     love.graphics.translate(-camera.x * camera.zoom, -camera.y * camera.zoom)
     love.graphics.scale(camera.zoom, camera.zoom)
     
+    -- Draw background
     love.graphics.setColor(config.visual.backgroundColor)
     love.graphics.rectangle("fill", 0, 0, WORLD_WIDTH, WORLD_HEIGHT)
     
+    -- Draw grid
     love.graphics.setColor(config.visual.gridColor)
     for x = 0, WORLD_WIDTH, config.visual.gridSize do
         love.graphics.line(x, 0, x, WORLD_HEIGHT)
@@ -1386,135 +1552,203 @@ function love.draw()
         love.graphics.line(0, y, WORLD_WIDTH, y)
     end
     
+    -- Draw all molecules
     for _, mol in ipairs(molecules) do
         mol:draw()
     end
     
     love.graphics.pop()
+end
+
+function drawUI()
+    local y = 10
     
+    -- Title and version
     love.graphics.setColor(1, 1, 1)
-    love.graphics.print(config.game.title .. " v" .. config.game.version, 10, 10, 0, 1.5, 1.5)
+    love.graphics.print(config.game.title .. " v" .. config.game.version, 10, y, 0, 1.5, 1.5)
+    y = y + 40
     
-    local y = 40
+    -- FPS counter
     if config.debug.showFPS then
         love.graphics.print("FPS: " .. love.timer.getFPS(), 10, y)
         y = y + 25
     end
+    
+    -- Zoom level
     love.graphics.print("Zoom: " .. string.format("%.1f", camera.zoom) .. "x", 10, y)
     y = y + 25
     
+    -- Following indicator
     if camera.followTarget and camera.followTarget.alive then
         love.graphics.setColor(1, 1, 0)
         love.graphics.print("Following: " .. camera.followTarget.type, 10, y)
-        y = y + 20
         love.graphics.setColor(1, 1, 1)
+        y = y + 20
     end
     
+    -- Controls help
     love.graphics.print("Arrow keys: Move  |  +/- : Zoom  |  ESC: Unfollow", 10, y)
     y = y + 20
     love.graphics.print("Middle-click: Focus on molecule", 10, y)
-    
-    if hoveredMolecule then
-        local mouseX, mouseY = love.mouse.getPosition()
-        local tooltipX = mouseX + 15
-        local tooltipY = mouseY + 15
+end
 
-        local hunts = {}
-        local hunted_by = {}
-        local consumes = {}
-        
-        -- Check what this molecule hunts
-        if hoveredMolecule.type == "oxygen" or hoveredMolecule.type == "ozone" or hoveredMolecule.type == "chlorine" 
-           or hoveredMolecule.type == "fluorine" or hoveredMolecule.type == "hydrogen_peroxide" 
-           or hoveredMolecule.type == "sulfuric_acid" or hoveredMolecule.type == "hydrochloric_acid" 
-           or hoveredMolecule.type == "hydronium" then
-            hunts = {"methane", "ethylene", "propane", "cyclopropane", "benzene", "ammonia", "etc."}
-            
-            -- Specific prey for hydronium
-            if hoveredMolecule.type == "hydronium" then
-                hunts = {"hydroxide", "ammonia", "ethanol", "acetone", "bases"}
-            end
-            
-        elseif hoveredMolecule.type == "hydroxide" then
-            hunts = {"hydronium", "hydrochloric_acid", "sulfuric_acid", "acids"}
-            consumes = {}  -- Hydroxide doesn't consume like cleaners
-        elseif hoveredMolecule.type == "lithium_hydroxide" or hoveredMolecule.type == "sodium_hydroxide" then
-            consumes = {"CO2", "water"}
-        end
-        
-        -- Check what hunts this molecule
-        if hoveredMolecule.type == "methane" or hoveredMolecule.type == "ethylene" or hoveredMolecule.type == "propane"
-           or hoveredMolecule.type == "cyclopropane" or hoveredMolecule.type == "benzene" or hoveredMolecule.type == "ammonia"
-           or hoveredMolecule.type == "ethanol" or hoveredMolecule.type == "caffeine" or hoveredMolecule.type == "tnt"
-           or hoveredMolecule.type == "acetone" or hoveredMolecule.type == "acetylcarnitine"
-           or hoveredMolecule.type == "cyclopropenylidene" or hoveredMolecule.type == "cyclobutane"
-           or hoveredMolecule.type == "cyclopentane" or hoveredMolecule.type == "cyclobutene"
-           or hoveredMolecule.type == "helium_dimer" or hoveredMolecule.type == "tetrafluoroethylene" then
-            hunted_by = {"O2", "O3", "Cl2", "F2", "H2O2", "acids"}
-        elseif hoveredMolecule.type == "hydroxide" then
-            hunted_by = {"hydronium", "acids"}
-        elseif hoveredMolecule.type == "hydronium" then
-            hunted_by = {"hydroxide", "bases", "LiOH", "NaOH"}
-        elseif hoveredMolecule.type == "co2" or hoveredMolecule.type == "water" then
-            hunted_by = {"LiOH", "NaOH"}
-        elseif hoveredMolecule.type == "helium" then
-            hunted_by = {"F2 (only!)"}
-        end
-        
-        local lines = {}
-        table.insert(lines, "Type: " .. hoveredMolecule.type)
-        table.insert(lines, "Health: " .. math.floor(hoveredMolecule.health) .. "/" .. hoveredMolecule.maxHealth)
-        
-        if #hunts > 0 then
-            table.insert(lines, "Hunts: " .. table.concat(hunts, ", "))
-        end
-        if #consumes > 0 then
-            table.insert(lines, "Consumes: " .. table.concat(consumes, ", "))
-        end
-        if #hunted_by > 0 then
-            table.insert(lines, "Hunted by: " .. table.concat(hunted_by, ", "))
-        end
-        if hoveredMolecule.type:match("_atom$") then
-            table.insert(lines, "Status: Free atom - can bond!")
-        end
-        
-        if hoveredMolecule.type == "hydroxide" then
-            table.insert(lines, "Charge: -1 (base)")
-        elseif hoveredMolecule.type == "hydronium" then
-            table.insert(lines, "Charge: +1 (acid)")
-        end
-        
-        if hoveredMolecule.type == "hydroxide" or hoveredMolecule.type == "hydronium" then
-            table.insert(lines, "Neutralizes with opposite ion")
-        end
-        
-        local maxWidth = 0
-        for _, line in ipairs(lines) do
-            local w = love.graphics.getFont():getWidth(line)
-            if w > maxWidth then maxWidth = w end
-        end
-        
-        local tooltipWidth = maxWidth + 20
-        local tooltipHeight = #lines * 20 + 10
-        
-  
-        if tooltipX + tooltipWidth > love.graphics.getWidth() then
-            tooltipX = mouseX - tooltipWidth - 15
-        end
-        if tooltipY + tooltipHeight > love.graphics.getHeight() then
-            tooltipY = mouseY - tooltipHeight - 15
-        end
+function drawMoleculeTooltip(molecule)
+    local mouseX, mouseY = love.mouse.getPosition()
+    local lines = {}
     
-        love.graphics.setColor(0.1, 0.1, 0.15, 0.95)
-        love.graphics.rectangle("fill", tooltipX, tooltipY, tooltipWidth, tooltipHeight, 5, 5)
-        love.graphics.setColor(0.3, 0.3, 0.4)
-        love.graphics.rectangle("line", tooltipX, tooltipY, tooltipWidth, tooltipHeight, 5, 5)
-        
-        love.graphics.setColor(1, 1, 1)
-        for i, line in ipairs(lines) do
-            love.graphics.print(line, tooltipX + 10, tooltipY + 5 + (i - 1) * 20)
+    -- Basic info
+    table.insert(lines, "Type: " .. molecule.type)
+    table.insert(lines, "Health: " .. math.floor(molecule.health) .. "/" .. molecule.maxHealth)
+    
+    -- Determine behavior info
+    local behaviorInfo = getMoleculeBehaviorInfo(molecule)
+    if behaviorInfo.hunts and #behaviorInfo.hunts > 0 then
+        table.insert(lines, "Hunts: " .. table.concat(behaviorInfo.hunts, ", "))
+    end
+    if behaviorInfo.consumes and #behaviorInfo.consumes > 0 then
+        table.insert(lines, "Consumes: " .. table.concat(behaviorInfo.consumes, ", "))
+    end
+    if behaviorInfo.huntedBy and #behaviorInfo.huntedBy > 0 then
+        table.insert(lines, "Hunted by: " .. table.concat(behaviorInfo.huntedBy, ", "))
+    end
+    
+    -- Special properties
+    if molecule.type:match("_atom$") then
+        table.insert(lines, "Status: Free atom - can bond!")
+    end
+    
+    if molecule.type == "hydroxide" then
+        table.insert(lines, "Charge: -1 (base)")
+        table.insert(lines, "Neutralizes with hydronium")
+    elseif molecule.type == "hydronium" then
+        table.insert(lines, "Charge: +1 (acid)")
+        table.insert(lines, "Neutralizes with hydroxide")
+    end
+    
+  -- Uranium-specific info
+    if molecule.type:match("uranium") or molecule.type:match("uranyl") then
+        table.insert(lines, "[!] RADIOACTIVE [!]")
+        if molecule.type == "uranium_hexafluoride" then
+            table.insert(lines, "Highly corrosive and reactive")
+        elseif molecule.type == "uranyl" then
+            table.insert(lines, "Soluble ion: seeks hydroxide")
         end
     end
+    
+  -- Calculate tooltip size and position
+    local maxWidth = 0
+    for _, line in ipairs(lines) do
+        local w = love.graphics.getFont():getWidth(line)
+        if w > maxWidth then maxWidth = w end
+    end
+    
+    local tooltipWidth = maxWidth + 20
+    local tooltipHeight = #lines * 20 + 10
+    local tooltipX = mouseX + 15
+    local tooltipY = mouseY + 15
+    
+  -- Adjust position if tooltip goes off-screen
+    if tooltipX + tooltipWidth > love.graphics.getWidth() then
+        tooltipX = mouseX - tooltipWidth - 15
+    end
+    if tooltipY + tooltipHeight > love.graphics.getHeight() then
+        tooltipY = mouseY - tooltipHeight - 15
+    end
+    
+  -- Draw tooltip background
+    love.graphics.setColor(0.1, 0.1, 0.15, 0.95)
+    love.graphics.rectangle("fill", tooltipX, tooltipY, tooltipWidth, tooltipHeight, 5, 5)
+    love.graphics.setColor(0.3, 0.3, 0.4)
+    love.graphics.rectangle("line", tooltipX, tooltipY, tooltipWidth, tooltipHeight, 5, 5)
+    
+  -- Draw tooltip text
+    love.graphics.setColor(1, 1, 1)
+    for i, line in ipairs(lines) do
+        love.graphics.print(line, tooltipX + 10, tooltipY + 5 + (i - 1) * 20)
+    end
+end
+
+function getMoleculeBehaviorInfo(molecule)
+    local info = { hunts = {}, consumes = {}, huntedBy = {} }
+    
+  -- Aggressive molecules (hunters)
+    if molecule.type == "oxygen" or molecule.type == "ozone" or molecule.type == "chlorine" 
+       or molecule.type == "fluorine" or molecule.type == "hydrogen_peroxide" 
+       or molecule.type == "sulfuric_acid" or molecule.type == "hydrochloric_acid" then
+        
+        table.insert(info.hunts, "methane")
+        table.insert(info.hunts, "ethylene")
+        table.insert(info.hunts, "propane")
+        table.insert(info.hunts, "cyclopropane")
+        table.insert(info.hunts, "benzene")
+        table.insert(info.hunts, "ammonia")
+        table.insert(info.hunts, "etc.")
+        
+    elseif molecule.type == "hydronium" then
+        table.insert(info.hunts, "hydroxide")
+        table.insert(info.hunts, "ammonia")
+        table.insert(info.hunts, "ethanol")
+        table.insert(info.hunts, "acetone")
+        table.insert(info.hunts, "bases")
+        
+        table.insert(info.huntedBy, "hydroxide")
+        table.insert(info.huntedBy, "bases")
+        
+    elseif molecule.type == "hydroxide" then
+        table.insert(info.hunts, "hydronium")
+        table.insert(info.hunts, "hydrochloric_acid")
+        table.insert(info.hunts, "sulfuric_acid")
+        table.insert(info.hunts, "acids")
+        
+        table.insert(info.huntedBy, "hydronium")
+        table.insert(info.huntedBy, "uranyl")
+        table.insert(info.huntedBy, "acids")
+        
+    elseif molecule.type == "lithium_hydroxide" or molecule.type == "sodium_hydroxide" then
+        table.insert(info.consumes, "CO2")
+        table.insert(info.consumes, "water")
+        
+    elseif molecule.type == "uranium_hexafluoride" then
+        table.insert(info.hunts, "water")
+        table.insert(info.hunts, "methane")
+        table.insert(info.hunts, "ethanol")
+        table.insert(info.hunts, "ammonia")
+        table.insert(info.hunts, "ethylene")
+        table.insert(info.hunts, "propane")
+        
+    elseif molecule.type == "uranyl" then
+        table.insert(info.hunts, "hydroxide")
+        table.insert(info.hunts, "lithium_hydroxide")
+        table.insert(info.hunts, "sodium_hydroxide")
+    end
+    
+  -- Prey molecules (hunted)
+    if molecule.type == "methane" or molecule.type == "ethylene" or molecule.type == "propane"
+       or molecule.type == "cyclopropane" or molecule.type == "benzene" or molecule.type == "ammonia"
+       or molecule.type == "ethanol" or molecule.type == "caffeine" or molecule.type == "tnt"
+       or molecule.type == "acetone" or molecule.type == "acetylcarnitine"
+       or molecule.type == "cyclopropenylidene" or molecule.type == "cyclobutane"
+       or molecule.type == "cyclopentane" or molecule.type == "cyclobutene"
+       or molecule.type == "helium_dimer" or molecule.type == "tetrafluoroethylene" then
+        
+        table.insert(info.huntedBy, "O2")
+        table.insert(info.huntedBy, "O3")
+        table.insert(info.huntedBy, "Cl2")
+        table.insert(info.huntedBy, "F2")
+        table.insert(info.huntedBy, "H2O2")
+        table.insert(info.huntedBy, "acids")
+        table.insert(info.huntedBy, "UF6")
+        
+    elseif molecule.type == "water" or molecule.type == "co2" then
+        table.insert(info.huntedBy, "LiOH")
+        table.insert(info.huntedBy, "NaOH")
+        table.insert(info.huntedBy, "UF6")
+        
+    elseif molecule.type == "helium" then
+        table.insert(info.huntedBy, "F2 (only!)")
+    end
+    
+    return info
 end
 
 spawnFragments = function(molecule)
