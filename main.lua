@@ -7,7 +7,7 @@
 -- --------------------------
 -- December 20 2025 12:52 - Started. Finally. Hooray. (December 2025 Build 0.1.14779)
 -- December 20 2025 13:39 - Fixed subscript bug for hydroxide. (December 2025 Build 0.1.14783)
--- December 20 2025 - Added uranium compounds, fixed love:draw and fragmentationRules, and other stuff. (December 2025 Build 0.1.14897)
+-- December 20 2025 14:29 - Added uranium compounds, fixed love:draw and fragmentationRules, and other stuff. (December 2025 Build 0.1.14897)
 
 local config = require("config")
 

@@ -149,7 +149,6 @@ config.molecules = {
         fluorinated = true,
         unsaturated = true
     },
-    
     oxygen = {
         health = 50,
         radius = 15,
@@ -205,7 +204,6 @@ config.molecules = {
         speedMultiplier = 1.0,
         detectionMultiplier = 1.1
     },
-    
     lithium_hydroxide = {
         health = 80,
         radius = 16,
@@ -224,7 +222,6 @@ config.molecules = {
         detectionMultiplier = 1.3,
         cleaner = true
     },
-    
     water = {
         health = 30,
         radius = 12,
@@ -261,7 +258,7 @@ config.molecules = {
         charge = 1,
         acid = true
     },
-	uranyl = {
+    uranyl = {
         health = 120,
         radius = 22,
         spawnKey = "u",
@@ -382,8 +379,8 @@ config.initialSpawns = {
     hydroxide = 12,
     hydronium = 12,
     helium = 9,
-	uranyl = 3,
-	uranium_hexafluoride = 2
+    uranyl = 3,
+    uranium_hexafluoride = 2
 }
 
 config.visual = {
