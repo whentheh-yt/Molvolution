@@ -5,7 +5,8 @@
 --     |_____\___/ \____|
 --                       
 -- --------------------------
--- December 20 2025 12:52 - Started. Finally. Hooray.
+-- December 20 2025 12:52 - Started. Finally. Hooray. (December 2025 Build 0.1.14779)
+-- December 20 2025 13:39 - Fixed subscript bug for hydroxide. (December 2025 Build 0.1.14783)
 
 local config = require("config")
 
@@ -1484,7 +1485,7 @@ function love.draw()
         end
         
         if hoveredMolecule.type == "hydroxide" or hoveredMolecule.type == "hydronium" then
-            table.insert(lines, "Neutralizes with opposite ion → H₂O")
+            table.insert(lines, "Neutralizes with opposite ion")
         end
         
         local maxWidth = 0
