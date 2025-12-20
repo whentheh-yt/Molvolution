@@ -8,6 +8,7 @@
 -- December 20 2025 12:52 - Started. Finally. Hooray. (December 2025 Build 0.1.14779)
 -- December 20 2025 13:39 - Fixed subscript bug for hydroxide. (December 2025 Build 0.1.14783)
 -- December 20 2025 14:29 - Added uranium compounds, fixed love:draw and fragmentationRules, and other stuff. (December 2025 Build 0.1.14897)
+-- December 20 2025 15:21 - Added atom attractions. (December 2025 Build 0.1.15012)
 
 local config = require("config")
 
@@ -28,6 +29,18 @@ local DETECTION_RANGE = config.gameplay.detectionRange
 local HUNT_SPEED = config.gameplay.huntSpeed
 local FLEE_SPEED = config.gameplay.fleeSpeed
 local WANDER_SPEED = config.gameplay.wanderSpeed
+
+local ATTRACTION_RANGE = 450
+local ATTRACTION_FORCE = 240
+local BONDING_DISTANCE = 15
+
+local ELEMENT_ATTRACTION = {
+    H = {C = 1.5, O = 2.0, N = 1.3, H = 0.5, F = 1.0},
+    C = {C = 0.8, H = 1.5, O = 1.8, N = 1.2, F = 1.0},
+    O = {C = 1.8, H = 2.0, O = 0.2, N = 1.0, H = 2.0},
+    N = {C = 1.2, H = 1.3, O = 1.0, N = 0.3, F = 0.8},
+    F = {C = 1.0, H = 1.0, F = 0.1, U = 1.5}
+}
 
 -- What molecules break into
 local fragmentationRules = {
@@ -751,18 +764,147 @@ function Molecule:new(type, x, y)
         wanderAngle = math.random() * math.pi * 2,
         alive = true,
         rotation = math.random() * math.pi * 2,
-        rotationSpeed = (math.random() - 0.5) * 0.5
+        rotationSpeed = (math.random() - 0.5) * 0.5,
+        element = type:match("^(%w+)_atom$") or nil,  -- Extract element if atom
+        attractionForce = 0
     }
     setmetatable(mol, Molecule)
     return mol
 end
 
+function Molecule:attemptBonding(nearbyAtoms)
+    if not self.element or not self.alive then return end
+    
+    -- Create atom counts
+    local atomCounts = {}
+    local allAtoms = {self}
+    
+    -- Add self to the list
+    local selfElement = self.element
+    if selfElement then
+        atomCounts[selfElement] = (atomCounts[selfElement] or 0) + 1
+    end
+    
+    -- Add nearby atoms
+    for _, atom in ipairs(nearbyAtoms) do
+        if atom.alive and atom.element then
+            table.insert(allAtoms, atom)
+            local element = atom.element
+            atomCounts[element] = (atomCounts[element] or 0) + 1
+        end
+    end
+    
+    -- Normalize element names for bonding rules
+    local normalizedCounts = {}
+    for element, count in pairs(atomCounts) do
+        local normElement = element:sub(1, 1):upper()
+        if element == "hydrogen" then normElement = "H"
+        elseif element == "carbon" then normElement = "C"
+        elseif element == "oxygen" then normElement = "O"
+        elseif element == "nitrogen" then normElement = "N"
+        elseif element == "fluorine" then normElement = "F"
+        end
+        normalizedCounts[normElement] = (normalizedCounts[normElement] or 0) + count
+    end
+    
+    -- Check bonding rules (sorted by priority)
+    table.sort(bondingRules, function(a, b) return a.priority > b.priority end)
+    
+    for _, rule in ipairs(bondingRules) do
+        local canBond = true
+        
+        -- Check if we have enough of each atom
+        for element, needed in pairs(rule.atoms) do
+            if (normalizedCounts[element] or 0) < needed then
+                canBond = false
+                break
+            end
+        end
+        
+        if canBond then
+            -- Calculate center position
+            local centerX, centerY = 0, 0
+            for _, atom in ipairs(allAtoms) do
+                centerX = centerX + atom.x
+                centerY = centerY + atom.y
+                atom.alive = false  -- Mark atoms for removal
+            end
+            centerX = centerX / #allAtoms
+            centerY = centerY / #allAtoms
+            
+            -- Create new molecule
+            local newMolecule = Molecule:new(rule.product, centerX, centerY)
+            
+            -- Give it some velocity from the bond formation
+            newMolecule.vx = (math.random() - 0.5) * 40
+            newMolecule.vy = (math.random() - 0.5) * 40
+            
+            table.insert(molecules, newMolecule)
+            break
+        end
+    end
+end
+
 function Molecule:update(dt)
     if not self.alive then return end
     
-    if math.abs(self.vx) > WANDER_SPEED * 2 or math.abs(self.vy) > WANDER_SPEED * 2 then
-        self.vx = self.vx * 0.95  -- Damping
-        self.vy = self.vy * 0.95
+    if self.element then
+        local totalForceX, totalForceY = 0, 0
+        local atomCount = 0
+        
+        for _, other in ipairs(molecules) do
+            if other ~= self and other.alive and other.element then
+                local dx = other.x - self.x
+                local dy = other.y - self.y
+                local distance = math.sqrt(dx*dx + dy*dy)
+                
+                if distance < ATTRACTION_RANGE and distance > 1 then
+                    local attractionStrength = ELEMENT_ATTRACTION[self.element] and 
+                                              ELEMENT_ATTRACTION[self.element][other.element] or 0.5
+                    
+                    if attractionStrength > 0 then
+                        local force = (ATTRACTION_FORCE * attractionStrength) / (distance * distance * 0.1)
+                        
+                        local dirX = dx / distance
+                        local dirY = dy / distance
+                        
+                        totalForceX = totalForceX + dirX * force
+                        totalForceY = totalForceY + dirY * force
+                        atomCount = atomCount + 1
+                    end
+                end
+            end
+        end
+        
+        -- Average the force if we have multiple attractions
+        if atomCount > 0 then
+            totalForceX = totalForceX / atomCount
+            totalForceY = totalForceY / atomCount
+            
+            self.vx = self.vx + totalForceX * dt
+            self.vy = self.vy + totalForceY * dt
+            
+            self.attractionForce = math.sqrt(totalForceX * totalForceX + totalForceY * totalForceY)
+        else
+            self.attractionForce = 0
+        end
+        
+        local nearbyAtoms = {}
+        for _, other in ipairs(molecules) do
+            if other ~= self and other.alive and other.element then
+                local dx = other.x - self.x
+                local dy = other.y - self.y
+                local distance = math.sqrt(dx*dx + dy*dy)
+                
+                if distance < BONDING_DISTANCE then
+                    table.insert(nearbyAtoms, other)
+                end
+            end
+        end
+        
+        if #nearbyAtoms >= 1 then
+            self:attemptBonding(nearbyAtoms)
+        end
     end
     
     self.rotation = self.rotation + self.rotationSpeed * dt
@@ -1229,6 +1371,33 @@ function Molecule:draw()
         love.graphics.circle("fill", self.x, self.y, self.radius + 10)
     end
     
+    -- Draw attraction field for atoms
+    if self.element and self.attractionForce > 0 then
+        local intensity = math.min(self.attractionForce / 50, 0.3)
+        love.graphics.setColor(0.3, 0.8, 1, intensity * 0.3)
+        love.graphics.circle("line", self.x, self.y, ATTRACTION_RANGE)
+        
+        -- Draw attraction lines to nearby atoms
+        love.graphics.setColor(0.5, 0.8, 1, intensity)
+        for _, other in ipairs(molecules) do
+            if other ~= self and other.alive and other.element then
+                local dx = other.x - self.x
+                local dy = other.y - self.y
+                local distance = math.sqrt(dx*dx + dy*dy)
+                
+                if distance < ATTRACTION_RANGE then
+                    local attractionStrength = ELEMENT_ATTRACTION[self.element] and 
+                                              ELEMENT_ATTRACTION[self.element][other.element] or 0
+                    
+                    if attractionStrength > 0.1 then
+                        love.graphics.setLineWidth(1)
+                        love.graphics.line(self.x, self.y, other.x, other.y)
+                    end
+                end
+            end
+        end
+    end
+    
     love.graphics.push()
     love.graphics.translate(self.x, self.y)
     love.graphics.rotate(self.rotation)
@@ -1319,6 +1488,11 @@ function Molecule:draw()
     if love.keyboard.isDown("d") then
         love.graphics.setColor(1, 1, 1, 0.1)
         love.graphics.circle("line", self.x, self.y, DETECTION_RANGE)
+	end
+	
+    if self.element then
+        love.graphics.setColor(0, 1, 0, 0.1)
+        love.graphics.circle("line", self.x, self.y, BONDING_DISTANCE)
     end
 end
 
@@ -1565,7 +1739,7 @@ function drawUI()
     
     -- Title and version
     love.graphics.setColor(1, 1, 1)
-    love.graphics.print(config.game.title .. " v" .. config.game.version, 10, y, 0, 1.5, 1.5)
+    love.graphics.print(config.game.title .. " " .. config.game.version, 10, y, 0, 1.5, 1.5)
     y = y + 40
     
     -- FPS counter
