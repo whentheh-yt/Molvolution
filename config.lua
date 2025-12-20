@@ -2,7 +2,7 @@ local config = {}
 
 config.game = {
     title = "Molvolution",
-    version = "December 2025 Build 0.1.15048",
+    version = "December 2025 Build 0.1.15050",
     window = {
         width = 1200,
         height = 800,
@@ -36,23 +36,178 @@ config.molecules = {
         radius = 20,
         spawnKey = "space"
     },
+    -- FLUOROMETHANES
+    fluoromethane = {
+        health = 110,
+        radius = 21,
+        speedMultiplier = 1.05,
+        fluorinated = true
+    },
+    difluoromethane = {
+        health = 120,
+        radius = 22,
+        speedMultiplier = 1.1,
+        fluorinated = true
+    },
+    trifluoromethane = {
+        health = 130,
+        radius = 23,
+        speedMultiplier = 1.15,
+        fluorinated = true
+    },
+    carbon_tetrafluoride = {
+        health = 150,
+        radius = 24,
+        speedMultiplier = 1.2,
+        fluorinated = true,
+        inert = true  -- SUPER stable
+    },
+    -- CHLOROMETHANES
+    chloromethane = {
+        health = 105,
+        radius = 22,
+        speedMultiplier = 0.95
+    },
+    dichloromethane = {
+        health = 115,
+        radius = 23,
+        speedMultiplier = 0.9
+    },
+    chloroform = {
+        health = 125,
+        radius = 24,
+        speedMultiplier = 0.85,
+        anesthetic = true
+    },
+    carbon_tetrachloride = {
+        health = 140,
+        radius = 26,
+        speedMultiplier = 0.8,
+        toxic = true
+    },
+    -- BROMOMETHANES
+    bromomethane = {
+        health = 100,
+        radius = 23,
+        speedMultiplier = 0.85
+    },
+    dibromomethane = {
+        health = 110,
+        radius = 25,
+        speedMultiplier = 0.75
+    },
+    tribromomethane = {
+        health = 120,
+        radius = 27,
+        speedMultiplier = 0.7,
+        anesthetic = true
+    },
+    carbon_tetrabromide = {
+        health = 135,
+        radius = 29,
+        speedMultiplier = 0.65,
+        heavy = true
+    },
+    -- IODOMETHANES
+    iodomethane = {
+        health = 95,
+        radius = 25,
+        speedMultiplier = 0.75
+    },
+    diiodomethane = {
+        health = 105,
+        radius = 28,
+        speedMultiplier = 0.65,
+        heavy = true
+    },
+    triiodomethane = {
+        health = 115,
+        radius = 31,
+        speedMultiplier = 0.6,
+        unstable = true,
+        anesthetic = true
+    },
+    carbon_tetraiodide = {
+        health = 80,
+        radius = 34,
+        speedMultiplier = 0.5,
+        explosive = true,
+        unstable = true,
+        heavy = true
+    },
+    -- MIXED HALOMETHANES (the fun ones!)
+    chlorofluoromethane = {
+        health = 115,
+        radius = 22,
+        speedMultiplier = 1.0,
+        refrigerant = true
+    },
+    dichlorofluoromethane = {
+        health = 125,
+        radius = 23,
+        speedMultiplier = 0.95,
+        refrigerant = true
+    },
+    chlorodifluoromethane = {
+        health = 130,
+        radius = 23,
+        speedMultiplier = 1.0,
+        refrigerant = true
+    },
+    bromochloromethane = {
+        health = 110,
+        radius = 24,
+        speedMultiplier = 0.85
+    },
+    bromodichloromethane = {
+        health = 120,
+        radius = 25,
+        speedMultiplier = 0.8,
+        toxic = true
+    },
+    dibromochloromethane = {
+        health = 125,
+        radius = 26,
+        speedMultiplier = 0.75,
+        toxic = true
+    },
+    bromofluoromethane = {
+        health = 108,
+        radius = 23,
+        speedMultiplier = 0.9
+    },
+    chloroiodomethane = {
+        health = 105,
+        radius = 25,
+        speedMultiplier = 0.8
+    },
+    bromoiodomethane = {
+        health = 100,
+        radius = 27,
+        speedMultiplier = 0.7,
+        heavy = true
+    },
+    fluoroiodomethane = {
+        health = 95,
+        radius = 26,
+        speedMultiplier = 0.85,
+        unstable = true
+    },
+    -- Original molecules
     propane = {
         health = 140,
         radius = 28,
-        spawnKey = "p",
         speedMultiplier = 0.85
     },
     cyclopropane = {
         health = 80,
         radius = 18,
-        spawnKey = "c",
         speedMultiplier = 1.1,
         strained = true
     },
     cyclopropenylidene = {
         health = 50,
         radius = 14,
-        spawnKey = "y",
         speedMultiplier = 1.3,
         carbene = true,
         strained = true
@@ -60,83 +215,70 @@ config.molecules = {
     cyclobutane = {
         health = 90,
         radius = 19,
-        spawnKey = "4",
         speedMultiplier = 1.05,
         strained = true
     },
     cyclobutene = {
         health = 70,
         radius = 17,
-        spawnKey = "u",
         speedMultiplier = 1.15,
         strained = true
     },
     cyclopentane = {
         health = 110,
         radius = 21,
-        spawnKey = "5",
         speedMultiplier = 0.95
     },
     benzene = {
         health = 180,
         radius = 25,
-        spawnKey = "b",
         speedMultiplier = 0.8,
         aromatic = true
     },
     ethylene = {
         health = 120,
         radius = 22,
-        spawnKey = "e",
         speedMultiplier = 0.9
     },
     ethanol = {
         health = 110,
         radius = 24,
-        spawnKey = "t",
         speedMultiplier = 0.88
     },
     ammonia = {
         health = 60,
         radius = 16,
-        spawnKey = "n",
         speedMultiplier = 1.0
     },
     acetylcarnitine = {
         health = 200,
         radius = 35,
-        spawnKey = "a",
         speedMultiplier = 0.7
     },
     caffeine = {
         health = 180,
         radius = 32,
-        spawnKey = "k",
         speedMultiplier = 1.15
     },
     tnt = {
         health = 150,
         radius = 30,
-        spawnKey = "x",
         speedMultiplier = 0.75,
         explosive = true
     },
     acetone = {
         health = 90,
         radius = 20,
-        spawnKey = "j",
         speedMultiplier = 0.95
     },
     helium_dimer = {
         health = 30,
         radius = 26,
-        spawnKey = "g",
         speedMultiplier = 1.2
     },
     squaric_acid = {
         health = 110,
         radius = 21,
-        spawnKey = "q",
         speedMultiplier = 0.9,
         aromatic = true,
         acidic = true
@@ -144,7 +286,6 @@ config.molecules = {
     tetrafluoroethylene = {
         health = 130,
         radius = 22,
-        spawnKey = "v",
         speedMultiplier = 1.05,
         fluorinated = true,
         unsaturated = true
@@ -152,13 +293,11 @@ config.molecules = {
     oxygen = {
         health = 50,
         radius = 15,
-        spawnKey = "o",
         damage = 50
     },
     ozone = {
         health = 60,
         radius = 18,
-        spawnKey = "z",
         damage = 70,
         speedMultiplier = 1.2,
         detectionMultiplier = 1.3,
@@ -167,7 +306,6 @@ config.molecules = {
     chlorine = {
         health = 70,
         radius = 17,
-        spawnKey = "l",
         damage = 65,
         speedMultiplier = 1.1,
         detectionMultiplier = 1.2
@@ -175,7 +313,6 @@ config.molecules = {
     fluorine = {
         health = 80,
         radius = 16,
-        spawnKey = "f",
         damage = 90,
         speedMultiplier = 1.3,
         detectionMultiplier = 1.5
@@ -183,7 +320,6 @@ config.molecules = {
     hydrogen_peroxide = {
         health = 60,
         radius = 14,
-        spawnKey = "h",
         damage = 55,
         speedMultiplier = 1.15,
         detectionMultiplier = 1.1
@@ -191,7 +327,6 @@ config.molecules = {
     sulfuric_acid = {
         health = 70,
         radius = 18,
-        spawnKey = "s",
         damage = 80,
         speedMultiplier = 0.9,
         detectionMultiplier = 1.4
@@ -199,7 +334,6 @@ config.molecules = {
     hydrochloric_acid = {
         health = 50,
         radius = 13,
-        spawnKey = "i",
         damage = 55,
         speedMultiplier = 1.0,
         detectionMultiplier = 1.1
@@ -207,7 +341,6 @@ config.molecules = {
     lithium_hydroxide = {
         health = 80,
         radius = 16,
-        spawnKey = "1",
         damage = 40,
         speedMultiplier = 0.95,
         detectionMultiplier = 1.2,
@@ -216,7 +349,6 @@ config.molecules = {
     sodium_hydroxide = {
         health = 70,
         radius = 15,
-        spawnKey = "3",
         damage = 35,
         speedMultiplier = 1.0,
         detectionMultiplier = 1.3,
@@ -225,21 +357,18 @@ config.molecules = {
     water = {
         health = 30,
         radius = 12,
-        spawnKey = "w",
         speedMultiplier = 0.7,
         peaceful = true
     },
     co2 = {
         health = 40,
         radius = 14,
-        spawnKey = "2",
         speedMultiplier = 0.75,
         peaceful = true
     },
     hydroxide = {
         health = 25,
         radius = 10,
-        spawnKey = "7",
         damage = 60,
         speedMultiplier = 1.1,
         detectionMultiplier = 1.5,
@@ -250,7 +379,6 @@ config.molecules = {
     hydronium = {
         health = 35,
         radius = 12,
-        spawnKey = "8",
         damage = 55,
         speedMultiplier = 1.05,
         detectionMultiplier = 1.4,
@@ -261,7 +389,6 @@ config.molecules = {
     uranyl = {
         health = 120,
         radius = 22,
-        spawnKey = "u",
         speedMultiplier = 0.85,
         ion = true,
         charge = 2,
@@ -271,16 +398,22 @@ config.molecules = {
     uranium_hexafluoride = {
         health = 180,
         radius = 32,
-        spawnKey = "6",
         speedMultiplier = 0.75,
         radioactive = true,
         damage = 60,
         detectionMultiplier = 1.8
     },
+    perchloric_acid = {
+        health = 360,
+        radius = 24,
+        speedMultiplier = 1.25,
+        damage = 120,
+        detectionMultiplier = 3.6
+    },
     helium = {
         health = 20,
         radius = 8,
-        spawnKey = "m",
+        spawnKey = "e",
         speedMultiplier = 1.5,
         peaceful = true,
         noble = true
@@ -288,6 +421,7 @@ config.molecules = {
     hydrogen_atom = {
         health = 10,
         radius = 6,
+        spawnKey = "h",
         speedMultiplier = 1.4,
         peaceful = true,
         atom = true,
@@ -296,6 +430,7 @@ config.molecules = {
     carbon_atom = {
         health = 15,
         radius = 8,
+        spawnKey = "c",
         speedMultiplier = 1.1,
         peaceful = true,
         atom = true,
@@ -304,6 +439,7 @@ config.molecules = {
     oxygen_atom = {
         health = 15,
         radius = 7,
+        spawnKey = "o",
         speedMultiplier = 1.2,
         peaceful = true,
         atom = true,
@@ -312,14 +448,16 @@ config.molecules = {
     nitrogen_atom = {
         health = 15,
         radius = 7,
+        spawnKey = "n",
         speedMultiplier = 1.15,
         peaceful = true,
         atom = true,
         valence = 3
     },
-	nitrogen_positive1_atom = {
+    nitrogen_positive1_atom = {
         health = 12,
         radius = 7,
+        spawnKey = "1",
         speedMultiplier = 1.2,
         peaceful = true,
         atom = true,
@@ -330,15 +468,41 @@ config.molecules = {
     fluorine_atom = {
         health = 12,
         radius = 6,
+        spawnKey = "f",
         speedMultiplier = 1.3,
         peaceful = true,
         atom = true,
         valence = 1
     },
-	uranium_atom = {
+    chlorine_atom = {
+        health = 13,
+        radius = 7,
+        speedMultiplier = 1.2,
+        peaceful = true,
+        atom = true,
+        valence = 1
+    },
+    bromine_atom = {
+        health = 14,
+        radius = 8,
+        speedMultiplier = 1.0,
+        peaceful = true,
+        atom = true,
+        valence = 1
+    },
+    iodine_atom = {
+        health = 16,
+        radius = 9,
+        speedMultiplier = 0.9,
+        peaceful = true,
+        atom = true,
+        valence = 1
+    },
+    uranium_atom = {
         health = 40,
         radius = 12,
         speedMultiplier = 0.8,
+        spawnKey = "u",
         peaceful = true,
         atom = true,
         valence = 6,
@@ -347,40 +511,79 @@ config.molecules = {
 }
 
 config.initialSpawns = {
-    methane = 24,
-    propane = 15,
-    cyclopropane = 9,
-    cyclopropenylidene = 4,
-    cyclobutane = 9,
-    cyclobutene = 6,
-    cyclopentane = 12,
-    benzene = 12,
-    ethylene = 15,
-    ethanol = 12,
-    ammonia = 18,
-    acetylcarnitine = 6,
-    caffeine = 9,
-    tnt = 3,
-    acetone = 12,
-    helium_dimer = 15,
-    squaric_acid = 8,
-    tetrafluoroethylene = 10,
-    oxygen = 12,
-    ozone = 6,
-    chlorine = 6,
+    methane = 20,
+
+    -- Fluoromethanes (stable)
+    fluoromethane = 8,
+    difluoromethane = 6,
+    trifluoromethane = 5,
+    carbon_tetrafluoride = 4,
+
+    -- Chloromethanes
+    chloromethane = 8,
+    dichloromethane = 6,
+    chloroform = 5,
+    carbon_tetrachloride = 4,
+
+    -- Bromomethanes
+    bromomethane = 6,
+    dibromomethane = 4,
+    tribromomethane = 3,
+    carbon_tetrabromide = 2,
+
+    -- Iodomethanes (unstable!)
+    iodomethane = 5,
+    diiodomethane = 3,
+    triiodomethane = 2,
+    carbon_tetraiodide = 1,
+
+    -- Mixed halomethanes
+    chlorofluoromethane = 6,
+    dichlorofluoromethane = 5,
+    chlorodifluoromethane = 5,
+    bromochloromethane = 4,
+    bromodichloromethane = 3,
+    dibromochloromethane = 3,
+    bromofluoromethane = 4,
+    chloroiodomethane = 3,
+    bromoiodomethane = 2,
+    fluoroiodomethane = 2,
+
+    -- Original molecules
+    propane = 12,
+    cyclopropane = 8,
+    cyclopropenylidene = 3,
+    cyclobutane = 8,
+    cyclobutene = 5,
+    cyclopentane = 10,
+    benzene = 10,
+    ethylene = 12,
+    ethanol = 10,
+    ammonia = 15,
+    acetylcarnitine = 5,
+    caffeine = 8,
+    tnt = 2,
+    acetone = 10,
+    helium_dimer = 12,
+    squaric_acid = 6,
+    tetrafluoroethylene = 8,
+    oxygen = 10,
+    ozone = 5,
+    chlorine = 5,
     fluorine = 3,
-    hydrogen_peroxide = 6,
-    sulfuric_acid = 3,
-    hydrochloric_acid = 9,
-    lithium_hydroxide = 6,
-    sodium_hydroxide = 6,
-    water = 18,
-    co2 = 15,
-    hydroxide = 12,
-    hydronium = 12,
-    helium = 9,
-    uranyl = 3,
-    uranium_hexafluoride = 2
+    hydrogen_peroxide = 5,
+    sulfuric_acid = 2,
+    hydrochloric_acid = 8,
+    lithium_hydroxide = 5,
+    sodium_hydroxide = 5,
+    water = 15,
+    co2 = 12,
+    hydroxide = 10,
+    hydronium = 10,
+    helium = 8,
+    uranyl = 2,
+    uranium_hexafluoride = 1,
+    perchloric_acid = 1
 }
 
 config.visual = {
