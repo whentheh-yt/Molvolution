@@ -2,7 +2,7 @@ local config = {}
 
 config.game = {
     title = "Molvolution",
-    version = "December 2025 Build 0.1.15279",
+    version = "December 2025 Build 0.1.15289",
     window = {
         width = 1200,
         height = 800,
@@ -209,7 +209,7 @@ config.molecules = {
         radius = 28,
         speedMultiplier = 0.85
     },
-    	butane = {
+    butane = {
         health = 160,
         radius = 32,
         speedMultiplier = 0.80
@@ -253,7 +253,7 @@ config.molecules = {
         speedMultiplier = 1.1,
         strained = true
     },
-	    nitric_acid = {
+	nitric_acid = {
         health = 65,
         radius = 19,
         damage = 75,
@@ -370,6 +370,11 @@ config.molecules = {
         health = 30,
         radius = 26,
         speedMultiplier = 1.2
+    },
+	helium_trimer = {
+        health = 45,
+        radius = 50,
+        speedMultiplier = 1.15
     },
     squaric_acid = {
         health = 110,

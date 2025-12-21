@@ -249,6 +249,15 @@ local fragmentationRules = {
         requiresCollision = true,
         soundType = "merge"
     },
+    {
+        reactants = {"helium_dimer", "helium"},
+        products = {
+            {type = "helium_trimer", count = 1}
+        },
+        probability = 0.5,
+        requiresCollision = true,
+        soundType = "merge"
+    },
 	{
         reactants = {"hydroxide", "hydronium"},
         products = {
@@ -329,6 +338,10 @@ local bondingRecipes = {
 local deathFragmentations = {
     helium_dimer = {
         {type = "helium", count = 2}
+    },
+	helium_trimer = {
+	    {type = "helium_dimer", count = 1},
+        {type = "helium", count = 1}
     },
     hydrogen = {
         {type = "hydrogen_atom", count = 2}
@@ -841,6 +854,7 @@ local structures = {
         },
         inert = true
     },
+	
     -- CHLOROMETHANES
     chloromethane = {
         atoms = {
@@ -943,6 +957,7 @@ local structures = {
         },
         heavy = true
     },
+	
     -- IODOMETHANES (the wild ones!)
     iodomethane = {
         atoms = {
@@ -998,7 +1013,6 @@ local structures = {
         unstable = true,
         heavy = true
     },
-    -- (keeping all the original structures...)
     hydroxide = {
         atoms = {
             {element = "O", x = 0, y = 0, color = ELEMENT_COLORS.O},
@@ -1119,6 +1133,7 @@ local structures = {
         atoms = {{element = "I", x = 0, y = 0, color = ELEMENT_COLORS.I}},
         bonds = {}
     },
+	
     -- MIXED HALOMETHANES
     chlorofluoromethane = {
         atoms = {
@@ -1575,6 +1590,14 @@ local structures = {
         },
         bonds = {{1, 2, weak = true}}
     },
+	helium_trimer = {
+        atoms = {
+            {element = "He", x = -38, y = 0, color = ELEMENT_COLORS.He},
+            {element = "He", x = 38, y = 0, color = ELEMENT_COLORS.He},
+			{element = "He", x = 0, y = 16, color = ELEMENT_COLORS.He}
+        },
+        bonds = {{1, 2, weak = true}, {1, 3, weak = true}, {2, 3, weak = true}}
+    },
 	hypobromous_acid = {
         atoms = {
             {element = "Br", x = -8, y = 0, color = ELEMENT_COLORS.Br},
@@ -1947,7 +1970,7 @@ function Molecule:update(dt)
         local preyTypes = {"methane", "ethylene", "propane", "cyclopropane", "acetylcarnitine", 
                           "ethanol", "benzene", "ammonia", "caffeine", "tnt", "acetone",
                           "cyclopropenylidene", "cyclobutane", "cyclopentane", "cyclobutene",
-                          "helium_dimer", "tetrafluoroethylene", 
+                          "helium_dimer", "helium_trimer", "tetrafluoroethylene", 
                           "fluoromethane", "difluoromethane", "trifluoromethane",
                           "chloromethane", "dichloromethane", "chloroform", "carbon_tetrachloride",
                           "bromomethane", "dibromomethane", "tribromomethane", "carbon_tetrabromide",
@@ -1962,7 +1985,7 @@ function Molecule:update(dt)
             preyTypes = {"methane", "ethylene", "propane", "cyclopropane", "acetylcarnitine",
                         "ethanol", "benzene", "ammonia", "water", "caffeine", "tnt", "acetone",
                         "cyclopropenylidene", "cyclobutane", "cyclopentane", "cyclobutene",
-                        "helium_dimer", "helium", "chloromethane", "dichloromethane", "chloroform",
+                        "helium_dimer", "helium_trimer", "helium", "chloromethane", "dichloromethane", "chloroform",
                         "carbon_tetrachloride", "bromomethane", "dibromomethane", "tribromomethane",
                         "carbon_tetrabromide", "iodomethane", "diiodomethane", "triiodomethane",
                         "carbon_tetraiodide", "helium_hydride"}
@@ -2037,7 +2060,7 @@ function Molecule:update(dt)
            self.type == "benzene" or self.type == "ethylene" or self.type == "ethanol" or
            self.type == "ammonia" or self.type == "caffeine" or self.type == "tnt" or
            self.type == "acetone" or self.type == "acetylcarnitine" or self.type == "helium_dimer" or
-           self.type == "tetrafluoroethylene" or self.type == "tricarbon" or 
+           self.type == "tetrafluoroethylene" or self.type == "tricarbon" or self.type == "helium_trimer" or
            self.type == "cyanoacetylene" or self.type == "acetonitrile" then
         local threats = {"oxygen", "ozone", "chlorine", "fluorine", "hydrogen_peroxide", 
                         "sulfuric_acid", "hydrochloric_acid", "perchloric_acid", "formaldehyde",
@@ -2074,6 +2097,8 @@ function Molecule:update(dt)
                 self.rotationSpeed = 4
             elseif self.type == "helium_dimer" then
                 self.rotationSpeed = 6
+		    elseif self.type == "helium_trimer" then
+                self.rotationSpeed = 5.5
             else
                 self.rotationSpeed = 3
             end
@@ -2522,6 +2547,9 @@ function drawMoleculeTooltip(molecule)
     if molecule.type == "helium_dimer" then
         table.insert(lines, "Weakly bound - very fragile")
     end
+	if molecule.type == "helium_trimer" then
+        table.insert(lines, "More weakly bound - even more fragile than helium dimer")
+    end
     if molecule.type == "helium" then
         table.insert(lines, "Noble gas - inert")
     end
@@ -2795,7 +2823,7 @@ function getMoleculeBehaviorInfo(molecule)
        molecule.type == "tnt" or molecule.type == "acetone" or
        molecule.type == "acetylcarnitine" or molecule.type == "helium_dimer" or
        molecule.type == "tricarbon" or molecule.type == "cyanoacetylene" or 
-       molecule.type == "acetonitrile" then
+       molecule.type == "acetonitrile" or molecule.type == "helium_trimer" then
         table.insert(info.huntedBy, "O2")
         table.insert(info.huntedBy, "O3")
         table.insert(info.huntedBy, "Cl2")
