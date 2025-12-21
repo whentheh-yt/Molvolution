@@ -50,6 +50,40 @@ function Console.execute(cmd, context)
         end
         
         Console.log("Spawned " .. count .. "x " .. molType)
+		
+    elseif command == "godmode" then
+        if not context.godmode then context.godmode = {} end
+        context.godmode.enabled = not context.godmode.enabled
+        Console.log("God mode: " .. (context.godmode.enabled and "ON" or "OFF"))
+    
+    elseif command == "speed" then
+        if #args < 2 then
+            Console.log("Usage: speed <multiplier>")
+            return
+        end
+        local multiplier = tonumber(args[2])
+        if multiplier then
+            context.config.gameplay.huntSpeed = 80 * multiplier
+            context.config.gameplay.fleeSpeed = 100 * multiplier
+            context.config.gameplay.wanderSpeed = 40 * multiplier
+            Console.log("Game speed set to " .. multiplier .. "x")
+        end
+    
+    elseif command == "teleport" then
+        local mouseX, mouseY = love.mouse.getPosition()
+        local worldX = context.camera.x + mouseX / context.camera.zoom
+        local worldY = context.camera.y + mouseY / context.camera.zoom
+        for _, mol in ipairs(context.molecules) do
+            mol.x = worldX + (math.random() - 0.5) * 200
+            mol.y = worldY + (math.random() - 0.5) * 200
+        end
+        Console.log("Teleported all molecules to cursor")
+    
+    elseif command == "rainbow" then
+        for _, mol in ipairs(context.molecules) do
+            mol.rainbow = not mol.rainbow
+        end
+        Console.log("Rainbow mode toggled")
     
     -- CLEAR command: clear <molecule_type> or clear all
     elseif command == "clear" then
@@ -137,7 +171,7 @@ function Console.execute(cmd, context)
         for i = #context.molecules, 1, -1 do
             context.molecules[i].alive = false
         end
-        Console.log("💥 NUKED " .. count .. " molecules!")
+        Console.log("NUKED " .. count .. " molecules!")
     
     -- CHAOS command: spawn random molecules
     elseif command == "chaos" then
@@ -154,7 +188,7 @@ function Console.execute(cmd, context)
             table.insert(context.molecules, context.Molecule:new(molType, x, y))
         end
         
-        Console.log("🌀 CHAOS! Spawned " .. count .. " random molecules")
+        Console.log("CHAOS! Spawned " .. count .. " random molecules")
     
     -- HELP command
     elseif command == "help" then
@@ -256,5 +290,7 @@ function Console.keypressed(key, context)
     
     return true
 end
+
+
 
 return Console

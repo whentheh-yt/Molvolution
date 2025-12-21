@@ -2,7 +2,7 @@ local config = {}
 
 config.game = {
     title = "Molvolution",
-    version = "December 2025 Build 0.1.15223",
+    version = "December 2025 Build 0.1.15256",
     window = {
         width = 1200,
         height = 800,
@@ -12,7 +12,7 @@ config.game = {
 }
 
 config.world = {
-    width = 20000,
+    width = 40000,
     height = 2000
 }
 
@@ -252,6 +252,53 @@ config.molecules = {
         radius = 18,
         speedMultiplier = 1.1,
         strained = true
+    },
+	    nitric_acid = {
+        health = 65,
+        radius = 19,
+        damage = 75,
+        speedMultiplier = 1.05,
+        detectionMultiplier = 1.2,
+        acid = true
+    },
+    nitrous_oxide = {
+        health = 55,
+        radius = 17,
+        speedMultiplier = 1.3,
+        anesthetic = true,
+        laughing_gas = true
+    },
+    cyanide = {
+        health = 25,
+        radius = 10,
+        damage = 150,
+        speedMultiplier = 1.4,
+        detectionMultiplier = 1.8,
+        toxic = true,
+        ion = true,
+        charge = -1
+    },
+    hydrogen_cyanide = {
+        health = 45,
+        radius = 16,
+        damage = 120,
+        speedMultiplier = 1.2,
+        toxic = true,
+        volatile = true
+    },
+    sulfur_dioxide = {
+        health = 60,
+        radius = 18,
+        damage = 55,
+        speedMultiplier = 1.1,
+        toxic = true
+    },
+    nitroglycerin = {
+        health = 80,
+        radius = 32,
+        speedMultiplier = 0.6,
+        explosive = true,
+        unstable = true
     },
     cyclopropenylidene = {
         health = 50,
@@ -636,6 +683,67 @@ config.molecules = {
         radius = 18,
         damage = 55,
         speedMultiplier = 0.95
+    },
+	
+	-- INTERSTELLAR MOLECULES
+    trihydrogen_cation = {
+        health = 25,
+        radius = 11,
+        damage = 40,
+        speedMultiplier = 1.6,
+        ion = true,
+        charge = 1,
+        interstellar = true,
+        electron_hungry = true
+    },
+    tricarbon = {
+        health = 45,
+        radius = 15,
+        speedMultiplier = 1.3,
+        interstellar = true,
+        reactive = true,
+        chain = true
+    },
+    cyanoacetylene = {
+        health = 70,
+        radius = 20,
+        speedMultiplier = 1.1,
+        interstellar = true,
+        nitrile = true
+    },
+    ethynyl_radical = {
+        health = 35,
+        radius = 12,
+        damage = 50,
+        speedMultiplier = 1.4,
+        interstellar = true,
+        radical = true,
+        reactive = true
+    },
+    formyl_cation = {
+        health = 30,
+        radius = 10,
+        damage = 45,
+        speedMultiplier = 1.5,
+        ion = true,
+        charge = 1,
+        interstellar = true
+    },
+    acetonitrile = {
+        health = 85,
+        radius = 19,
+        speedMultiplier = 1.0,
+        interstellar = true,
+        nitrile = true
+    },
+    buckminsterfullerene = {
+        health = 400,
+        radius = 45,
+        speedMultiplier = 0.4,
+        interstellar = true,
+        fullerene = true,
+        soccer_ball = true,
+        extremely_stable = true
     }
 }
 
@@ -720,7 +828,21 @@ config.initialSpawns = {
     hexane = 7,
     octane = 6,
     nonane = 4,
-    decane = 3
+    decane = 3,
+	nitric_acid = 4,
+    nitrous_oxide = 6,
+    hydrogen_cyanide = 3,
+    sulfur_dioxide = 5,
+    nitroglycerin = 2,
+	
+	-- Interstellar molecules
+	trihydrogen_cation = 8,
+    tricarbon = 6,
+    cyanoacetylene = 5,
+    ethynyl_radical = 7,
+    formyl_cation = 6,
+    acetonitrile = 4,
+    buckminsterfullerene = 1
 }
 
 config.visual = {

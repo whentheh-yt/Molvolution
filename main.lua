@@ -12,6 +12,7 @@
 -- December 20 2025 16:15 - HALOMETHANE EDITION - Added ALL the halomethanes! (December 2025 Build 0.1.15050)
 -- December 21 2025 11:01 - Added 3 secret molecules and a console. (December 2025 Build 0.1.15102)
 -- December 21 2025 15:31 - Added more alkanes, added sound and revamped death. Also main.lua hit 100KB. (December 2025 Build 0.1.15223)
+-- December 21 2025 20:31 - Added interstellar molecules.
 
 local config = require("config")
 local Console = require("console")
@@ -136,6 +137,47 @@ local ELEMENT_ATTRACTION = {
 -- molecule + molecule → new products!
 local fragmentationRules = {
     {
+        reactants = {"nitric_acid", "water"},
+        products = {
+            {type = "hydronium", count = 1},
+            {type = "nitrate", count = 1}
+        },
+        probability = 0.7,
+        requiresCollision = true,
+        soundType = "merge"
+    },
+    {
+        reactants = {"nitric_acid", "ammonia"},
+        products = {
+            {type = "ammonium_nitrate", count = 1}
+        },
+        probability = 0.9,
+        requiresCollision = true,
+        soundType = "merge"
+    },
+    {
+        reactants = {"hydrogen_cyanide", "water"},
+        products = {
+            {type = "formic_acid", count = 1},
+            {type = "ammonia", count = 1}
+        },
+        probability = 0.3,
+        requiresCollision = true,
+        soundType = "merge"
+    },
+    {
+        reactants = {"nitroglycerin", "oxygen"},
+        products = {
+            {type = "co2", count = 3},
+            {type = "water", count = 2.5},
+            {type = "nitrogen", count = 1.5}
+        },
+        probability = 0.15,
+        requiresCollision = true,
+        requiresHighSpeed = 100,
+        soundType = "explosion"
+    },
+    {
         reactants = {"co2", "chlorine"},
         products = {
             {type = "phosgene", count = 1},
@@ -202,6 +244,38 @@ local fragmentationRules = {
         probability = 1,
         requiresCollision = true,
         soundType = "merge"
+    },
+	
+	-- Interstellar reactions
+    {
+        reactants = {"trihydrogen_cation", "water"},
+        products = {
+            {type = "hydronium", count = 1},
+            {type = "hydrogen", count = 1}
+        },
+        probability = 0.8,
+        requiresCollision = true,
+        soundType = "merge"
+    },
+    {
+        reactants = {"ethynyl_radical", "hydrogen_atom"},
+        products = {
+            {type = "ethylene", count = 0.5},
+            {type = "carbon_atom", count = 1}
+        },
+        probability = 0.6,
+        requiresCollision = true,
+        soundType = "merge"
+    },
+    {
+        reactants = {"tricarbon", "oxygen"},
+        products = {
+            {type = "co2", count = 1},
+            {type = "carbon_atom", count = 2}
+        },
+        probability = 0.4,
+        requiresCollision = true,
+        soundType = "merge"
     }
 }
 
@@ -226,6 +300,17 @@ local bondingRecipes = {
     {atoms = {"C", "H", "H", "H", "F"}, product = "fluoromethane", probability = 0.7},
     {atoms = {"C", "H", "H", "H", "Cl"}, product = "chloromethane", probability = 0.75},
     {atoms = {"C", "F", "F", "F", "F"}, product = "carbon_tetrafluoride", probability = 0.5},
+	{atoms = {"N", "O", "O", "O"}, product = "nitric_acid", probability = 0.6},
+    {atoms = {"N", "N", "O"}, product = "nitrous_oxide", probability = 0.4},
+    {atoms = {"C", "N"}, product = "cyanide", probability = 0.3},
+    {atoms = {"H", "C", "N"}, product = "hydrogen_cyanide", probability = 0.5},
+    {atoms = {"S", "O", "O"}, product = "sulfur_dioxide", probability = 0.7},
+	
+	-- Interstellar bonding
+    {atoms = {"H", "H", "H"}, product = "trihydrogen_cation", probability = 0.6},
+    {atoms = {"C", "C", "C"}, product = "tricarbon", probability = 0.4},
+    {atoms = {"H", "C", "O"}, product = "formyl_cation", probability = 0.5},
+    {atoms = {"C", "C", "H"}, product = "ethynyl_radical", probability = 0.7}
 }
 
 local deathFragmentations = {
@@ -427,6 +512,66 @@ local deathFragmentations = {
     hydrogen_peroxide = {
         {type = "water", count = 1},
         {type = "oxygen_atom", count = 1}
+    },
+	nitric_acid = {
+        {type = "nitrogen_dioxide", count = 1},
+        {type = "water", count = 1},
+        {type = "oxygen_atom", count = 1}
+    },
+    
+    nitrous_oxide = {
+        {type = "nitrogen", count = 1},
+        {type = "oxygen", count = 1}
+    },
+    
+    hydrogen_cyanide = {
+        {type = "hydrogen_atom", count = 1},
+        {type = "carbon_atom", count = 1},
+        {type = "nitrogen_atom", count = 1}
+    },
+    
+    sulfur_dioxide = {
+        {type = "sulfur_atom", count = 1},
+        {type = "oxygen_atom", count = 2}
+    },
+    
+    nitroglycerin = {
+        {type = "co2", count = 3},
+        {type = "water", count = 2},
+        {type = "nitrogen", count = 1.5},
+        {type = "oxygen", count = 0.5}
+    },
+	
+	-- Interstellar molecules
+    trihydrogen_cation = {
+        {type = "hydrogen", count = 1},
+        {type = "hydrogen_atom", count = 1}
+    },
+    tricarbon = {
+        {type = "carbon_atom", count = 3}
+    },
+    cyanoacetylene = {
+        {type = "hydrogen_cyanide", count = 1},
+        {type = "ethylene", count = 0.5},
+        {type = "carbon_atom", count = 1}
+    },
+    ethynyl_radical = {
+        {type = "carbon_atom", count = 2},
+        {type = "hydrogen_atom", count = 1}
+    },
+    formyl_cation = {
+        {type = "carbon_atom", count = 1},
+        {type = "oxygen_atom", count = 1},
+        {type = "hydrogen_atom", count = 1}
+    },
+    acetonitrile = {
+        {type = "methane", count = 1},
+        {type = "cyanide", count = 1}
+    },
+    buckminsterfullerene = {
+        {type = "carbon_atom", count = 20},
+        {type = "benzene", count = 3},
+        {type = "tricarbon", count = 5}
     }
 }
 
@@ -450,7 +595,6 @@ local ELEMENT_COLORS = {
 }
 
 local structures = {
-
     butane = {
         atoms = {
             {element = "C", x = -30, y = 0, color = ELEMENT_COLORS.C},
@@ -1203,6 +1347,95 @@ local structures = {
         },
         bonds = {{1, 2}, {2, 3}, {3, 4}, {1, 5}, {1, 6}, {2, 7}, {2, 8}}
     },
+	nitric_acid = {
+        atoms = {
+            {element = "N", x = 0, y = 0, color = ELEMENT_COLORS.N},
+            {element = "O", x = 0, y = 15, color = ELEMENT_COLORS.O},
+            {element = "O", x = 15, y = -8, color = ELEMENT_COLORS.O},
+            {element = "O", x = -15, y = -8, color = ELEMENT_COLORS.O},
+            {element = "H", x = 0, y = 25, color = ELEMENT_COLORS.H}
+        },
+        bonds = {
+            {1, 2, double = true},
+            {1, 3, double = true},
+            {1, 4, resonance = true},
+            {4, 5}
+        },
+        acid = true
+    },
+    nitrous_oxide = {
+        atoms = {
+            {element = "N", x = -12, y = 0, color = ELEMENT_COLORS.N},
+            {element = "N", x = 0, y = 0, color = ELEMENT_COLORS.N},
+            {element = "O", x = 12, y = 0, color = ELEMENT_COLORS.O}
+        },
+        bonds = {
+            {1, 2, triple = true},
+            {2, 3, double = true}
+        },
+        anesthetic = true
+    },
+    cyanide = {
+        atoms = {
+            {element = "C", x = -8, y = 0, color = ELEMENT_COLORS.C},
+            {element = "N", x = 8, y = 0, color = ELEMENT_COLORS.N}
+        },
+        bonds = {
+            {1, 2, triple = true}
+        },
+        toxic = true,
+        ion = true,
+        charge = -1
+    },
+    hydrogen_cyanide = {
+        atoms = {
+            {element = "C", x = -8, y = 0, color = ELEMENT_COLORS.C},
+            {element = "N", x = 8, y = 0, color = ELEMENT_COLORS.N},
+            {element = "H", x = -18, y = 0, color = ELEMENT_COLORS.H}
+        },
+        bonds = {
+            {1, 2, triple = true},
+            {1, 3}
+        },
+        toxic = true,
+        volatile = true
+    },
+    sulfur_dioxide = {
+        atoms = {
+            {element = "S", x = 0, y = 0, color = ELEMENT_COLORS.S},
+            {element = "O", x = -15, y = -8, color = ELEMENT_COLORS.O},
+            {element = "O", x = 15, y = -8, color = ELEMENT_COLORS.O}
+        },
+        bonds = {
+            {1, 2, double = true},
+            {1, 3, double = true}
+        },
+        toxic = true
+    },
+    nitroglycerin = {
+        atoms = {
+            {element = "C", x = 0, y = 0, color = ELEMENT_COLORS.C},
+            {element = "C", x = -20, y = -12, color = ELEMENT_COLORS.C},
+            {element = "C", x = 20, y = -12, color = ELEMENT_COLORS.C},
+            {element = "O", x = 0, y = 15, color = ELEMENT_COLORS.O},
+            {element = "O", x = -30, y = -20, color = ELEMENT_COLORS.O},
+            {element = "O", x = 30, y = -20, color = ELEMENT_COLORS.O},
+            {element = "N", x = -35, y = -30, color = ELEMENT_COLORS.N},
+            {element = "N", x = 35, y = -30, color = ELEMENT_COLORS.N},
+            {element = "O", x = -40, y = -40, color = ELEMENT_COLORS.O},
+            {element = "O", x = -30, y = -40, color = ELEMENT_COLORS.O},
+            {element = "O", x = 30, y = -40, color = ELEMENT_COLORS.O},
+            {element = "O", x = 40, y = -40, color = ELEMENT_COLORS.O},
+            {element = "H", x = -25, y = 5, color = ELEMENT_COLORS.H},
+            {element = "H", x = 25, y = 5, color = ELEMENT_COLORS.H}
+        },
+        bonds = {
+            {1, 2}, {1, 3}, {1, 4}, {2, 5}, {3, 6}, {5, 7}, {6, 8},
+            {7, 9}, {7, 10}, {8, 11}, {8, 12}, {2, 13}, {3, 14}
+        },
+        explosive = true,
+        unstable = true
+    },
     ammonia = {
         atoms = {
             {element = "N", x = 0, y = 0, color = ELEMENT_COLORS.N},
@@ -1489,6 +1722,103 @@ local structures = {
         },
         bonds = {{1, 2}, {2, 3}, {2, 4}, {2, 5}, {1, 6}}
     },
+	trihydrogen_cation = {
+        atoms = {
+            {element = "H", x = 0, y = -10, color = ELEMENT_COLORS.H},
+            {element = "H", x = -8.7, y = 5, color = ELEMENT_COLORS.H},
+            {element = "H", x = 8.7, y = 5, color = ELEMENT_COLORS.H}
+        },
+        bonds = {{1, 2}, {2, 3}, {3, 1}},
+        ion = true,
+        charge = 1,
+        interstellar = true
+    },
+    tricarbon = {
+        atoms = {
+            {element = "C", x = -12, y = 0, color = ELEMENT_COLORS.C},
+            {element = "C", x = 0, y = 0, color = ELEMENT_COLORS.C},
+            {element = "C", x = 12, y = 0, color = ELEMENT_COLORS.C}
+        },
+        bonds = {{1, 2, double = true}, {2, 3, double = true}},
+        interstellar = true,
+        chain = true
+    },
+    cyanoacetylene = {
+        atoms = {
+            {element = "H", x = -24, y = 0, color = ELEMENT_COLORS.H},
+            {element = "C", x = -16, y = 0, color = ELEMENT_COLORS.C},
+            {element = "C", x = -4, y = 0, color = ELEMENT_COLORS.C},
+            {element = "C", x = 8, y = 0, color = ELEMENT_COLORS.C},
+            {element = "N", x = 18, y = 0, color = ELEMENT_COLORS.N}
+        },
+        bonds = {{1, 2}, {2, 3, triple = true}, {3, 4}, {4, 5, triple = true}},
+        interstellar = true
+    },
+    ethynyl_radical = {
+        atoms = {
+            {element = "C", x = -8, y = 0, color = ELEMENT_COLORS.C},
+            {element = "C", x = 8, y = 0, color = ELEMENT_COLORS.C},
+            {element = "H", x = -18, y = 0, color = ELEMENT_COLORS.H}
+        },
+        bonds = {{1, 2, triple = true}, {1, 3}},
+        radical = true,
+        interstellar = true
+    },
+    formyl_cation = {
+        atoms = {
+            {element = "H", x = -10, y = 0, color = ELEMENT_COLORS.H},
+            {element = "C", x = 0, y = 0, color = ELEMENT_COLORS.C},
+            {element = "O", x = 10, y = 0, color = ELEMENT_COLORS.O}
+        },
+        bonds = {{1, 2}, {2, 3, triple = true}},
+        ion = true,
+        charge = 1,
+        interstellar = true
+    },
+    acetonitrile = {
+        atoms = {
+            {element = "C", x = -12, y = 0, color = ELEMENT_COLORS.C},
+            {element = "C", x = 0, y = 0, color = ELEMENT_COLORS.C},
+            {element = "N", x = 12, y = 0, color = ELEMENT_COLORS.N},
+            {element = "H", x = -17, y = -8, color = ELEMENT_COLORS.H},
+            {element = "H", x = -17, y = 8, color = ELEMENT_COLORS.H},
+            {element = "H", x = -19, y = 0, color = ELEMENT_COLORS.H}
+        },
+        bonds = {{1, 2}, {2, 3, triple = true}, {1, 4}, {1, 5}, {1, 6}},
+        interstellar = true
+    },
+    buckminsterfullerene = {
+        atoms = {
+            -- Simplified C60 representation; i ain't doing the whole thing
+            {element = "C", x = 0, y = -35, color = ELEMENT_COLORS.C},
+            {element = "C", x = -12, y = -30, color = ELEMENT_COLORS.C},
+            {element = "C", x = 12, y = -30, color = ELEMENT_COLORS.C},
+            {element = "C", x = -18, y = -18, color = ELEMENT_COLORS.C},
+            {element = "C", x = 18, y = -18, color = ELEMENT_COLORS.C},
+            {element = "C", x = -28, y = -10, color = ELEMENT_COLORS.C},
+            {element = "C", x = -30, y = 5, color = ELEMENT_COLORS.C},
+            {element = "C", x = 28, y = -10, color = ELEMENT_COLORS.C},
+            {element = "C", x = 30, y = 5, color = ELEMENT_COLORS.C},
+            {element = "C", x = -25, y = 18, color = ELEMENT_COLORS.C},
+            {element = "C", x = 25, y = 18, color = ELEMENT_COLORS.C},
+            {element = "C", x = -15, y = 28, color = ELEMENT_COLORS.C},
+            {element = "C", x = 15, y = 28, color = ELEMENT_COLORS.C},
+            {element = "C", x = 0, y = 35, color = ELEMENT_COLORS.C},
+            {element = "C", x = 0, y = -20, color = ELEMENT_COLORS.C},
+            {element = "C", x = -20, y = 0, color = ELEMENT_COLORS.C},
+            {element = "C", x = 20, y = 0, color = ELEMENT_COLORS.C},
+            {element = "C", x = 0, y = 20, color = ELEMENT_COLORS.C}
+        },
+        bonds = {
+            {1, 2}, {1, 3}, {2, 4}, {3, 5}, {4, 6}, {5, 8},
+            {6, 7}, {8, 9}, {7, 10}, {9, 11}, {10, 12}, {11, 13},
+            {12, 14}, {13, 14}, {2, 15}, {3, 15}, {4, 16}, {6, 16},
+            {5, 17}, {8, 17}, {10, 18}, {12, 18}, {11, 18}, {13, 18},
+            {1, 15}, {15, 16}, {15, 17}, {16, 18}, {17, 18}, {7, 16}
+        },
+        fullerene = true,
+        interstellar = true
+    },
 }
 
 local Molecule = {}
@@ -1599,7 +1929,8 @@ function Molecule:update(dt)
            self.type == "fluorine" or self.type == "hydrogen_peroxide" or
            self.type == "sulfuric_acid" or self.type == "hydrochloric_acid" or
            self.type == "hydronium" or self.type == "formaldehyde" or
-		   self.type == "hypobromous_acid" then
+           self.type == "hypobromous_acid" or self.type == "ethynyl_radical" or
+           self.type == "trihydrogen_cation" or self.type == "formyl_cation" then
         local preyTypes = {"methane", "ethylene", "propane", "cyclopropane", "acetylcarnitine", 
                           "ethanol", "benzene", "ammonia", "caffeine", "tnt", "acetone",
                           "cyclopropenylidene", "cyclobutane", "cyclopentane", "cyclobutene",
@@ -1630,6 +1961,15 @@ function Molecule:update(dt)
                     table.insert(preyTypes, molType)
                 end
             end
+        end
+		
+		if self.type == "trihydrogen_cation" or self.type == "formyl_cation" then
+            preyTypes = {"hydrogen_atom", "carbon_atom", "oxygen_atom", "nitrogen_atom",
+                        "fluorine_atom", "chlorine_atom", "bromine_atom", "iodine_atom",
+                        "helium", "water", "ammonia", "methane"}
+        elseif self.type == "ethynyl_radical" then
+            preyTypes = {"hydrogen_atom", "methane", "ethylene", "water", "ammonia",
+                        "fluoromethane", "chloromethane"}
         end
 
         local closest = nil
@@ -1663,7 +2003,12 @@ function Molecule:update(dt)
 
             local damage = molConfig.damage or 50
             if dist < self.radius + closest.radius then
-                closest.health = closest.health - damage * dt
+                local damageMultiplier = 1.0
+                if closest.type == "buckminsterfullerene" then
+                    damageMultiplier = 0.1
+                end
+                
+                closest.health = closest.health - (damage * damageMultiplier * dt)
                 if closest.health <= 0 then
                     closest.alive = false
                 end
@@ -1679,10 +2024,11 @@ function Molecule:update(dt)
            self.type == "benzene" or self.type == "ethylene" or self.type == "ethanol" or
            self.type == "ammonia" or self.type == "caffeine" or self.type == "tnt" or
            self.type == "acetone" or self.type == "acetylcarnitine" or self.type == "helium_dimer" or
-           self.type == "tetrafluoroethylene" then
+           self.type == "tetrafluoroethylene" or self.type == "tricarbon" or 
+           self.type == "cyanoacetylene" or self.type == "acetonitrile" then
         local threats = {"oxygen", "ozone", "chlorine", "fluorine", "hydrogen_peroxide", 
                         "sulfuric_acid", "hydrochloric_acid", "perchloric_acid", "formaldehyde",
-						"hypobromous_acid"}
+                        "hypobromous_acid", "trihydrogen_cation", "formyl_cation", "ethynyl_radical"}
         local nearestThreat = nil
         local nearestDist = DETECTION_RANGE
 
@@ -1735,7 +2081,8 @@ function Molecule:update(dt)
                 self.rotationSpeed = 0.5
             end
         end
-    elseif self.type == "water" or self.type == "co2" or self.type == "helium" or self.type == "helium_hydride" then
+    elseif self.type == "water" or self.type == "co2" or self.type == "helium" or 
+           self.type == "helium_hydride" or self.type == "buckminsterfullerene" then
         if self.type == "helium" then
             local nearestFluorine = nil
             local nearestDist = DETECTION_RANGE
@@ -1772,6 +2119,12 @@ function Molecule:update(dt)
             self.vy = math.sin(self.wanderAngle) * (WANDER_SPEED * speedMult)
             self.rotationSpeed = 0.3
         end
+    elseif self.type == "buckminsterfullerene" then
+        -- C60 is extremely stable and barely moves
+        self.wanderAngle = self.wanderAngle + (math.random() - 0.5) * 0.02
+        self.vx = math.cos(self.wanderAngle) * (WANDER_SPEED * 0.4)
+        self.vy = math.sin(self.wanderAngle) * (WANDER_SPEED * 0.4)
+         elf.rotationSpeed = 0.1
     else
         -- Default wander for everything else
         self.wanderAngle = self.wanderAngle + (math.random() - 0.5) * 0.08
@@ -1794,6 +2147,32 @@ function Molecule:draw()
     if not self.alive then return end
     local struct = structures[self.type]
     if not struct then return end
+	
+    if struct.interstellar then
+        local pulse = (math.sin(love.timer.getTime() * 2) + 1) * 0.5
+        
+        if self.type == "trihydrogen_cation" or self.type == "formyl_cation" then
+            love.graphics.setColor(0.3, 0.5, 1, 0.15 + pulse * 0.15)
+            love.graphics.circle("fill", self.x, self.y, self.radius + 8)
+            for i = 1, 2 do
+                love.graphics.circle("line", self.x, self.y, self.radius + i * 6)
+            end
+        elseif self.type == "ethynyl_radical" or self.type == "tricarbon" then
+            love.graphics.setColor(0.7, 0.3, 0.8, 0.1 + pulse * 0.1)
+            love.graphics.circle("fill", self.x, self.y, self.radius + 6)
+        elseif self.type == "buckminsterfullerene" then
+            -- Golden cosmic glow for our beloved buckyball
+            love.graphics.setColor(0.9, 0.7, 0.2, 0.15 + pulse * 0.15)
+            love.graphics.circle("fill", self.x, self.y, self.radius + 12)
+            for i = 1, 4 do
+                love.graphics.setColor(0.8, 0.6, 0.1, 0.3)
+                love.graphics.circle("line", self.x, self.y, self.radius + i * 7)
+            end
+        else
+            love.graphics.setColor(0.3, 0.8, 0.8, 0.1 + pulse * 0.1)
+            love.graphics.circle("fill", self.x, self.y, self.radius + 5)
+        end
+    end
 
     -- Carbon tetraiodide gets purple glow when unstable
     if self.type == "carbon_tetraiodide" and self.unstableTimer > 5 then
@@ -2097,7 +2476,6 @@ function drawMoleculeTooltip(molecule)
         table.insert(lines, "C10 alkane - getting waxy")
     end
 
-    -- Original molecule properties
     if molecule.type == "cyclopropane" or molecule.type == "cyclopropenylidene" or 
        molecule.type == "cyclobutane" or molecule.type == "cyclobutene" then
         table.insert(lines, "Ring strain - unstable!")
@@ -2258,6 +2636,36 @@ function drawMoleculeTooltip(molecule)
     if config.molecules[molecule.type].radioactive then
         table.insert(lines, "[!] RADIOACTIVE [!]")
     end
+	
+    if molecule.type == "trihydrogen_cation" then
+        table.insert(lines, "Most abundant ion in space!")
+        table.insert(lines, "Electron hungry - hunts atoms")
+    end
+    if molecule.type == "tricarbon" then
+        table.insert(lines, "Linear carbon chain")
+        table.insert(lines, "Found in molecular clouds")
+    end
+    if molecule.type == "cyanoacetylene" then
+        table.insert(lines, "Common in space")
+        table.insert(lines, "Precursor to complex organics")
+    end
+    if molecule.type == "ethynyl_radical" then
+        table.insert(lines, "Highly reactive radical")
+        table.insert(lines, "Key in interstellar chemistry")
+    end
+    if molecule.type == "formyl_cation" then
+        table.insert(lines, "2nd most abundant ion")
+        table.insert(lines, "Proton affinity marker")
+    end
+    if molecule.type == "acetonitrile" then
+        table.insert(lines, "Complex organic")
+        table.insert(lines, "Found near star-forming regions")
+    end
+    if molecule.type == "buckminsterfullerene" then
+        table.insert(lines, "Extremely stable fullerene")
+        table.insert(lines, "Found in planetary nebulae!")
+        table.insert(lines, "[90% damage resistance]")
+    end
 
     -- Atom info
     if molecule.element then
@@ -2324,6 +2732,12 @@ function getMoleculeBehaviorInfo(molecule)
         if molecule.type == "fluorine" then
             table.insert(info.hunts, "noble gases")
         end
+	elseif molecule.type == "trihydrogen_cation" or molecule.type == "formyl_cation" then
+        table.insert(info.hunts, "atoms")
+        table.insert(info.hunts, "electrons")
+    elseif molecule.type == "ethynyl_radical" then
+        table.insert(info.hunts, "hydrogen")
+        table.insert(info.hunts, "small molecules")
     elseif molecule.type == "perchloric_acid" then
         table.insert(info.hunts, "EVERYTHING")
     elseif molecule.type == "hydroxide" then
@@ -2349,12 +2763,15 @@ function getMoleculeBehaviorInfo(molecule)
        molecule.type == "propane" or molecule.type == "ethanol" or
        molecule.type == "ammonia" or molecule.type == "caffeine" or
        molecule.type == "tnt" or molecule.type == "acetone" or
-       molecule.type == "acetylcarnitine" or molecule.type == "helium_dimer" then
+       molecule.type == "acetylcarnitine" or molecule.type == "helium_dimer" or
+       molecule.type == "tricarbon" or molecule.type == "cyanoacetylene" or 
+       molecule.type == "acetonitrile" then
         table.insert(info.huntedBy, "O2")
         table.insert(info.huntedBy, "O3")
         table.insert(info.huntedBy, "Cl2")
         table.insert(info.huntedBy, "F2")
         table.insert(info.huntedBy, "acids")
+        table.insert(info.huntedBy, "radicals")
     end
 
     if molecule.type == "helium" then
@@ -2363,6 +2780,10 @@ function getMoleculeBehaviorInfo(molecule)
 
     if molecule.type == "water" or molecule.type == "co2" then
         table.insert(info.huntedBy, "bases")
+    end
+	
+	if molecule.type == "buckminsterfullerene" then
+        table.insert(info.huntedBy, "almost nothing!")
     end
 
     return info
