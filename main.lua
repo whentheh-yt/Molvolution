@@ -10,12 +10,23 @@
 -- December 20 2025 14:29 - Added uranium compounds, fixed love:draw and fragmentationRules, and other stuff. (December 2025 Build 0.1.14897)
 -- December 20 2025 15:21 - Added atom attractions. (December 2025 Build 0.1.15012)
 -- December 20 2025 16:15 - HALOMETHANE EDITION - Added ALL the halomethanes! (December 2025 Build 0.1.15050)
+-- ---------------------- -
 -- December 21 2025 11:01 - Added 3 secret molecules and a console. (December 2025 Build 0.1.15102)
 -- December 21 2025 15:31 - Added more alkanes, added sound and revamped death. Also main.lua hit 100KB. (December 2025 Build 0.1.15223)
--- December 21 2025 20:31 - Added interstellar molecules.
+-- December 21 2025 20:31 - Added interstellar molecules. (December 2025 Build 0.1.15256)
+-- December 21 2025 20:53 - Added a time slider, fixed the camera zooming and added .\libs. (December 2025 Build 0.1.15279)
 
 local config = require("config")
-local Console = require("console")
+local Console = require("libs/console")
+local TimeSlider = require("libs/timeslider")
+
+function love.mousereleased(x, y, button)
+    TimeSlider.mousereleased(x, y, button)
+end
+
+function love.mousemoved(x, y, dx, dy)
+    TimeSlider.mousemoved(x, y, dx, dy)
+end
 
 local molecules = {}
 local hoveredMolecule = nil
@@ -73,7 +84,9 @@ function generateSound(frequency, duration, volume)
         soundData:setSample(i, value)
     end
     
-    return love.audio.newSource(soundData)
+    local source = love.audio.newSource(soundData)
+    source:setPitch(TimeSlider.scale)
+    return source
 end
 
 
@@ -2309,6 +2322,7 @@ function love.load()
 end
 
 function love.update(dt)
+    dt = dt * TimeSlider.scale
     local mouseX, mouseY = love.mouse.getPosition()
     local worldX = camera.x + mouseX / camera.zoom
     local worldY = camera.y + mouseY / camera.zoom
@@ -2344,6 +2358,9 @@ function love.update(dt)
             table.remove(molecules, i)
         end
     end
+	
+	local zoomSpeed = 1
+    local oldZoom = camera.zoom
 
     -- Camera controls
     if camera.followTarget and camera.followTarget.alive then
@@ -2365,11 +2382,21 @@ function love.update(dt)
     if love.keyboard.isDown("-") or love.keyboard.isDown("_") then
         camera.zoom = math.max(camera.zoom - 1 * dt, camera.minZoom)
     end
+	
+	if camera.zoom ~= oldZoom then
+        local screenCenterX = love.graphics.getWidth() / 2
+        local screenCenterY = love.graphics.getHeight() / 2
+        local worldCenterX = camera.x + screenCenterX / oldZoom
+        local worldCenterY = camera.y + screenCenterY / oldZoom
+        camera.x = worldCenterX - screenCenterX / camera.zoom
+        camera.y = worldCenterY - screenCenterY / camera.zoom
+    end
 end
 
 function love.draw()
     drawWorld()
     drawUI()
+	TimeSlider.draw()
     if hoveredMolecule then
         drawMoleculeTooltip(hoveredMolecule)
     end
@@ -2433,6 +2460,9 @@ function drawUI()
 end
 
 function drawMoleculeTooltip(molecule)
+    if TimeSlider.mousepressed(x, y, button) then
+        return
+    end
     local mouseX, mouseY = love.mouse.getPosition()
     local lines = {}
 
@@ -2850,6 +2880,9 @@ function love.textinput(text)
 end
 
 function love.mousepressed(x, y, button)
+    if TimeSlider.mousepressed(x, y, button) then
+        return
+    end
     if button == 3 then
         local worldX = camera.x + x / camera.zoom
         local worldY = camera.y + y / camera.zoom
