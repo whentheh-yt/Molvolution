@@ -2,7 +2,7 @@ local config = {}
 
 config.game = {
     title = "Molvolution",
-    version = "December 2025 Build 0.1.15102",
+    version = "December 2025 Build 0.1.15223",
     window = {
         width = 1200,
         height = 800,
@@ -197,11 +197,56 @@ config.molecules = {
         speedMultiplier = 0.85,
         unstable = true
     },
+	
+	-- This chemical doesn't even exist. I don't know why I added this.
+	bromochloroflouroidiomethane = {
+        health = 125,
+        radius = 32,
+        speedMultiplier = 0.75,
+    },
     propane = {
         health = 140,
         radius = 28,
         speedMultiplier = 0.85
     },
+    	butane = {
+        health = 160,
+        radius = 32,
+        speedMultiplier = 0.80
+    },
+    pentane = {
+        health = 180,
+        radius = 36,
+        speedMultiplier = 0.75
+    },
+    hexane = {
+        health = 200,
+        radius = 40,
+        speedMultiplier = 0.70
+    },
+    heptane = {
+        health = 220,
+        radius = 44,
+        speedMultiplier = 0.65
+	},
+    octane = {
+         health = 240,
+        radius = 48,
+        speedMultiplier = 0.60,
+        fuel = true  -- Gasoline component!
+    },
+    nonane = {
+        health = 260,
+         radius = 52,
+        speedMultiplier = 0.55
+    },
+    decane = {
+        health = 280,
+        radius = 56,
+        speedMultiplier = 0.50,
+        waxy = true  -- Starting to get waxy at this length
+    },
+
     cyclopropane = {
         health = 80,
         radius = 18,
@@ -306,6 +351,13 @@ config.molecules = {
         detectionMultiplier = 1.3,
         prefersEthylene = true
     },
+	formaldehyde = {
+        health = 65,
+        radius = 21,
+        damage = 65,
+        speedMultiplier = 1.1,
+        detectionMultiplier = 1.05,
+    },
     chlorine = {
         health = 70,
         radius = 17,
@@ -334,6 +386,13 @@ config.molecules = {
         speedMultiplier = 0.9,
         detectionMultiplier = 1.4
     },
+	hypobromous_acid = {
+        health = 50,
+        radius = 16,
+        damage = 68,
+        speedMultiplier = 1.07,
+        detectionMultiplier = 1.12
+    },
     hydrochloric_acid = {
         health = 50,
         radius = 13,
@@ -361,6 +420,12 @@ config.molecules = {
         health = 30,
         radius = 12,
         speedMultiplier = 0.7,
+        peaceful = true
+    },
+	helium_hydride = {
+        health = 15,
+        radius = 12,
+        speedMultiplier = 1.8,
         peaceful = true
     },
     co2 = {
@@ -553,12 +618,6 @@ config.molecules = {
         speedMultiplier = 0.9,
         toxic = true,
     },
-    hydrogen = {
-        health = 35,
-        radius = 11,
-        speedMultiplier = 1.3,
-        peaceful = true
-    },
     nitrogen = {
         health = 60,
         radius = 13,
@@ -619,7 +678,7 @@ config.initialSpawns = {
     bromoiodomethane = 2,
     fluoroiodomethane = 2,
 
-    -- Original molecules
+    -- Normal molecules
     propane = 12,
     cyclopropane = 8,
     cyclopropenylidene = 3,
@@ -653,7 +712,15 @@ config.initialSpawns = {
     helium = 8,
     uranyl = 2,
     uranium_hexafluoride = 1,
-    perchloric_acid = 1
+    perchloric_acid = 1,
+	formaldehyde = 5,
+    hypobromous_acid = 5,
+	butane = 10,
+    pentane = 8,
+    hexane = 7,
+    octane = 6,
+    nonane = 4,
+    decane = 3
 }
 
 config.visual = {

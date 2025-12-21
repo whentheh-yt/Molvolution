@@ -11,6 +11,7 @@
 -- December 20 2025 15:21 - Added atom attractions. (December 2025 Build 0.1.15012)
 -- December 20 2025 16:15 - HALOMETHANE EDITION - Added ALL the halomethanes! (December 2025 Build 0.1.15050)
 -- December 21 2025 11:01 - Added 3 secret molecules and a console. (December 2025 Build 0.1.15102)
+-- December 21 2025 15:31 - Added more alkanes, added sound and revamped death. Also main.lua hit 100KB. (December 2025 Build 0.1.15223)
 
 local config = require("config")
 local Console = require("console")
@@ -26,6 +27,34 @@ local camera = {
     followTarget = nil
 }
 
+local deathFragments = {
+    carbon_tetraiodide = {
+        {type = "carbon_atom", count = 1},
+        {type = "iodine_atom", count = 4}
+    },
+    triiodomethane = {
+        {type = "iodine_atom", count = 3},
+        {type = "hydrogen_atom", count = 1}
+    },
+    tnt = {
+        {type = "nitrogen_atom", count = 3},
+        {type = "oxygen_atom", count = 6},
+        {type = "carbon_atom", count = 7}
+    },
+    helium_dimer = {
+        {type = "helium", count = 2}
+    },
+    benzene = {
+        {type = "carbon_atom", count = 6},
+        {type = "hydrogen_atom", count = 6}
+    },
+    caffeine = {
+        {type = "carbon_atom", count = 8},
+        {type = "nitrogen_atom", count = 4},
+        {type = "oxygen_atom", count = 2}
+    }
+}
+
 -- Sound system
 local sounds = {}
 local spawnFragments
@@ -38,7 +67,6 @@ function generateSound(frequency, duration, volume)
     
     for i = 0, samples - 1 do
         local t = i / sampleRate
-        -- Simple sine wave with envelope (fade out)
         local envelope = 1 - (i / samples)
         local value = math.sin(2 * math.pi * frequency * t) * envelope * volume
         soundData:setSample(i, value)
@@ -47,8 +75,9 @@ function generateSound(frequency, duration, volume)
     return love.audio.newSource(soundData)
 end
 
+
+
 function playDeathSound(moleculeType)
-    -- Pitch based on molecule size/type
     local basePitch = 220
     
     if moleculeType:match("atom") then
@@ -67,7 +96,7 @@ end
 
 function playMergeSound()
     -- Ascending chord for the FORBIDDEN MERGE
-    local frequencies = {220, 277, 330, 415} -- A minor chord ascending
+    local frequencies = {220, 277, 330, 415}
     for i, freq in ipairs(frequencies) do
         love.timer.sleep((i-1) * 0.05)
         local sound = generateSound(freq, 0.15, 0.2)
@@ -94,6 +123,7 @@ local BONDING_DISTANCE = 20
 
 local ELEMENT_ATTRACTION = {
     H = {C = 1.5, O = 2.0, N = 1.3, H = 0.5, F = 1.0, Cl = 1.2, Br = 1.1, I = 1.0},
+	He = {C = 1.2, O = 1.2, N = 1.3, H = 3.0, F = 0.9, Cl = 0.7, Br = 0.9, I = 0.1},
     C = {C = 0.8, H = 1.5, O = 1.8, N = 1.2, F = 1.0, Cl = 1.0, Br = 0.9, I = 0.8, S = 1.3},
     O = {C = 1.8, H = 2.0, O = 0.2, N = 1.0, F = 1.5},
     N = {C = 1.2, H = 1.3, O = 1.0, N = 0.3, F = 0.8},
@@ -155,10 +185,30 @@ local fragmentationRules = {
         requiresCollision = true,
         soundType = "merge"
     },
+	{
+        reactants = {"hydroxide", "bromine_atom"},
+        products = {
+            {type = "hypobromous_acid", count = 1}
+        },
+        probability = 0.5,
+        requiresCollision = true,
+        soundType = "merge"
+    },
+	{
+        reactants = {"hydroxide", "hydronium"},
+        products = {
+            {type = "water", count = 2}
+        },
+        probability = 1,
+        requiresCollision = true,
+        soundType = "merge"
+    }
 }
 
 local bondingRecipes = {
     {atoms = {"H", "H"}, product = "hydrogen", probability = 0.8},
+	{atoms = {"H", "He"}, product = "helium_hydride", probability = 0.9},
+    {atoms = {"He", "He"}, product = "helium_dimer", probability = 1},
     {atoms = {"O", "O"}, product = "oxygen", probability = 0.9},
     {atoms = {"Cl", "Cl"}, product = "chlorine", probability = 0.85},
     {atoms = {"F", "F"}, product = "fluorine", probability = 0.75},
@@ -176,6 +226,208 @@ local bondingRecipes = {
     {atoms = {"C", "H", "H", "H", "F"}, product = "fluoromethane", probability = 0.7},
     {atoms = {"C", "H", "H", "H", "Cl"}, product = "chloromethane", probability = 0.75},
     {atoms = {"C", "F", "F", "F", "F"}, product = "carbon_tetrafluoride", probability = 0.5},
+}
+
+local deathFragmentations = {
+    helium_dimer = {
+        {type = "helium", count = 2}
+    },
+    hydrogen = {
+        {type = "hydrogen_atom", count = 2}
+    },
+    oxygen = {
+        {type = "oxygen_atom", count = 2}
+    },
+    chlorine = {
+        {type = "chlorine_atom", count = 2}
+    },
+    fluorine = {
+        {type = "fluorine_atom", count = 2}
+    },
+    bromine = {
+        {type = "bromine_atom", count = 2}
+    },
+    iodine = {
+        {type = "iodine_atom", count = 2}
+    },
+    nitrogen = {
+        {type = "nitrogen_atom", count = 2}
+    },
+    
+    water = {
+        {type = "oxygen_atom", count = 1},
+        {type = "hydrogen_atom", count = 2}
+    },
+    
+    co2 = {
+        {type = "carbon_atom", count = 1},
+        {type = "oxygen_atom", count = 2}
+    },
+    
+    ammonia = {
+        {type = "nitrogen_atom", count = 1},
+        {type = "hydrogen_atom", count = 3}
+    },
+    
+    methane = {
+        {type = "carbon_atom", count = 1},
+        {type = "hydrogen_atom", count = 4}
+    },
+    
+    propane = {
+        {type = "methane", count = 1},
+        {type = "ethylene", count = 1}
+    },
+    
+    butane = {
+        {type = "ethylene", count = 2}
+    },
+    
+    pentane = {
+        {type = "ethylene", count = 1},
+        {type = "propane", count = 1}
+    },
+    
+    hexane = {
+        {type = "propane", count = 2}
+    },
+    
+    heptane = {
+        {type = "propane", count = 1},
+        {type = "butane", count = 1}
+    },
+    
+    octane = {
+        {type = "butane", count = 2}
+    },
+    
+    nonane = {
+        {type = "butane", count = 1},
+        {type = "pentane", count = 1}
+    },
+    
+    decane = {
+        {type = "pentane", count = 2}
+    },
+    
+    ethanol = {
+        {type = "ethylene", count = 1},
+        {type = "water", count = 1}
+    },
+    
+    cyclopropane = {
+        {type = "propane", count = 1}
+    },
+    
+    cyclobutane = {
+        {type = "butane", count = 1}
+    },
+    
+    cyclopentane = {
+        {type = "carbon_atom", count = 5},
+        {type = "hydrogen_atom", count = 10}
+    },
+    
+    benzene = {
+        {type = "carbon_atom", count = 6},
+        {type = "hydrogen_atom", count = 6}
+    },
+    
+    fluoromethane = {
+        {type = "methane", count = 1},
+        {type = "fluorine_atom", count = 1}
+    },
+    
+    difluoromethane = {
+        {type = "methane", count = 1},
+        {type = "fluorine_atom", count = 2}
+    },
+    
+    trifluoromethane = {
+        {type = "methane", count = 1},
+        {type = "fluorine_atom", count = 3}
+    },
+    
+    carbon_tetrafluoride = {
+        {type = "carbon_atom", count = 1},
+        {type = "fluorine_atom", count = 4}
+    },
+    
+    chloromethane = {
+        {type = "methane", count = 1},
+        {type = "chlorine_atom", count = 1}
+    },
+    
+    dichloromethane = {
+        {type = "methane", count = 1},
+        {type = "chlorine_atom", count = 2}
+    },
+    
+    chloroform = {
+        {type = "methane", count = 1},
+        {type = "chlorine_atom", count = 3}
+    },
+    
+    carbon_tetrachloride = {
+        {type = "carbon_atom", count = 1},
+        {type = "chlorine_atom", count = 4}
+    },
+    
+    bromomethane = {
+        {type = "methane", count = 1},
+        {type = "bromine_atom", count = 1}
+    },
+    
+    dibromomethane = {
+        {type = "methane", count = 1},
+        {type = "bromine_atom", count = 2}
+    },
+    
+    tribromomethane = {
+        {type = "methane", count = 1},
+        {type = "bromine_atom", count = 3}
+    },
+    
+    carbon_tetrabromide = {
+        {type = "carbon_atom", count = 1},
+        {type = "bromine_atom", count = 4}
+    },
+    
+    iodomethane = {
+        {type = "methane", count = 1},
+        {type = "iodine_atom", count = 1}
+    },
+    
+    diiodomethane = {
+        {type = "methane", count = 1},
+        {type = "iodine_atom", count = 2}
+    },
+    
+    triiodomethane = {
+        {type = "methane", count = 1},
+        {type = "iodine_atom", count = 3}
+    },
+    
+    carbon_tetraiodide = {
+        {type = "carbon_atom", count = 1},
+        {type = "iodine_atom", count = 4}
+    },
+    
+    tnt = {
+        {type = "carbon_atom", count = 7},
+        {type = "nitrogen_atom", count = 3},
+        {type = "oxygen_atom", count = 6}
+    },
+    
+    ozone = {
+        {type = "oxygen", count = 1},
+        {type = "oxygen_atom", count = 1}
+    },
+    
+    hydrogen_peroxide = {
+        {type = "water", count = 1},
+        {type = "oxygen_atom", count = 1}
+    }
 }
 
 local spawnFragments
@@ -198,6 +450,190 @@ local ELEMENT_COLORS = {
 }
 
 local structures = {
+
+    butane = {
+        atoms = {
+            {element = "C", x = -30, y = 0, color = ELEMENT_COLORS.C},
+            {element = "C", x = -10, y = 0, color = ELEMENT_COLORS.C},
+            {element = "C", x = 10, y = 0, color = ELEMENT_COLORS.C},
+            {element = "C", x = 30, y = 0, color = ELEMENT_COLORS.C},
+            {element = "H", x = -35, y = -12, color = ELEMENT_COLORS.H},
+            {element = "H", x = -35, y = 12, color = ELEMENT_COLORS.H},
+            {element = "H", x = -10, y = -12, color = ELEMENT_COLORS.H},
+            {element = "H", x = -10, y = 12, color = ELEMENT_COLORS.H},
+            {element = "H", x = 10, y = -12, color = ELEMENT_COLORS.H},
+            {element = "H", x = 10, y = 12, color = ELEMENT_COLORS.H},
+            {element = "H", x = 35, y = -12, color = ELEMENT_COLORS.H},
+            {element = "H", x = 35, y = 12, color = ELEMENT_COLORS.H}
+        },
+        bonds = {{1, 2}, {2, 3}, {3, 4}, {1, 5}, {1, 6}, {2, 7}, {2, 8}, {3, 9}, {3, 10}, {4, 11}, {4, 12}}
+    },
+    pentane = {
+        atoms = {
+            {element = "C", x = -40, y = 0, color = ELEMENT_COLORS.C},
+            {element = "C", x = -20, y = 0, color = ELEMENT_COLORS.C},
+            {element = "C", x = 0, y = 0, color = ELEMENT_COLORS.C},
+            {element = "C", x = 20, y = 0, color = ELEMENT_COLORS.C},
+            {element = "C", x = 40, y = 0, color = ELEMENT_COLORS.C},
+            {element = "H", x = -45, y = -12, color = ELEMENT_COLORS.H},
+            {element = "H", x = -45, y = 12, color = ELEMENT_COLORS.H},
+            {element = "H", x = -20, y = -12, color = ELEMENT_COLORS.H},
+            {element = "H", x = -20, y = 12, color = ELEMENT_COLORS.H},
+            {element = "H", x = 0, y = -12, color = ELEMENT_COLORS.H},
+            {element = "H", x = 0, y = 12, color = ELEMENT_COLORS.H},
+            {element = "H", x = 20, y = -12, color = ELEMENT_COLORS.H},
+            {element = "H", x = 20, y = 12, color = ELEMENT_COLORS.H},
+            {element = "H", x = 45, y = -12, color = ELEMENT_COLORS.H},
+            {element = "H", x = 45, y = 12, color = ELEMENT_COLORS.H}
+        },
+        bonds = {{1, 2}, {2, 3}, {3, 4}, {4, 5}, {1, 6}, {1, 7}, {2, 8}, {2, 9}, {3, 10}, {3, 11}, {4, 12}, {4, 13}, {5, 14}, {5, 15}}
+    },
+    hexane = {
+        atoms = {
+            {element = "C", x = -50, y = 0, color = ELEMENT_COLORS.C},
+            {element = "C", x = -30, y = 0, color = ELEMENT_COLORS.C},
+            {element = "C", x = -10, y = 0, color = ELEMENT_COLORS.C},
+            {element = "C", x = 10, y = 0, color = ELEMENT_COLORS.C},
+            {element = "C", x = 30, y = 0, color = ELEMENT_COLORS.C},
+            {element = "C", x = 50, y = 0, color = ELEMENT_COLORS.C},
+            {element = "H", x = -55, y = -12, color = ELEMENT_COLORS.H},
+            {element = "H", x = -55, y = 12, color = ELEMENT_COLORS.H},
+            {element = "H", x = -30, y = -12, color = ELEMENT_COLORS.H},
+            {element = "H", x = -30, y = 12, color = ELEMENT_COLORS.H},
+            {element = "H", x = -10, y = -12, color = ELEMENT_COLORS.H},
+            {element = "H", x = -10, y = 12, color = ELEMENT_COLORS.H},
+            {element = "H", x = 10, y = -12, color = ELEMENT_COLORS.H},
+            {element = "H", x = 10, y = 12, color = ELEMENT_COLORS.H},
+            {element = "H", x = 30, y = -12, color = ELEMENT_COLORS.H},
+            {element = "H", x = 30, y = 12, color = ELEMENT_COLORS.H},
+            {element = "H", x = 55, y = -12, color = ELEMENT_COLORS.H},
+            {element = "H", x = 55, y = 12, color = ELEMENT_COLORS.H}
+        },
+        bonds = {{1, 2}, {2, 3}, {3, 4}, {4, 5}, {5, 6}, {1, 7}, {1, 8}, {2, 9}, {2, 10}, {3, 11}, {3, 12}, {4, 13}, {4, 14}, {5, 15}, {5, 16}, {6, 17}, {6, 18}}
+    },
+    heptane = {
+        atoms = {
+            {element = "C", x = -60, y = 0, color = ELEMENT_COLORS.C},
+            {element = "C", x = -40, y = 0, color = ELEMENT_COLORS.C},
+            {element = "C", x = -20, y = 0, color = ELEMENT_COLORS.C},
+            {element = "C", x = 0, y = 0, color = ELEMENT_COLORS.C},
+            {element = "C", x = 20, y = 0, color = ELEMENT_COLORS.C},
+            {element = "C", x = 40, y = 0, color = ELEMENT_COLORS.C},
+            {element = "C", x = 60, y = 0, color = ELEMENT_COLORS.C},
+            {element = "H", x = -65, y = -12, color = ELEMENT_COLORS.H},
+            {element = "H", x = -65, y = 12, color = ELEMENT_COLORS.H},
+            {element = "H", x = -40, y = -12, color = ELEMENT_COLORS.H},
+            {element = "H", x = -40, y = 12, color = ELEMENT_COLORS.H},
+            {element = "H", x = -20, y = -12, color = ELEMENT_COLORS.H},
+            {element = "H", x = -20, y = 12, color = ELEMENT_COLORS.H},
+            {element = "H", x = 0, y = -12, color = ELEMENT_COLORS.H},
+            {element = "H", x = 0, y = 12, color = ELEMENT_COLORS.H},
+            {element = "H", x = 20, y = -12, color = ELEMENT_COLORS.H},
+            {element = "H", x = 20, y = 12, color = ELEMENT_COLORS.H},
+            {element = "H", x = 40, y = -12, color = ELEMENT_COLORS.H},
+            {element = "H", x = 40, y = 12, color = ELEMENT_COLORS.H},
+            {element = "H", x = 65, y = -12, color = ELEMENT_COLORS.H},
+            {element = "H", x = 65, y = 12, color = ELEMENT_COLORS.H}
+        },
+        bonds = {{1, 2}, {2, 3}, {3, 4}, {4, 5}, {5, 6}, {6, 7}, {1, 8}, {1, 9}, {2, 10}, {2, 11}, {3, 12}, {3, 13}, {4, 14}, {4, 15}, {5, 16}, {5, 17}, {6, 18}, {6, 19}, {7, 20}, {7, 21}}
+    },
+    octane = {
+        atoms = {
+            {element = "C", x = -70, y = 0, color = ELEMENT_COLORS.C},
+            {element = "C", x = -50, y = 0, color = ELEMENT_COLORS.C},
+            {element = "C", x = -30, y = 0, color = ELEMENT_COLORS.C},
+            {element = "C", x = -10, y = 0, color = ELEMENT_COLORS.C},
+            {element = "C", x = 10, y = 0, color = ELEMENT_COLORS.C},
+            {element = "C", x = 30, y = 0, color = ELEMENT_COLORS.C},
+            {element = "C", x = 50, y = 0, color = ELEMENT_COLORS.C},
+            {element = "C", x = 70, y = 0, color = ELEMENT_COLORS.C},
+            {element = "H", x = -75, y = -12, color = ELEMENT_COLORS.H},
+            {element = "H", x = -75, y = 12, color = ELEMENT_COLORS.H},
+            {element = "H", x = -50, y = -12, color = ELEMENT_COLORS.H},
+            {element = "H", x = -50, y = 12, color = ELEMENT_COLORS.H},
+            {element = "H", x = -30, y = -12, color = ELEMENT_COLORS.H},
+            {element = "H", x = -30, y = 12, color = ELEMENT_COLORS.H},
+            {element = "H", x = -10, y = -12, color = ELEMENT_COLORS.H},
+            {element = "H", x = -10, y = 12, color = ELEMENT_COLORS.H},
+            {element = "H", x = 10, y = -12, color = ELEMENT_COLORS.H},
+            {element = "H", x = 10, y = 12, color = ELEMENT_COLORS.H},
+            {element = "H", x = 30, y = -12, color = ELEMENT_COLORS.H},
+            {element = "H", x = 30, y = 12, color = ELEMENT_COLORS.H},
+            {element = "H", x = 50, y = -12, color = ELEMENT_COLORS.H},
+            {element = "H", x = 50, y = 12, color = ELEMENT_COLORS.H},
+            {element = "H", x = 75, y = -12, color = ELEMENT_COLORS.H},
+            {element = "H", x = 75, y = 12, color = ELEMENT_COLORS.H}
+        },
+        bonds = {{1, 2}, {2, 3}, {3, 4}, {4, 5}, {5, 6}, {6, 7}, {7, 8}, {1, 9}, {1, 10}, {2, 11}, {2, 12}, {3, 13}, {3, 14}, {4, 15}, {4, 16}, {5, 17}, {5, 18}, {6, 19}, {6, 20}, {7, 21}, {7, 22}, {8, 23}, {8, 24}}
+    },
+    nonane = {
+        atoms = {
+            {element = "C", x = -80, y = 0, color = ELEMENT_COLORS.C},
+            {element = "C", x = -60, y = 0, color = ELEMENT_COLORS.C},
+            {element = "C", x = -40, y = 0, color = ELEMENT_COLORS.C},
+            {element = "C", x = -20, y = 0, color = ELEMENT_COLORS.C},
+            {element = "C", x = 0, y = 0, color = ELEMENT_COLORS.C},
+            {element = "C", x = 20, y = 0, color = ELEMENT_COLORS.C},
+            {element = "C", x = 40, y = 0, color = ELEMENT_COLORS.C},
+            {element = "C", x = 60, y = 0, color = ELEMENT_COLORS.C},
+            {element = "C", x = 80, y = 0, color = ELEMENT_COLORS.C},
+            {element = "H", x = -85, y = -12, color = ELEMENT_COLORS.H},
+            {element = "H", x = -85, y = 12, color = ELEMENT_COLORS.H},
+            {element = "H", x = -60, y = -12, color = ELEMENT_COLORS.H},
+            {element = "H", x = -60, y = 12, color = ELEMENT_COLORS.H},
+            {element = "H", x = -40, y = -12, color = ELEMENT_COLORS.H},
+            {element = "H", x = -40, y = 12, color = ELEMENT_COLORS.H},
+            {element = "H", x = -20, y = -12, color = ELEMENT_COLORS.H},
+            {element = "H", x = -20, y = 12, color = ELEMENT_COLORS.H},
+            {element = "H", x = 0, y = -12, color = ELEMENT_COLORS.H},
+            {element = "H", x = 0, y = 12, color = ELEMENT_COLORS.H},
+            {element = "H", x = 20, y = -12, color = ELEMENT_COLORS.H},
+            {element = "H", x = 20, y = 12, color = ELEMENT_COLORS.H},
+            {element = "H", x = 40, y = -12, color = ELEMENT_COLORS.H},
+            {element = "H", x = 40, y = 12, color = ELEMENT_COLORS.H},
+            {element = "H", x = 60, y = -12, color = ELEMENT_COLORS.H},
+            {element = "H", x = 60, y = 12, color = ELEMENT_COLORS.H},
+            {element = "H", x = 85, y = -12, color = ELEMENT_COLORS.H},
+            {element = "H", x = 85, y = 12, color = ELEMENT_COLORS.H}
+        },
+        bonds = {{1, 2}, {2, 3}, {3, 4}, {4, 5}, {5, 6}, {6, 7}, {7, 8}, {8, 9}, {1, 10}, {1, 11}, {2, 12}, {2, 13}, {3, 14}, {3, 15}, {4, 16}, {4, 17}, {5, 18}, {5, 19}, {6, 20}, {6, 21}, {7, 22}, {7, 23}, {8, 24}, {8, 25}, {9, 26}, {9, 27}}
+    },
+    decane = {
+        atoms = {
+            {element = "C", x = -90, y = 0, color = ELEMENT_COLORS.C},
+            {element = "C", x = -70, y = 0, color = ELEMENT_COLORS.C},
+            {element = "C", x = -50, y = 0, color = ELEMENT_COLORS.C},
+            {element = "C", x = -30, y = 0, color = ELEMENT_COLORS.C},
+            {element = "C", x = -10, y = 0, color = ELEMENT_COLORS.C},
+            {element = "C", x = 10, y = 0, color = ELEMENT_COLORS.C},
+            {element = "C", x = 30, y = 0, color = ELEMENT_COLORS.C},
+            {element = "C", x = 50, y = 0, color = ELEMENT_COLORS.C},
+            {element = "C", x = 70, y = 0, color = ELEMENT_COLORS.C},
+            {element = "C", x = 90, y = 0, color = ELEMENT_COLORS.C},
+            {element = "H", x = -95, y = -12, color = ELEMENT_COLORS.H},
+            {element = "H", x = -95, y = 12, color = ELEMENT_COLORS.H},
+            {element = "H", x = -70, y = -12, color = ELEMENT_COLORS.H},
+            {element = "H", x = -70, y = 12, color = ELEMENT_COLORS.H},
+            {element = "H", x = -50, y = -12, color = ELEMENT_COLORS.H},
+            {element = "H", x = -50, y = 12, color = ELEMENT_COLORS.H},
+            {element = "H", x = -30, y = -12, color = ELEMENT_COLORS.H},
+            {element = "H", x = -30, y = 12, color = ELEMENT_COLORS.H},
+            {element = "H", x = -10, y = -12, color = ELEMENT_COLORS.H},
+            {element = "H", x = -10, y = 12, color = ELEMENT_COLORS.H},
+            {element = "H", x = 10, y = -12, color = ELEMENT_COLORS.H},
+            {element = "H", x = 10, y = 12, color = ELEMENT_COLORS.H},
+            {element = "H", x = 30, y = -12, color = ELEMENT_COLORS.H},
+            {element = "H", x = 30, y = 12, color = ELEMENT_COLORS.H},
+            {element = "H", x = 50, y = -12, color = ELEMENT_COLORS.H},
+            {element = "H", x = 50, y = 12, color = ELEMENT_COLORS.H},
+            {element = "H", x = 70, y = -12, color = ELEMENT_COLORS.H},
+            {element = "H", x = 70, y = 12, color = ELEMENT_COLORS.H},
+            {element = "H", x = 95, y = -12, color = ELEMENT_COLORS.H},
+            {element = "H", x = 95, y = 12, color = ELEMENT_COLORS.H}
+        },
+        bonds = {{1, 2}, {2, 3}, {3, 4}, {4, 5}, {5, 6}, {6, 7}, {7, 8}, {8, 9}, {9, 10}, {1, 11}, {1, 12}, {2, 13}, {2, 14}, {3, 15}, {3, 16}, {4, 17}, {4, 18}, {5, 19}, {5, 20}, {6, 21}, {6, 22}, {7, 23}, {7, 24}, {8, 25}, {8, 26}, {9, 27}, {9, 28}, {10, 29}, {10, 30}}
+    },
+	
     -- FLUOROMETHANES
     fluoromethane = {
         atoms = {
@@ -466,6 +902,13 @@ local structures = {
         },
         bonds = {{1, 2, double = true}, {2, 3, double = true}}
     },
+	helium_hydride = {
+        atoms = {
+            {element = "H", x = -6, y = 0, color = ELEMENT_COLORS.H},
+            {element = "He", x = 6, y = 0, color = ELEMENT_COLORS.He},
+        },
+        bonds = {{1, 2}}
+    },
     oxygen = {
         atoms = {
             {element = "O", x = -8, y = 0, color = ELEMENT_COLORS.O},
@@ -627,7 +1070,16 @@ local structures = {
         bonds = {{1, 2}, {1, 3}, {1, 4}, {1, 5}},
         unstable = true
     },
-    -- MORE ORIGINAL MOLECULES
+	bromochloroflouroidiomethane = {
+        atoms = {
+            {element = "C", x = 0, y = 0, color = ELEMENT_COLORS.C},
+			{element = "Br", x = 0, y = -15, color = ELEMENT_COLORS.Br},
+            {element = "Cl", x = 0, y = 15, color = ELEMENT_COLORS.Cl},
+			{element = "F", x = 15, y = 0, color = ELEMENT_COLORS.F},
+			{element = "I", x = -15, y = 0, color = ELEMENT_COLORS.I},
+        },
+        bonds = {{1, 2}, {1, 3}, {1, 4}, {1, 5}}
+    },
     cyclopropane = {
         atoms = {
             {element = "C", x = 0, y = -12, color = ELEMENT_COLORS.C},
@@ -783,7 +1235,6 @@ local structures = {
         bonds = {},
         radioactive = true
     },
-    -- MORE MISSING MOLECULES
     acetylcarnitine = {
         atoms = {
             {element = "C", x = -30, y = 0, color = ELEMENT_COLORS.C},
@@ -877,6 +1328,23 @@ local structures = {
             {element = "He", x = 26, y = 0, color = ELEMENT_COLORS.He}
         },
         bonds = {{1, 2, weak = true}}
+    },
+	hypobromous_acid = {
+        atoms = {
+            {element = "Br", x = -8, y = 0, color = ELEMENT_COLORS.Br},
+            {element = "O", x = -2, y = 0, color = ELEMENT_COLORS.O},
+			{element = "H", x = 2, y = 5, color = ELEMENT_COLORS.H}
+        },
+        bonds = {{1, 2}, {2, 3}}
+    },
+	formaldehyde = {
+        atoms = {
+            {element = "O", x = -8, y = 0, color = ELEMENT_COLORS.O},
+            {element = "C", x = 8, y = 0, color = ELEMENT_COLORS.C},
+			{element = "H", x = 14, y = 5, color = ELEMENT_COLORS.H},
+			{element = "H", x = 14, y = -5, color = ELEMENT_COLORS.H},
+        },
+        bonds = {{1, 2, double = true}, {2, 3}, {2, 4}}
     },
     hydrochloric_acid = {
         atoms = {
@@ -1127,20 +1595,20 @@ function Molecule:update(dt)
                 self.rotationSpeed = 0.5
             end
         end
-    -- All the other original molecule behaviors
     elseif self.type == "oxygen" or self.type == "ozone" or self.type == "chlorine" or 
            self.type == "fluorine" or self.type == "hydrogen_peroxide" or
            self.type == "sulfuric_acid" or self.type == "hydrochloric_acid" or
-           self.type == "hydronium" then
+           self.type == "hydronium" or self.type == "formaldehyde" or
+		   self.type == "hypobromous_acid" then
         local preyTypes = {"methane", "ethylene", "propane", "cyclopropane", "acetylcarnitine", 
                           "ethanol", "benzene", "ammonia", "caffeine", "tnt", "acetone",
                           "cyclopropenylidene", "cyclobutane", "cyclopentane", "cyclobutene",
                           "helium_dimer", "tetrafluoroethylene", 
-                          -- Add halomethanes as prey too!
                           "fluoromethane", "difluoromethane", "trifluoromethane",
                           "chloromethane", "dichloromethane", "chloroform", "carbon_tetrachloride",
                           "bromomethane", "dibromomethane", "tribromomethane", "carbon_tetrabromide",
-                          "iodomethane", "diiodomethane", "triiodomethane"}
+                          "iodomethane", "diiodomethane", "triiodomethane",
+						  "butane", "pentane", "hexane", "heptane", "octane", "nonane", "decane"}
 
         if molConfig.prefersEthylene then
             preyTypes = {"ethylene", "tetrafluoroethylene", "cyclopropane", "benzene", "tnt", 
@@ -1153,7 +1621,7 @@ function Molecule:update(dt)
                         "helium_dimer", "helium", "chloromethane", "dichloromethane", "chloroform",
                         "carbon_tetrachloride", "bromomethane", "dibromomethane", "tribromomethane",
                         "carbon_tetrabromide", "iodomethane", "diiodomethane", "triiodomethane",
-                        "carbon_tetraiodide"}
+                        "carbon_tetraiodide", "helium_hydride"}
         elseif self.type == "perchloric_acid" then
             -- Still hunts everything
             preyTypes = {}
@@ -1213,7 +1681,8 @@ function Molecule:update(dt)
            self.type == "acetone" or self.type == "acetylcarnitine" or self.type == "helium_dimer" or
            self.type == "tetrafluoroethylene" then
         local threats = {"oxygen", "ozone", "chlorine", "fluorine", "hydrogen_peroxide", 
-                        "sulfuric_acid", "hydrochloric_acid", "perchloric_acid"}
+                        "sulfuric_acid", "hydrochloric_acid", "perchloric_acid", "formaldehyde",
+						"hypobromous_acid"}
         local nearestThreat = nil
         local nearestDist = DETECTION_RANGE
 
@@ -1266,7 +1735,7 @@ function Molecule:update(dt)
                 self.rotationSpeed = 0.5
             end
         end
-    elseif self.type == "water" or self.type == "co2" or self.type == "helium" then
+    elseif self.type == "water" or self.type == "co2" or self.type == "helium" or self.type == "helium_hydride" then
         if self.type == "helium" then
             local nearestFluorine = nil
             local nearestDist = DETECTION_RANGE
@@ -1611,6 +2080,22 @@ function drawMoleculeTooltip(molecule)
             end
         end
     end
+	
+	if molecule.type == "butane" then
+        table.insert(lines, "C4 alkane - lighter fuel")
+    elseif molecule.type == "pentane" then
+        table.insert(lines, "C5 alkane - volatile liquid")
+    elseif molecule.type == "hexane" then
+        table.insert(lines, "C6 alkane - common solvent")
+    elseif molecule.type == "heptane" then
+        table.insert(lines, "C7 alkane - reference fuel")
+    elseif molecule.type == "octane" then
+        table.insert(lines, "C8 alkane - GASOLINE!")
+    elseif molecule.type == "nonane" then
+        table.insert(lines, "C9 alkane - diesel component")
+    elseif molecule.type == "decane" then
+        table.insert(lines, "C10 alkane - getting waxy")
+    end
 
     -- Original molecule properties
     if molecule.type == "cyclopropane" or molecule.type == "cyclopropenylidene" or 
@@ -1665,6 +2150,9 @@ function drawMoleculeTooltip(molecule)
     if molecule.type == "water" then
         table.insert(lines, "Universal solvent")
     end
+	if molecule.type == "helium_hydride" then
+        table.insert(lines, "One of the lightest molecules")
+    end
     if molecule.type == "co2" then
         table.insert(lines, "Carbon dioxide - greenhouse gas")
     end
@@ -1688,8 +2176,14 @@ function drawMoleculeTooltip(molecule)
     if molecule.type == "sulfuric_acid" then
         table.insert(lines, "Strong acid - corrosive")
     end
+	if molecule.type == "hypobromous_acid" then
+        table.insert(lines, "Strong acid - corrosive")
+    end
+	if molecule.type == "formaldehyde" then
+        table.insert(lines, "Simplest aldehyde")
+    end
     if molecule.type == "hydrochloric_acid" then
-        table.insert(lines, "Strong acid - in stomach")
+        table.insert(lines, "Weak acid")
     end
     if molecule.type == "perchloric_acid" then
         table.insert(lines, "SUPERACID - strongest!")
@@ -1823,7 +2317,8 @@ function getMoleculeBehaviorInfo(molecule)
 
     if molecule.type == "oxygen" or molecule.type == "ozone" or molecule.type == "chlorine" or
        molecule.type == "fluorine" or molecule.type == "hydrogen_peroxide" or
-       molecule.type == "sulfuric_acid" or molecule.type == "hydrochloric_acid" then
+       molecule.type == "sulfuric_acid" or molecule.type == "hydrochloric_acid" or
+	   molecule.type == "formaldehyde" or molecule.type == "hypobromous_acid" then
         table.insert(info.hunts, "hydrocarbons")
         table.insert(info.hunts, "halomethanes")
         if molecule.type == "fluorine" then
@@ -1840,6 +2335,7 @@ function getMoleculeBehaviorInfo(molecule)
     elseif molecule.type == "lithium_hydroxide" or molecule.type == "sodium_hydroxide" then
         table.insert(info.hunts, "CO2")
         table.insert(info.hunts, "water")
+		table.insert(info.hunts, "helium hydride")
     elseif molecule.type == "uranium_hexafluoride" then
         table.insert(info.hunts, "water")
         table.insert(info.hunts, "organics")
@@ -1873,24 +2369,31 @@ function getMoleculeBehaviorInfo(molecule)
 end
 
 spawnFragments = function(molecule)
-    local rules = fragmentationRules[molecule.type]
-    if not rules then return end
+    local fragmentation = deathFragmentations[molecule.type]
+    if not fragmentation then return end
 
     local fragmentCount = 0
-    for _, rule in ipairs(rules) do
+    for _, rule in ipairs(fragmentation) do
         fragmentCount = fragmentCount + rule.count
     end
 
     local angleStep = (math.pi * 2) / fragmentCount
     local currentAngle = math.random() * math.pi * 2
 
-    for _, rule in ipairs(rules) do
+    for _, rule in ipairs(fragmentation) do
         for i = 1, rule.count do
             local distance = 30 + math.random() * 20
             local x = molecule.x + math.cos(currentAngle) * distance
             local y = molecule.y + math.sin(currentAngle) * distance
             local fragment = Molecule:new(rule.type, x, y)
             local explosionSpeed = 80 + math.random() * 40
+            
+            -- Bigger explosion for unstable molecules
+            if molecule.type == "carbon_tetraiodide" or molecule.type == "tnt" or 
+               molecule.type == "triiodomethane" then
+                explosionSpeed = explosionSpeed * 2
+            end
+            
             fragment.vx = math.cos(currentAngle) * explosionSpeed
             fragment.vy = math.sin(currentAngle) * explosionSpeed
             table.insert(molecules, fragment)
