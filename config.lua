@@ -2,7 +2,7 @@ local config = {}
 
 config.game = {
     title = "Molvolution",
-    version = "December 2025 Build 0.1.15051",
+    version = "December 2025 Build 0.1.15102",
     window = {
         width = 1200,
         height = 800,
@@ -60,7 +60,7 @@ config.molecules = {
         radius = 24,
         speedMultiplier = 1.2,
         fluorinated = true,
-        inert = true  -- SUPER stable
+        inert = true
     },
     -- CHLOROMETHANES
     chloromethane = {
@@ -85,6 +85,7 @@ config.molecules = {
         speedMultiplier = 0.8,
         toxic = true
     },
+	
     -- BROMOMETHANES
     bromomethane = {
         health = 100,
@@ -108,6 +109,7 @@ config.molecules = {
         speedMultiplier = 0.65,
         heavy = true
     },
+	
     -- IODOMETHANES
     iodomethane = {
         health = 95,
@@ -135,6 +137,8 @@ config.molecules = {
         unstable = true,
         heavy = true
     },
+	
+	
     -- MIXED HALOMETHANES (the fun ones!)
     chlorofluoromethane = {
         health = 115,
@@ -193,7 +197,6 @@ config.molecules = {
         speedMultiplier = 0.85,
         unstable = true
     },
-    -- Original molecules
     propane = {
         health = 140,
         radius = 28,
@@ -413,7 +416,6 @@ config.molecules = {
     helium = {
         health = 20,
         radius = 8,
-        spawnKey = "e",
         speedMultiplier = 1.5,
         peaceful = true,
         noble = true
@@ -421,7 +423,6 @@ config.molecules = {
     hydrogen_atom = {
         health = 10,
         radius = 6,
-        spawnKey = "h",
         speedMultiplier = 1.4,
         peaceful = true,
         atom = true,
@@ -430,7 +431,6 @@ config.molecules = {
     carbon_atom = {
         health = 15,
         radius = 8,
-        spawnKey = "c",
         speedMultiplier = 1.1,
         peaceful = true,
         atom = true,
@@ -439,7 +439,6 @@ config.molecules = {
     oxygen_atom = {
         health = 15,
         radius = 7,
-        spawnKey = "o",
         speedMultiplier = 1.2,
         peaceful = true,
         atom = true,
@@ -448,7 +447,6 @@ config.molecules = {
     nitrogen_atom = {
         health = 15,
         radius = 7,
-        spawnKey = "n",
         speedMultiplier = 1.15,
         peaceful = true,
         atom = true,
@@ -457,7 +455,6 @@ config.molecules = {
     nitrogen_positive1_atom = {
         health = 12,
         radius = 7,
-        spawnKey = "1",
         speedMultiplier = 1.2,
         peaceful = true,
         atom = true,
@@ -468,7 +465,6 @@ config.molecules = {
     fluorine_atom = {
         health = 12,
         radius = 6,
-        spawnKey = "f",
         speedMultiplier = 1.3,
         peaceful = true,
         atom = true,
@@ -502,11 +498,85 @@ config.molecules = {
         health = 40,
         radius = 12,
         speedMultiplier = 0.8,
-        spawnKey = "u",
         peaceful = true,
         atom = true,
         valence = 6,
         radioactive = true
+    },
+    phosgene = {
+        health = 90,
+        radius = 18,
+        damage = 100,
+        speedMultiplier = 1.1,
+        detectionMultiplier = 1.4,
+        toxic = true,
+        war_crime = true  -- Geneva Convention disapproves
+    },
+    carbonic_acid = {
+        health = 50,
+        radius = 16,
+        speedMultiplier = 0.8,
+        unstable = true,
+        peaceful = true,
+        fizzy = true
+    },
+    foof = {
+        health = 120,
+        radius = 17,
+        damage = 180,
+        speedMultiplier = 1.4,
+        detectionMultiplier = 2.5,
+        explosive = true,
+        burns_everything = true,  -- Yes, even water
+    },
+    chlorine_monofluoride = {
+        health = 40,
+        radius = 12,
+        damage = 70,
+        speedMultiplier = 1.2,
+        unstable = true,
+        probably_shouldnt_exist = true
+    },
+    hydrogen_fluoride = {
+        health = 55,
+        radius = 11,
+        damage = 75,
+        speedMultiplier = 1.15,
+        toxic = true,
+        etches_glass = true,
+        dissolves_bones = true,  -- Not a joke
+        why_did_we_make_this = true
+    },
+    methanol = {
+        health = 80,
+        radius = 18,
+        speedMultiplier = 0.9,
+        toxic = true,
+    },
+    hydrogen = {
+        health = 35,
+        radius = 11,
+        speedMultiplier = 1.3,
+        peaceful = true
+    },
+    nitrogen = {
+        health = 60,
+        radius = 13,
+        speedMultiplier = 1.0,
+        peaceful = true,
+        inert = true
+    },
+    bromine = {
+        health = 65,
+        radius = 16,
+        damage = 60,
+        speedMultiplier = 1.05
+    },
+    iodine = {
+        health = 70,
+        radius = 18,
+        damage = 55,
+        speedMultiplier = 0.95
     }
 }
 

@@ -9,9 +9,11 @@
 -- December 20 2025 13:39 - Fixed subscript bug for hydroxide. (December 2025 Build 0.1.14783)
 -- December 20 2025 14:29 - Added uranium compounds, fixed love:draw and fragmentationRules, and other stuff. (December 2025 Build 0.1.14897)
 -- December 20 2025 15:21 - Added atom attractions. (December 2025 Build 0.1.15012)
--- December 20 2025 16:15 - Added lots of halomethanes because I have free will. (December 2025 Build 0.1.15050)
+-- December 20 2025 16:15 - HALOMETHANE EDITION - Added ALL the halomethanes! (December 2025 Build 0.1.15050)
+-- December 21 2025 11:01 - Added 3 secret molecules and a console. (December 2025 Build 0.1.15102)
 
 local config = require("config")
+local Console = require("console")
 
 local molecules = {}
 local hoveredMolecule = nil
@@ -24,6 +26,61 @@ local camera = {
     followTarget = nil
 }
 
+-- Sound system
+local sounds = {}
+local spawnFragments
+-- ↖Do not touch this. DO NOT EVEN LOOK WEIRD AT IT.
+
+function generateSound(frequency, duration, volume)
+    local sampleRate = 44100
+    local samples = math.floor(sampleRate * duration)
+    local soundData = love.sound.newSoundData(samples, sampleRate, 16, 1)
+    
+    for i = 0, samples - 1 do
+        local t = i / sampleRate
+        -- Simple sine wave with envelope (fade out)
+        local envelope = 1 - (i / samples)
+        local value = math.sin(2 * math.pi * frequency * t) * envelope * volume
+        soundData:setSample(i, value)
+    end
+    
+    return love.audio.newSource(soundData)
+end
+
+function playDeathSound(moleculeType)
+    -- Pitch based on molecule size/type
+    local basePitch = 220
+    
+    if moleculeType:match("atom") then
+        basePitch = 440 -- High pitch for atoms
+    elseif moleculeType:match("iodo") or moleculeType == "carbon_tetraiodide" then
+        basePitch = 110 -- Deep rumble for iodine compounds
+    elseif moleculeType == "benzene" or moleculeType == "caffeine" then
+        basePitch = 165 -- Lower for large molecules
+    elseif moleculeType:match("methane") then
+        basePitch = 330 -- Medium for halomethanes
+    end
+    
+    local sound = generateSound(basePitch, 0.1, 0.3)
+    sound:play()
+end
+
+function playMergeSound()
+    -- Ascending chord for the FORBIDDEN MERGE
+    local frequencies = {220, 277, 330, 415} -- A minor chord ascending
+    for i, freq in ipairs(frequencies) do
+        love.timer.sleep((i-1) * 0.05)
+        local sound = generateSound(freq, 0.15, 0.2)
+        sound:play()
+    end
+end
+
+function playTrackSound()
+    -- Short beep
+    local sound = generateSound(880, 0.05, 0.2)
+    sound:play()
+end
+
 local WORLD_WIDTH = config.world.width
 local WORLD_HEIGHT = config.world.height
 local DETECTION_RANGE = config.gameplay.detectionRange
@@ -33,214 +90,92 @@ local WANDER_SPEED = config.gameplay.wanderSpeed
 
 local ATTRACTION_RANGE = 450
 local ATTRACTION_FORCE = 240
-local BONDING_DISTANCE = 15
+local BONDING_DISTANCE = 20
 
 local ELEMENT_ATTRACTION = {
     H = {C = 1.5, O = 2.0, N = 1.3, H = 0.5, F = 1.0, Cl = 1.2, Br = 1.1, I = 1.0},
-    C = {C = 0.8, H = 1.5, O = 1.8, N = 1.2, F = 1.0, Cl = 1.0, Br = 0.9, I = 0.8},
-    O = {C = 1.8, H = 2.0, O = 0.2, N = 1.0},
+    C = {C = 0.8, H = 1.5, O = 1.8, N = 1.2, F = 1.0, Cl = 1.0, Br = 0.9, I = 0.8, S = 1.3},
+    O = {C = 1.8, H = 2.0, O = 0.2, N = 1.0, F = 1.5},
     N = {C = 1.2, H = 1.3, O = 1.0, N = 0.3, F = 0.8},
-    F = {C = 1.0, H = 1.0, F = 0.1, U = 1.5},
-    Cl = {C = 1.0, H = 1.2, Cl = 0.2},
+    F = {C = 1.0, H = 1.0, F = 0.1, U = 1.5, O = 1.5, Cl = 1.3},
+    Cl = {C = 1.0, H = 1.2, Cl = 0.2, F = 1.3, O = 1.2},
     Br = {C = 0.9, H = 1.1, Br = 0.2},
     I = {C = 0.8, H = 1.0, I = 0.1}
 }
 
--- What molecules break into
+-- molecule + molecule → new products!
 local fragmentationRules = {
-    acetylcarnitine = {
-        {type = "co2", count = 2},
-        {type = "oxygen_atom", count = 1},
-        {type = "carbon_atom", count = 7},
-        {type = "nitrogen_positive1_atom", count = 1}
+    {
+        reactants = {"co2", "chlorine"},
+        products = {
+            {type = "phosgene", count = 1},
+            {type = "oxygen_atom", count = 1}
+        },
+        probability = 0.08,
+        requiresCollision = true,
+        soundType = "forbidden"
     },
-    benzene = {
-        {type = "ethylene", count = 3}
+    {
+        reactants = {"co2", "water"},
+        products = {
+            {type = "carbonic_acid", count = 1}
+        },
+        probability = 0.02,
+        requiresCollision = true,
+        soundType = "merge"
     },
-    caffeine = {
-        {type = "co2", count = 3},
-        {type = "ammonia", count = 2},
-        {type = "water", count = 2}
+    {
+        reactants = {"oxygen", "fluorine"},
+        products = {
+            {type = "foof", count = 1}
+        },
+        probability = 0.15,
+        requiresHighSpeed = 150,
+        requiresCollision = true,
+        soundType = "explosion"
     },
-    tnt = {
-        {type = "co2", count = 4},
-        {type = "water", count = 3},
-        {type = "ammonia", count = 2}
+    {
+        reactants = {"chlorine", "fluorine"},
+        products = {
+            {type = "chlorine_monofluoride", count = 1},
+            {type = "fluorine_atom", count = 1},
+            {type = "chlorine_atom", count = 1}
+        },
+        probability = 0.12,
+        requiresCollision = true,
+        soundType = "merge"
     },
-    propane = {
-        {type = "methane", count = 1},
-        {type = "ethylene", count = 1}
+    {
+        reactants = {"fluoromethane", "water"},
+        products = {
+            {type = "hydrogen_fluoride", count = 1},
+            {type = "methanol", count = 1}
+        },
+        probability = 0.05,
+        requiresCollision = true,
+        soundType = "merge"
     },
-    ethanol = {
-        {type = "methane", count = 1},
-        {type = "water", count = 1},
-        {type = "co2", count = 1}
-    },
-    cyclopropane = {
-        {type = "ethylene", count = 1},
-        {type = "methane", count = 1}
-    },
-    cyclopropenylidene = {
-        {type = "ethylene", count = 1},
-        {type = "co2", count = 1}
-    },
-    tetrafluoroethylene = {
-        {type = "fluorine_atom", count = 4},
-        {type = "carbon_atom", count = 2}
-    },
-    cyclobutane = {
-        {type = "ethylene", count = 2}
-    },
-    cyclobutene = {
-        {type = "ethylene", count = 2}
-    },
-    cyclopentane = {
-        {type = "ethylene", count = 2},
-        {type = "methane", count = 1}
-    },
-    ethylene = {
-        {type = "co2", count = 1},
-        {type = "water", count = 1}
-    },
-    acetone = {
-        {type = "co2", count = 2},
-        {type = "water", count = 2}
-    },
-    hydrogen_peroxide = {
-        {type = "water", count = 2}
-    },
-    hydrochloric_acid = {
-        {type = "water", count = 1},
-        {type = "chlorine", count = 1}
-    },
-    lithium_hydroxide = {
-        {type = "water", count = 1}
-    },
-    sodium_hydroxide = {
-        {type = "water", count = 1}
-    },
-    helium_dimer = {
-        {type = "helium", count = 2}
-    },
-    methane = {
-        {type = "carbon_atom", count = 1},
-        {type = "hydrogen_atom", count = 4}
-    },
-    ammonia = {
-        {type = "nitrogen_atom", count = 1},
-        {type = "hydrogen_atom", count = 3}
-    },
-    water = {
-        {type = "oxygen_atom", count = 1},
-        {type = "hydrogen_atom", count = 2}
-    },
-    co2 = {
-        {type = "carbon_atom", count = 1},
-        {type = "oxygen_atom", count = 2}
-    },
-    oxygen = {
-        {type = "oxygen_atom", count = 2}
-    },
-    fluorine = {
-        {type = "fluorine_atom", count = 2}
-    },
-    chlorine = {
-        {type = "chlorine_atom", count = 2}
-    },
-    hydroxide = {
-        {type = "oxygen_atom", count = 1},
-        {type = "hydrogen_atom", count = 1}
-    },
-    hydronium = {
-        {type = "oxygen_atom", count = 1},
-        {type = "hydrogen_atom", count = 3}
-    },
-    uranium_hexafluoride = {
-        {type = "uranium_atom", count = 1},
-        {type = "fluorine", count = 3}
-    },
-    uranyl = {
-        {type = "uranium_atom", count = 1},
-        {type = "oxygen", count = 1}
-    },
-	
-    -- Halomethane fragmentations
-    fluoromethane = {
-        {type = "carbon_atom", count = 1},
-        {type = "hydrogen_atom", count = 3},
-        {type = "fluorine_atom", count = 1}
-    },
-    difluoromethane = {
-        {type = "carbon_atom", count = 1},
-        {type = "hydrogen_atom", count = 2},
-        {type = "fluorine_atom", count = 2}
-    },
-    trifluoromethane = {
-        {type = "carbon_atom", count = 1},
-        {type = "hydrogen_atom", count = 1},
-        {type = "fluorine_atom", count = 3}
-    },
-    carbon_tetrafluoride = {
-        {type = "carbon_atom", count = 1},
-        {type = "fluorine_atom", count = 4}
-    },
-    chloromethane = {
-        {type = "carbon_atom", count = 1},
-        {type = "hydrogen_atom", count = 3},
-        {type = "chlorine_atom", count = 1}
-    },
-    dichloromethane = {
-        {type = "carbon_atom", count = 1},
-        {type = "hydrogen_atom", count = 2},
-        {type = "chlorine_atom", count = 2}
-    },
-    chloroform = {
-        {type = "carbon_atom", count = 1},
-        {type = "hydrogen_atom", count = 1},
-        {type = "chlorine_atom", count = 3}
-    },
-    carbon_tetrachloride = {
-        {type = "carbon_atom", count = 1},
-        {type = "chlorine_atom", count = 4}
-    },
-    bromomethane = {
-        {type = "carbon_atom", count = 1},
-        {type = "hydrogen_atom", count = 3},
-        {type = "bromine_atom", count = 1}
-    },
-    dibromomethane = {
-        {type = "carbon_atom", count = 1},
-        {type = "hydrogen_atom", count = 2},
-        {type = "bromine_atom", count = 2}
-    },
-    tribromomethane = {
-        {type = "carbon_atom", count = 1},
-        {type = "hydrogen_atom", count = 1},
-        {type = "bromine_atom", count = 3}
-    },
-    carbon_tetrabromide = {
-        {type = "carbon_atom", count = 1},
-        {type = "bromine_atom", count = 4}
-    },
-    iodomethane = {
-        {type = "carbon_atom", count = 1},
-        {type = "hydrogen_atom", count = 3},
-        {type = "iodine_atom", count = 1}
-    },
-    diiodomethane = {
-        {type = "carbon_atom", count = 1},
-        {type = "hydrogen_atom", count = 2},
-        {type = "iodine_atom", count = 2}
-    },
-    triiodomethane = {
-        {type = "carbon_atom", count = 1},
-        {type = "hydrogen_atom", count = 1},
-        {type = "iodine_atom", count = 3}
-    },
-    carbon_tetraiodide = {
-        {type = "carbon_atom", count = 1},
-        {type = "iodine_atom", count = 4}
-    }
+}
+
+local bondingRecipes = {
+    {atoms = {"H", "H"}, product = "hydrogen", probability = 0.8},
+    {atoms = {"O", "O"}, product = "oxygen", probability = 0.9},
+    {atoms = {"Cl", "Cl"}, product = "chlorine", probability = 0.85},
+    {atoms = {"F", "F"}, product = "fluorine", probability = 0.75},
+    {atoms = {"Br", "Br"}, product = "bromine", probability = 0.85},
+    {atoms = {"I", "I"}, product = "iodine", probability = 0.85},
+    {atoms = {"N", "N"}, product = "nitrogen", probability = 0.9},
+    {atoms = {"O", "H", "H"}, product = "water", probability = 0.9},
+    {atoms = {"C", "O", "O"}, product = "co2", probability = 0.85},
+    {atoms = {"N", "H", "H", "H"}, product = "ammonia", probability = 0.8},
+    {atoms = {"C", "H", "H", "H", "H"}, product = "methane", probability = 0.85},
+    {atoms = {"O", "H"}, product = "hydroxide", probability = 0.7},
+    {atoms = {"H", "F"}, product = "hydrogen_fluoride", probability = 0.85},
+    {atoms = {"H", "Cl"}, product = "hydrochloric_acid", probability = 0.9},
+    {atoms = {"C", "C", "H", "H", "H", "H"}, product = "ethylene", probability = 0.6},
+    {atoms = {"C", "H", "H", "H", "F"}, product = "fluoromethane", probability = 0.7},
+    {atoms = {"C", "H", "H", "H", "Cl"}, product = "chloromethane", probability = 0.75},
+    {atoms = {"C", "F", "F", "F", "F"}, product = "carbon_tetrafluoride", probability = 0.5},
 }
 
 local spawnFragments
@@ -584,7 +519,6 @@ local structures = {
         atoms = {{element = "I", x = 0, y = 0, color = ELEMENT_COLORS.I}},
         bonds = {}
     },
-	
     -- MIXED HALOMETHANES
     chlorofluoromethane = {
         atoms = {
@@ -849,7 +783,6 @@ local structures = {
         bonds = {},
         radioactive = true
     },
-	
     -- MORE MISSING MOLECULES
     acetylcarnitine = {
         atoms = {
@@ -1033,8 +966,61 @@ local structures = {
         },
         bonds = {{1, 2, double = true}, {2, 3}, {1, 4}, {3, 6}, {4, 5}, {1, 7}, {2, 8}, {7, 8}, {9, 8, double = true}, {10, 7, double = true}},
 		aromantic = true,
-        acidic = true
-    }
+    },
+	phosgene = {
+        atoms = {
+		    {element = "C", x = 0, y = 0, color = ELEMENT_COLORS.C},
+			{element = "Cl", x = -10, y = -5, color = ELEMENT_COLORS.Cl},
+			{element = "Cl", x = 10, y = -5, color = ELEMENT_COLORS.Cl},
+			{element = "O", x = 0, y = 10, color = ELEMENT_COLORS.O}
+        },
+        bonds = {{1, 2}, {1, 3}, {1, 4}}
+    },
+    carbonic_acid = {
+        atoms = {
+		    {element = "C", x = 0, y = 0, color = ELEMENT_COLORS.C},
+			{element = "O", x = 0, y = 17, color = ELEMENT_COLORS.O},
+			{element = "O", x = 20, y = -5, color = ELEMENT_COLORS.O},
+			{element = "O", x = -20, y = -5, color = ELEMENT_COLORS.O},
+			{element = "H", x = -32, y = 5, color = ELEMENT_COLORS.H},
+			{element = "H", x = 32, y = 5, color = ELEMENT_COLORS.H}
+        },
+        bonds = {{1, 2, double = true}, {1, 3}, {1, 4}, {4, 5}, {3, 6}}
+    },
+	foof = {
+        atoms = {
+		    {element = "O", x = -8, y = 0, color = ELEMENT_COLORS.O},
+		    {element = "O", x = 8, y = 0, color = ELEMENT_COLORS.O},
+			{element = "F", x = 21, y = 7.5, color = ELEMENT_COLORS.F},
+			{element = "F", x = -21, y = 7.5, color = ELEMENT_COLORS.F},
+        },
+        bonds = {{1, 2}, {1, 4}, {2, 3}}
+    },
+	chlorine_monofluoride = {
+        atoms = {
+		    {element = "Cl", x = -6, y = 0, color = ELEMENT_COLORS.Cl},
+			{element = "F", x = 6, y = 0, color = ELEMENT_COLORS.F},
+        },
+        bonds = {{1, 2}}
+    },
+	hydrogen_fluoride = {
+        atoms = {
+			{element = "F", x = 3, y = 0, color = ELEMENT_COLORS.F},
+			{element = "H", x = -3, y = 0, color = ELEMENT_COLORS.H},
+        },
+        bonds = {{1, 2}}
+    },
+	methanol = {
+        atoms = {
+			{element = "O", x = 0, y = 0, color = ELEMENT_COLORS.O},
+			{element = "C", x = -15, y = 0, color = ELEMENT_COLORS.C},
+			{element = "H", x = -25, y = 0, color = ELEMENT_COLORS.H},
+			{element = "H", x = -20, y = 7.5, color = ELEMENT_COLORS.H},
+			{element = "H", x = -20, y = -7.5, color = ELEMENT_COLORS.H},
+			{element = "H", x = 10, y = 7.5, color = ELEMENT_COLORS.H},
+        },
+        bonds = {{1, 2}, {2, 3}, {2, 4}, {2, 5}, {1, 6}}
+    },
 }
 
 local Molecule = {}
@@ -1074,8 +1060,11 @@ function Molecule:update(dt)
         self.unstableTimer = self.unstableTimer + dt
         if self.unstableTimer > 5 then  -- Decompose after 5 seconds
             self.health = self.health - 20 * dt
-            -- Purple glow intensifies
+            
         end
+		if self.health >= 0 then
+		    self.alive = false
+	    end
     end
 
     -- Triiodomethane also unstable but slower
@@ -1084,10 +1073,14 @@ function Molecule:update(dt)
         if self.unstableTimer > 15 then
             self.health = self.health - 5 * dt
         end
+		if self.health >= 0 then
+		    self.alive = false
+	    end
     end
 
     self.rotation = self.rotation + self.rotationSpeed * dt
 
+    -- Predator/prey AI (keeping original logic + halomethanes)
     local molConfig = config.molecules[self.type]
     
     -- Halomethanes flee from halogens and oxidizers
@@ -1498,6 +1491,7 @@ function love.update(dt)
             if camera.followTarget == molecules[i] then
                 camera.followTarget = nil
             end
+            playDeathSound(molecules[i].type)  -- SOUND!
             spawnFragments(molecules[i])
             table.remove(molecules, i)
         end
@@ -1531,6 +1525,7 @@ function love.draw()
     if hoveredMolecule then
         drawMoleculeTooltip(hoveredMolecule)
     end
+    Console.draw()  -- Draw console on top
 end
 
 function drawWorld()
@@ -1562,26 +1557,21 @@ end
 function drawUI()
     local y = 10
 
-    -- Title
     love.graphics.setColor(1, 1, 1)
     love.graphics.print(config.game.title .. " " .. config.game.version, 10, y, 0, 1.5, 1.5)
     y = y + 40
 
-    -- FPS
     if config.debug.showFPS then
         love.graphics.print("FPS: " .. love.timer.getFPS(), 10, y)
         y = y + 25
     end
 
-    -- Molecule count
     love.graphics.print("Molecules: " .. #molecules, 10, y)
     y = y + 25
 
-    -- Zoom
     love.graphics.print("Zoom: " .. string.format("%.1f", camera.zoom) .. "x", 10, y)
     y = y + 25
 
-    -- Following indicator
     if camera.followTarget and camera.followTarget.alive then
         love.graphics.setColor(1, 1, 0)
         love.graphics.print("Following: " .. camera.followTarget.type, 10, y)
@@ -1589,10 +1579,9 @@ function drawUI()
         y = y + 20
     end
 
-    -- Controls
     love.graphics.print("Arrow keys: Move  |  +/- : Zoom  |  ESC: Unfollow", 10, y)
     y = y + 20
-    love.graphics.print("Middle-click: Focus on molecule  |  D: Debug", 10, y)
+    love.graphics.print("Middle-click: Focus on molecule  |  ` : Console", 10, y)
 end
 
 function drawMoleculeTooltip(molecule)
@@ -1911,12 +1900,29 @@ spawnFragments = function(molecule)
 end
 
 function love.keypressed(key)
+    -- Console gets first priority
+    local context = {
+        molecules = molecules,
+        camera = camera,
+        config = config,
+        Molecule = Molecule
+    }
+    
+    if Console.keypressed(key, context) then
+        return  -- Console handled it
+    end
+    
+    -- Normal game keys
     if key == "escape" then
         camera.followTarget = nil
     end
     if key == "0" then
         camera.zoom = config.camera.defaultZoom
     end
+end
+
+function love.textinput(text)
+    Console.textinput(text)
 end
 
 function love.mousepressed(x, y, button)
@@ -1940,6 +1946,9 @@ function love.mousepressed(x, y, button)
 
         if closest then
             camera.followTarget = (camera.followTarget == closest) and nil or closest
+            if camera.followTarget == closest then
+                playTrackSound()  -- SOUND when locking on!
+            end
         else
             camera.followTarget = nil
         end
