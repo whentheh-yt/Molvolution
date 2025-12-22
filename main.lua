@@ -4,7 +4,7 @@
 --     | |__| |_| | |_| |
 --     |_____\___/ \____|
 --
--- --------------------------
+-- ------------------------
 -- December 20 2025 12:52 - Started. Finally. Hooray. (December 2025 Build 0.1.14779)
 -- December 20 2025 13:39 - Fixed subscript bug for hydroxide. (December 2025 Build 0.1.14783)
 -- December 20 2025 14:29 - Added uranium compounds, fixed love:draw and fragmentationRules, and other stuff. (December 2025 Build 0.1.14897)
@@ -15,6 +15,8 @@
 -- December 21 2025 15:31 - Added more alkanes, added sound and revamped death. Also main.lua hit 100KB. (December 2025 Build 0.1.15223)
 -- December 21 2025 20:31 - Added interstellar molecules. (December 2025 Build 0.1.15256)
 -- December 21 2025 20:53 - Added a time slider, fixed the camera zooming and added .\libs. (December 2025 Build 0.1.15279)
+-- ---------------------- -
+-- December 22 2025 10:16 - Added a secret molecule reccomended by my sister and a few more radioactive shit. (December 2025 Build 0.1.15300)
 
 local config = require("config")
 local Console = require("libs/console")
@@ -598,7 +600,7 @@ local deathFragmentations = {
         {type = "carbon_atom", count = 20},
         {type = "benzene", count = 3},
         {type = "tricarbon", count = 5}
-    }
+    },
 }
 
 local spawnFragments
@@ -617,7 +619,13 @@ local ELEMENT_COLORS = {
     Cl = {0.3, 0.9, 0.6},
     Br = {0.6, 0.2, 0.1},
     I = {0.5, 0.0, 0.5},
-    U = {0.0, 0.8, 0.0}
+    U = {0.0, 0.8, 0.0},
+	Po = {0.7, 0.0, 0.7},
+    Ra = {0.0, 1.0, 0.5},
+    Pu = {0.8, 0.6, 0.0},
+    Sr = {0.9, 0.9, 0.5},
+    Cs = {1.0, 0.8, 0.2},
+    T = {0.5, 1.0, 0.5}
 }
 
 local structures = {
@@ -1033,6 +1041,27 @@ local structures = {
         ion = true,
         charge = 1
     },
+	miau = {
+	        atoms = {
+            {element = "C", x = 15, y = -15, color = ELEMENT_COLORS.C},
+            {element = "C", x = -15, y = -15, color = ELEMENT_COLORS.C},
+            {element = "C", x = -15, y = 15, color = ELEMENT_COLORS.C},
+            {element = "C", x = 15, y = 15, color = ELEMENT_COLORS.C},
+			{element = "C", x = 0, y = 15, color = ELEMENT_COLORS.C},
+			{element = "C", x = 15, y = 30, color = ELEMENT_COLORS.C},
+			{element = "C", x = -15, y = 30, color = ELEMENT_COLORS.C},
+			{element = "H", x = -8, y = 6, color = ELEMENT_COLORS.H},
+			{element = "H", x = -8, y = -2, color = ELEMENT_COLORS.H},
+			{element = "H", x = 6, y = 6, color = ELEMENT_COLORS.H},
+			{element = "H", x = 6, y = -2, color = ELEMENT_COLORS.H},
+			{element = "H", x = -4, y = -10, color = ELEMENT_COLORS.H},
+			{element = "H", x = -10, y = -5, color = ELEMENT_COLORS.H},
+			{element = "H", x = 10, y = -5, color = ELEMENT_COLORS.H},
+			{element = "H", x = 4, y = -10, color = ELEMENT_COLORS.H},
+			{element = "H", x = 0, y = -5, color = ELEMENT_COLORS.H},
+        },
+        bonds = {{1, 2}, {2, 3}, {4, 1}, {6, 5}, {7, 5}, {6, 4}, {7, 3}, {8, 9}, {10, 11}, {12, 13}, {13, 16}, {16, 15}, {15, 14}}
+	},
     methane = {
         atoms = {
             {element = "C", x = 0, y = 0, color = ELEMENT_COLORS.C},
@@ -1855,6 +1884,70 @@ local structures = {
         fullerene = true,
         interstellar = true
     },
+	
+	-- Radioactive stuff
+	polonium_atom = {
+        atoms = {{element = "Po", x = 0, y = 0, color = ELEMENT_COLORS.Po}},
+        bonds = {},
+        radioactive = true
+    },
+    radium_atom = {
+        atoms = {{element = "Ra", x = 0, y = 0, color = ELEMENT_COLORS.Ra}},
+        bonds = {},
+        radioactive = true
+    },
+    plutonium_atom = {
+        atoms = {{element = "Pu", x = 0, y = 0, color = ELEMENT_COLORS.Pu}},
+        bonds = {},
+        radioactive = true
+    },
+    polonium_dioxide = {
+        atoms = {
+            {element = "Po", x = 0, y = 0, color = ELEMENT_COLORS.Po},
+            {element = "O", x = -12, y = 0, color = ELEMENT_COLORS.O},
+            {element = "O", x = 12, y = 0, color = ELEMENT_COLORS.O}
+        },
+        bonds = {{1, 2, double = true}, {1, 3, double = true}},
+        radioactive = true
+    },
+    radium_chloride = {
+        atoms = {
+            {element = "Ra", x = 0, y = 0, color = ELEMENT_COLORS.Ra},
+            {element = "Cl", x = -15, y = 0, color = ELEMENT_COLORS.Cl},
+            {element = "Cl", x = 15, y = 0, color = ELEMENT_COLORS.Cl}
+        },
+        bonds = {{1, 2}, {1, 3}},
+        radioactive = true
+    },
+    plutonium_dioxide = {
+        atoms = {
+            {element = "Pu", x = 0, y = 0, color = ELEMENT_COLORS.Pu},
+            {element = "O", x = -12, y = 0, color = ELEMENT_COLORS.O},
+            {element = "O", x = 12, y = 0, color = ELEMENT_COLORS.O}
+        },
+        bonds = {{1, 2, double = true}, {1, 3, double = true}},
+        radioactive = true
+    },
+    strontium_90 = {
+        atoms = {{element = "Sr", x = 0, y = 0, color = ELEMENT_COLORS.Sr}},
+        bonds = {},
+        radioactive = true
+    },
+    cesium_137 = {
+        atoms = {{element = "Cs", x = 0, y = 0, color = ELEMENT_COLORS.Cs}},
+        bonds = {},
+        radioactive = true
+    },
+    tritium = {
+        atoms = {{element = "T", x = 0, y = 0, color = ELEMENT_COLORS.T}},
+        bonds = {},
+        radioactive = true
+    },
+    radon = {
+        atoms = {{element = "Rn", x = 0, y = 0, color = ELEMENT_COLORS.Ra}},
+        bonds = {},
+        radioactive = true
+    }
 }
 
 local Molecule = {}
@@ -2310,7 +2403,20 @@ function Molecule:draw()
     -- Radioactive glow
     if struct.radioactive then
         local pulse = (math.sin(love.timer.getTime() * 3) + 1) * 0.5
-        love.graphics.setColor(0, 1, 0, 0.1 + pulse * 0.1)
+        local intensity = 0.1
+        
+        -- Extra glow for extremely radioactive elements
+        if self.type == "polonium_atom" or self.type == "polonium_dioxide" then
+            intensity = 0.2
+            love.graphics.setColor(0.7, 0, 0.7, intensity + pulse * 0.2)
+        elseif self.type == "radium_atom" or self.type == "radium_chloride" then
+            love.graphics.setColor(0, 1, 0.5, intensity + pulse * 0.15)
+        elseif self.type == "tritium" then
+            love.graphics.setColor(0.5, 1, 0.5, intensity + pulse * 0.1)
+        else
+            love.graphics.setColor(0, 1, 0, intensity + pulse * 0.1)
+        end
+        
         for i = 1, 3 do
             love.graphics.circle("line", 0, 0, self.radius + i * 5)
         end
@@ -2638,6 +2744,10 @@ function drawMoleculeTooltip(molecule)
     if molecule.type == "hydronium" then
         table.insert(lines, "Acid ion - H3O⁺")
         table.insert(lines, "Neutralizes bases!")
+    end
+	if molecule.type == "miau" then
+        table.insert(lines, "My sister requested I add this.")
+        table.insert(lines, "I just couldn't say no.")
     end
     if molecule.type == "uranyl" then
         table.insert(lines, "Uranium(VI) ion - UO2²⁺")

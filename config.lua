@@ -2,7 +2,7 @@ local config = {}
 
 config.game = {
     title = "Molvolution",
-    version = "December 2025 Build 0.1.15289",
+    version = "December 2025 Build 0.1.15300",
     window = {
         width = 1200,
         height = 800,
@@ -364,6 +364,11 @@ config.molecules = {
     acetone = {
         health = 90,
         radius = 20,
+        speedMultiplier = 0.95
+    },
+	miau = {
+        health = 110,
+        radius = 35,
         speedMultiplier = 0.95
     },
     helium_dimer = {
@@ -749,6 +754,95 @@ config.molecules = {
         fullerene = true,
         soccer_ball = true,
         extremely_stable = true
+    },
+	polonium_atom = {
+        health = 50,
+        radius = 11,
+        speedMultiplier = 0.7,
+        peaceful = true,
+        atom = true,
+        valence = 2,
+        radioactive = true,
+        extremely_radioactive = true,
+        alpha_emitter = true
+    },
+    radium_atom = {
+        health = 45,
+        radius = 13,
+        speedMultiplier = 0.75,
+        peaceful = true,
+        atom = true,
+        valence = 2,
+        radioactive = true,
+        glows_in_dark = true
+    },
+    plutonium_atom = {
+        health = 55,
+        radius = 13,
+        speedMultiplier = 0.7,
+        peaceful = true,
+        atom = true,
+        valence = 4,
+        radioactive = true,
+        fissile = true
+    },
+    polonium_dioxide = {
+        health = 90,
+        radius = 20,
+        speedMultiplier = 0.8,
+        radioactive = true,
+        extremely_radioactive = true,
+        volatile = true
+    },
+    radium_chloride = {
+        health = 100,
+        radius = 22,
+        speedMultiplier = 0.85,
+        radioactive = true,
+        salt = true,
+        soluble = true
+    },
+    plutonium_dioxide = {
+        health = 150,
+        radius = 24,
+        speedMultiplier = 0.7,
+        radioactive = true,
+        oxide = true,
+        stable_form = true
+    },
+    strontium_90 = {
+        health = 60,
+        radius = 14,
+        speedMultiplier = 0.9,
+        radioactive = true,
+        bone_seeker = true,
+        beta_emitter = true
+    },
+    cesium_137 = {
+        health = 55,
+        radius = 15,
+        speedMultiplier = 1.0,
+        radioactive = true,
+        gamma_emitter = true,
+        medical_use = true
+    },
+    tritium = {
+        health = 25,
+        radius = 7,
+        speedMultiplier = 1.6,
+        radioactive = true,
+        peaceful = true,
+        hydrogen_isotope = true,
+        glows_green = true
+    },
+    radon = {
+        health = 35,
+        radius = 12,
+        speedMultiplier = 1.3,
+        radioactive = true,
+        noble = true,
+        gas = true,
+        basement_hazard = true
     }
 }
 
@@ -847,7 +941,19 @@ config.initialSpawns = {
     ethynyl_radical = 7,
     formyl_cation = 6,
     acetonitrile = 4,
-    buckminsterfullerene = 1
+    buckminsterfullerene = 1,
+	
+	-- Radioactive stuff
+	polonium_atom = 3,
+    radium_atom = 3,
+    plutonium_atom = 2,
+    polonium_dioxide = 2,
+    radium_chloride = 2,
+    plutonium_dioxide = 1,
+    strontium_90 = 3,
+    cesium_137 = 2,
+    tritium = 5,
+    radon = 4
 }
 
 config.visual = {
