@@ -17,6 +17,7 @@
 -- December 21 2025 20:53 - Added a time slider, fixed the camera zooming and added .\libs. (December 2025 Build 0.1.15279)
 -- ---------------------- -
 -- December 22 2025 10:16 - Added a secret molecule reccomended by my sister and a few more radioactive shit. (December 2025 Build 0.1.15300)
+-- December 22 2025 18:54 - Added deuterium compounds. (December 2025 Build 0.1.15326)
 
 local config = require("config")
 local Console = require("libs/console")
@@ -329,6 +330,11 @@ local bondingRecipes = {
     {atoms = {"C", "N"}, product = "cyanide", probability = 0.3},
     {atoms = {"H", "C", "N"}, product = "hydrogen_cyanide", probability = 0.5},
     {atoms = {"S", "O", "O"}, product = "sulfur_dioxide", probability = 0.7},
+	{atoms = {"D", "D"}, product = "deuterium", probability = 0.85},
+    {atoms = {"O", "D", "D"}, product = "heavy_water", probability = 0.9},
+    {atoms = {"O", "H", "D"}, product = "semiheavy_water", probability = 0.85},
+    {atoms = {"N", "D", "D", "D"}, product = "deuterated_ammonia", probability = 0.8},
+    {atoms = {"C", "D", "D", "D", "D"}, product = "deuterated_methane", probability = 0.85},
 	
 	-- Interstellar bonding
     {atoms = {"H", "H", "H"}, product = "trihydrogen_cation", probability = 0.6},
@@ -569,6 +575,11 @@ local deathFragmentations = {
         {type = "nitrogen", count = 1.5},
         {type = "oxygen", count = 0.5}
     },
+	azidoazide_azide = {
+      {type = "nitrogen", count = 5},
+      {type = "nitrogen_atom", count = 4},
+      {type = "carbon_atom", count = 2}
+    },
 	
 	-- Interstellar molecules
     trihydrogen_cation = {
@@ -601,12 +612,38 @@ local deathFragmentations = {
         {type = "benzene", count = 3},
         {type = "tricarbon", count = 5}
     },
+	deuterium = {
+        {type = "deuterium_atom", count = 2}
+    },
+    heavy_water = {
+        {type = "oxygen_atom", count = 1},
+        {type = "deuterium_atom", count = 2}
+    },
+    semiheavy_water = {
+        {type = "oxygen_atom", count = 1},
+        {type = "hydrogen_atom", count = 1},
+        {type = "deuterium_atom", count = 1}
+    },
+    deuterium_oxide_ion = {
+        {type = "heavy_water", count = 1},
+        {type = "deuterium_atom", count = 1}
+    },
+    deuterated_ammonia = {
+        {type = "nitrogen_atom", count = 1},
+        {type = "deuterium_atom", count = 3}
+    },
+    deuterated_methane = {
+        {type = "carbon_atom", count = 1},
+        {type = "deuterium_atom", count = 4}
+    },
 }
 
 local spawnFragments
 
 local ELEMENT_COLORS = {
     H = {0.9, 0.9, 0.9},
+	    D = {0.7, 0.9, 1.0},
+		T = {0.5, 1.0, 0.5},
     He = {0.8, 0.9, 1.0},
     Li = {0.8, 0.5, 1.0},
     C = {0.3, 0.3, 0.3},
@@ -625,7 +662,6 @@ local ELEMENT_COLORS = {
     Pu = {0.8, 0.6, 0.0},
     Sr = {0.9, 0.9, 0.5},
     Cs = {1.0, 0.8, 0.2},
-    T = {0.5, 1.0, 0.5}
 }
 
 local structures = {
@@ -1391,6 +1427,71 @@ local structures = {
         },
         bonds = {{1, 2, double = true}, {1, 3}, {1, 4}, {2, 5}, {2, 6}}
     },
+    deuterium_atom = {
+        atoms = {{element = "D", x = 0, y = 0, color = ELEMENT_COLORS.D}},
+        bonds = {},
+        isotope = true
+    },
+    deuterium = {
+        atoms = {
+            {element = "D", x = -8, y = 0, color = ELEMENT_COLORS.D},
+            {element = "D", x = 8, y = 0, color = ELEMENT_COLORS.D}
+        },
+        bonds = {{1, 2}},
+        isotope = true
+    },
+    heavy_water = {
+        atoms = {
+            {element = "O", x = 0, y = 0, color = ELEMENT_COLORS.O},
+            {element = "D", x = -10, y = 8, color = ELEMENT_COLORS.D},
+            {element = "D", x = 10, y = 8, color = ELEMENT_COLORS.D}
+        },
+        bonds = {{1, 2}, {1, 3}},
+        heavy = true,
+        moderator = true
+    },
+    semiheavy_water = {
+        atoms = {
+            {element = "O", x = 0, y = 0, color = ELEMENT_COLORS.O},
+            {element = "H", x = -10, y = 8, color = ELEMENT_COLORS.H},
+            {element = "D", x = 10, y = 8, color = ELEMENT_COLORS.D}
+        },
+        bonds = {{1, 2}, {1, 3}},
+        hybrid = true
+    },
+    deuterium_oxide_ion = {
+        atoms = {
+            {element = "O", x = 0, y = 0, color = ELEMENT_COLORS.O},
+            {element = "D", x = 10, y = 0, color = ELEMENT_COLORS.D},
+            {element = "D", x = -5, y = 8, color = ELEMENT_COLORS.D},
+            {element = "D", x = -5, y = -8, color = ELEMENT_COLORS.D}
+        },
+        bonds = {{1, 2}, {1, 3}, {1, 4}},
+        ion = true,
+        charge = 1,
+        heavy = true
+    },
+    deuterated_ammonia = {
+        atoms = {
+            {element = "N", x = 0, y = 0, color = ELEMENT_COLORS.N},
+            {element = "D", x = 0, y = -12, color = ELEMENT_COLORS.D},
+            {element = "D", x = -10, y = 6, color = ELEMENT_COLORS.D},
+            {element = "D", x = 10, y = 6, color = ELEMENT_COLORS.D}
+        },
+        bonds = {{1, 2}, {1, 3}, {1, 4}},
+        deuterated = true
+    },
+    deuterated_methane = {
+        atoms = {
+            {element = "C", x = 0, y = 0, color = ELEMENT_COLORS.C},
+            {element = "D", x = 0, y = -15, color = ELEMENT_COLORS.D},
+            {element = "D", x = 15, y = 0, color = ELEMENT_COLORS.D},
+            {element = "D", x = 0, y = 15, color = ELEMENT_COLORS.D},
+            {element = "D", x = -15, y = 0, color = ELEMENT_COLORS.D}
+        },
+        bonds = {{1, 2}, {1, 3}, {1, 4}, {1, 5}},
+        deuterated = true
+    },
     ethanol = {
         atoms = {
             {element = "C", x = -15, y = 0, color = ELEMENT_COLORS.C},
@@ -1885,6 +1986,39 @@ local structures = {
         interstellar = true
     },
 	
+	azidoazide_azide = {
+      atoms = {
+          -- Central carbons
+          {element = "C", x = -6, y = 0, color = ELEMENT_COLORS.C},
+          {element = "C", x = 6, y = 0, color = ELEMENT_COLORS.C},
+          -- Left azide chain
+          {element = "N", x = -18, y = 0, color = ELEMENT_COLORS.N},
+          {element = "N", x = -30, y = 0, color = ELEMENT_COLORS.N},
+          {element = "N", x = -42, y = 0, color = ELEMENT_COLORS.N},
+          -- Right azide chain
+          {element = "N", x = 18, y = 0, color = ELEMENT_COLORS.N},
+          {element = "N", x = 30, y = 0, color = ELEMENT_COLORS.N},
+          {element = "N", x = 42, y = 0, color = ELEMENT_COLORS.N},
+          -- Top azide chains (left side)
+          {element = "N", x = -6, y = -12, color = ELEMENT_COLORS.N},
+          {element = "N", x = -6, y = -24, color = ELEMENT_COLORS.N},
+          {element = "N", x = -6, y = -36, color = ELEMENT_COLORS.N},
+          -- Top azide chains (right side)
+          {element = "N", x = 6, y = -12, color = ELEMENT_COLORS.N},
+          {element = "N", x = 6, y = -24, color = ELEMENT_COLORS.N},
+          {element = "N", x = 6, y = -36, color = ELEMENT_COLORS.N}
+      },
+      bonds = {
+          {1, 2}, -- C-C bond
+          {1, 3}, {3, 4}, {4, 5}, -- Left azide
+          {2, 6}, {6, 7}, {7, 8}, -- Right azide
+          {1, 9}, {9, 10}, {10, 11}, -- Top left azide
+          {2, 12}, {12, 13}, {13, 14} -- Top right azide
+      },
+      explosive = true,
+      unstable = true
+    },
+	
 	-- Radioactive stuff
 	polonium_atom = {
         atoms = {{element = "Po", x = 0, y = 0, color = ELEMENT_COLORS.Po}},
@@ -2003,6 +2137,19 @@ function Molecule:update(dt)
 		if self.health >= 0 then
 		    self.alive = false
 	    end
+    end
+	
+	if self.type == "azidoazide_azide" then
+        self.unstableTimer = self.unstableTimer + dt
+        if math.random() < 0.02 * dt then
+            self.health = 0
+            self.alive = false
+        end
+        local speed = math.sqrt(self.vx * self.vx + self.vy * self.vy)
+        if speed > 20 then
+            self.health = self.health - speed * 0.5 * dt
+        end
+        self.health = self.health - 2 * dt
     end
 
     self.rotation = self.rotation + self.rotationSpeed * dt
@@ -2255,7 +2402,7 @@ function Molecule:update(dt)
         self.wanderAngle = self.wanderAngle + (math.random() - 0.5) * 0.02
         self.vx = math.cos(self.wanderAngle) * (WANDER_SPEED * 0.4)
         self.vy = math.sin(self.wanderAngle) * (WANDER_SPEED * 0.4)
-         elf.rotationSpeed = 0.1
+        self.rotationSpeed = 0.1
     else
         -- Default wander for everything else
         self.wanderAngle = self.wanderAngle + (math.random() - 0.5) * 0.08
@@ -2302,6 +2449,16 @@ function Molecule:draw()
         else
             love.graphics.setColor(0.3, 0.8, 0.8, 0.1 + pulse * 0.1)
             love.graphics.circle("fill", self.x, self.y, self.radius + 5)
+        end
+    end
+	
+	if self.type == "azidoazide_azide" then
+        local pulse = (math.sin(love.timer.getTime() * 10) + 1) * 0.5  -- Fast pulse
+        love.graphics.setColor(1, 0, 0, 0.3 + pulse * 0.4)
+        love.graphics.circle("fill", self.x, self.y, self.radius + 15)
+        for i = 1, 5 do
+            love.graphics.setColor(1, 0.2, 0, 0.4)
+            love.graphics.circle("line", self.x, self.y, self.radius + i * 10)
         end
     end
 
@@ -2635,6 +2792,21 @@ function drawMoleculeTooltip(molecule)
         table.insert(lines, "C9 alkane - diesel component")
     elseif molecule.type == "decane" then
         table.insert(lines, "C10 alkane - getting waxy")
+    end
+	
+	if molecule.type == "deuterium" or molecule.type == "deuterium_atom" then
+        table.insert(lines, "Heavy hydrogen isotope - 2H")
+    elseif molecule.type == "heavy_water" then
+        table.insert(lines, "D2O - neutron moderator")
+        table.insert(lines, "Used in nuclear reactors!")
+    elseif molecule.type == "semiheavy_water" then
+        table.insert(lines, "HDO - mixed isotope water")
+    elseif molecule.type == "deuterium_oxide_ion" then
+        table.insert(lines, "D3O+ - heavy hydronium")
+    elseif molecule.type == "deuterated_ammonia" then
+        table.insert(lines, "ND3 - NMR solvent")
+    elseif molecule.type == "deuterated_methane" then
+        table.insert(lines, "CD4 - deuterated fuel")
     end
 
     if molecule.type == "cyclopropane" or molecule.type == "cyclopropenylidene" or 

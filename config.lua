@@ -2,7 +2,7 @@ local config = {}
 
 config.game = {
     title = "Molvolution",
-    version = "December 2025 Build 0.1.15300",
+    version = "December 2025 Build 0.1.15326",
     window = {
         width = 1200,
         height = 800,
@@ -12,8 +12,8 @@ config.game = {
 }
 
 config.world = {
-    width = 40000,
-    height = 2000
+    width = 10000,
+    height = 10000
 }
 
 config.camera = {
@@ -198,8 +198,8 @@ config.molecules = {
         unstable = true
     },
 	
-	-- This chemical doesn't even exist. I don't know why I added this.
-	bromochloroflouroidiomethane = {
+    -- This chemical doesn't even exist. I don't know why I added this.
+    bromochloroflouroidiomethane = {
         health = 125,
         radius = 32,
         speedMultiplier = 0.75,
@@ -334,6 +334,24 @@ config.molecules = {
         health = 120,
         radius = 22,
         speedMultiplier = 0.9
+    },
+    azidoazide_azide = {
+        health = 5,
+        radius = 28,
+        speedMultiplier = 0.3,
+        explosive = true,
+        unstable = true,
+        extremely_unstable = true,
+        explodes_if_looked_at_wrong = true,  -- Not even joking
+        damage = 200
+    },
+    thioacetone = {
+        health = 90,
+        radius = 20,
+        speedMultiplier = 1.2,
+        toxic = true,
+        smells_horrible = true,
+        olfactory_weapon = true
     },
     ethanol = {
         health = 110,
@@ -755,6 +773,8 @@ config.molecules = {
         soccer_ball = true,
         extremely_stable = true
     },
+	
+	-- Radioactive stuff
 	polonium_atom = {
         health = 50,
         radius = 11,
@@ -843,7 +863,65 @@ config.molecules = {
         noble = true,
         gas = true,
         basement_hazard = true
-    }
+    },
+    deuterium_atom = {
+        health = 11,
+        radius = 6,
+        speedMultiplier = 1.35,
+        peaceful = true,
+        atom = true,
+        valence = 1,
+        isotope = true,
+        heavier_than_hydrogen = true
+    },
+    deuterium = {
+        health = 55,
+        radius = 14,
+        speedMultiplier = 1.35,
+        peaceful = true,
+        isotope = true
+    },
+    heavy_water = {
+        health = 35,
+        radius = 13,
+        speedMultiplier = 0.65,
+        peaceful = true,
+        heavy = true,
+        moderator = true,
+        nuclear_reactor_coolant = true
+    },
+    semiheavy_water = {
+        health = 32,
+        radius = 12,
+        speedMultiplier = 0.68,
+        peaceful = true,
+        hybrid = true
+    },
+    deuterium_oxide_ion = {
+        health = 40,
+        radius = 13,
+        damage = 50,
+        speedMultiplier = 1.0,
+        detectionMultiplier = 1.3,
+        ion = true,
+        charge = 1,
+        acid = true,
+        heavy = true
+    },
+    deuterated_ammonia = {
+        health = 65,
+        radius = 17,
+        speedMultiplier = 0.95,
+        deuterated = true,
+        nmr_solvent = true
+    },
+    deuterated_methane = {
+        health = 105,
+        radius = 21,
+        speedMultiplier = 0.92,
+        deuterated = true,
+        nmr_solvent = true
+    },
 }
 
 config.initialSpawns = {
@@ -933,6 +1011,7 @@ config.initialSpawns = {
     hydrogen_cyanide = 3,
     sulfur_dioxide = 5,
     nitroglycerin = 2,
+	azidoazide_azide = 1,  -- Only spawn ONE. That's all you need.
 	
 	-- Interstellar molecules
 	trihydrogen_cation = 8,
@@ -953,7 +1032,16 @@ config.initialSpawns = {
     strontium_90 = 3,
     cesium_137 = 2,
     tritium = 5,
-    radon = 4
+    radon = 4,
+	
+	-- Deuterium stuff
+	deuterium_atom = 6,
+    deuterium = 8,
+    heavy_water = 12,
+    semiheavy_water = 10,
+    deuterium_oxide_ion = 6,
+    deuterated_ammonia = 7,
+    deuterated_methane = 8
 }
 
 config.visual = {
