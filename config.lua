@@ -2,7 +2,7 @@ local config = {}
 
 config.game = {
     title = "Molvolution",
-    version = "December 2025 Build 0.1.15326",
+    version = "December 2025 Build 0.1.15379",
     window = {
         width = 1200,
         height = 800,
@@ -922,6 +922,108 @@ config.molecules = {
         deuterated = true,
         nmr_solvent = true
     },
+    	
+    xenon = {
+        health = 25,
+        radius = 10,
+        speedMultiplier = 1.2,
+        peaceful = true,
+        noble = true,
+        anesthetic = true
+    },
+    
+    krypton = {
+        health = 22,
+        radius = 9,
+        speedMultiplier = 1.3,
+        peaceful = true,
+        noble = true
+    },
+    
+    neon = {
+        health = 18,
+        radius = 7,
+        speedMultiplier = 1.6,
+        peaceful = true,
+        noble = true,
+        glows_orange = true
+    },
+    
+    argon = {
+        health = 20,
+        radius = 8,
+        speedMultiplier = 1.4,
+        peaceful = true,
+        noble = true,
+        inert = true
+    },
+    
+    xenon_difluoride = {
+        health = 85,
+        radius = 18,
+        speedMultiplier = 0.9,
+        oxidizer = true,
+        linear = true,
+        noble_gas_compound = true
+    },
+    
+    xenon_tetrafluoride = {
+        health = 110,
+        radius = 22,
+        speedMultiplier = 0.8,
+        strong_oxidizer = true,
+        square_planar = true,
+        noble_gas_compound = true
+    },
+    
+    krypton_difluoride = {
+        health = 45,
+        radius = 16,
+        speedMultiplier = 1.1,
+        extremely_unstable = true,
+        decomposes_at_room_temp = true,
+        noble_gas_compound = true
+    },
+    
+    xenon_atom = {
+        health = 20,
+        radius = 10,
+        speedMultiplier = 1.0,
+        peaceful = true,
+        atom = true,
+        valence = 2,  -- Can be 2, 4, or 6 in compounds
+        noble = true
+    },
+    
+    krypton_atom = {
+        health = 18,
+        radius = 9,
+        speedMultiplier = 1.15,
+        peaceful = true,
+        atom = true,
+        valence = 2,
+        noble = true
+    },
+    
+    neon_atom = {
+        health = 15,
+        radius = 7,
+        speedMultiplier = 1.4,
+        peaceful = true,
+        atom = true,
+        valence = 0,
+        noble = true
+    },
+    
+    argon_atom = {
+        health = 16,
+        radius = 8,
+        speedMultiplier = 1.3,
+        peaceful = true,
+        atom = true,
+        valence = 0,
+        noble = true
+    }
 }
 
 config.initialSpawns = {
@@ -1041,7 +1143,16 @@ config.initialSpawns = {
     semiheavy_water = 10,
     deuterium_oxide_ion = 6,
     deuterated_ammonia = 7,
-    deuterated_methane = 8
+    deuterated_methane = 8,
+	
+	-- Random inorganic chemistry stuff
+	xenon = 6,
+    krypton = 7,
+    neon = 10,
+    argon = 8,
+    xenon_difluoride = 2,
+    xenon_tetrafluoride = 1,
+    krypton_difluoride = 1
 }
 
 config.visual = {

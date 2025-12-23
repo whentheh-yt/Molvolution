@@ -18,6 +18,8 @@
 -- ---------------------- -
 -- December 22 2025 10:16 - Added a secret molecule reccomended by my sister and a few more radioactive shit. (December 2025 Build 0.1.15300)
 -- December 22 2025 18:54 - Added deuterium compounds. (December 2025 Build 0.1.15326)
+-- ---------------------- -
+-- December 23 2025 16:29 - Added more chemicals ^_^ (December 2025 Build 0.1.15379)
 
 local config = require("config")
 local Console = require("libs/console")
@@ -340,7 +342,11 @@ local bondingRecipes = {
     {atoms = {"H", "H", "H"}, product = "trihydrogen_cation", probability = 0.6},
     {atoms = {"C", "C", "C"}, product = "tricarbon", probability = 0.4},
     {atoms = {"H", "C", "O"}, product = "formyl_cation", probability = 0.5},
-    {atoms = {"C", "C", "H"}, product = "ethynyl_radical", probability = 0.7}
+    {atoms = {"C", "C", "H"}, product = "ethynyl_radical", probability = 0.7},
+	
+	{atoms = {"Xe", "F", "F"}, product = "xenon_difluoride", probability = 0.3},
+    {atoms = {"Xe", "F", "F", "F", "F"}, product = "xenon_tetrafluoride", probability = 0.15},
+    {atoms = {"Kr", "F", "F"}, product = "krypton_difluoride", probability = 0.05},
 }
 
 local deathFragmentations = {
@@ -636,14 +642,26 @@ local deathFragmentations = {
         {type = "carbon_atom", count = 1},
         {type = "deuterium_atom", count = 4}
     },
+    xenon_difluoride = {
+        {type = "xenon", count = 1},
+        {type = "fluorine", count = 1}
+    },
+    
+    xenon_tetrafluoride = {
+        {type = "xenon", count = 1},
+        {type = "fluorine", count = 2}
+    },
+    
+    krypton_difluoride = {
+        {type = "krypton", count = 1},
+        {type = "fluorine", count = 1}
+    }
 }
 
 local spawnFragments
 
 local ELEMENT_COLORS = {
     H = {0.9, 0.9, 0.9},
-	    D = {0.7, 0.9, 1.0},
-		T = {0.5, 1.0, 0.5},
     He = {0.8, 0.9, 1.0},
     Li = {0.8, 0.5, 1.0},
     C = {0.3, 0.3, 0.3},
@@ -657,11 +675,17 @@ local ELEMENT_COLORS = {
     Br = {0.6, 0.2, 0.1},
     I = {0.5, 0.0, 0.5},
     U = {0.0, 0.8, 0.0},
-	Po = {0.7, 0.0, 0.7},
+    Po = {0.7, 0.0, 0.7},
     Ra = {0.0, 1.0, 0.5},
     Pu = {0.8, 0.6, 0.0},
     Sr = {0.9, 0.9, 0.5},
     Cs = {1.0, 0.8, 0.2},
+    T = {0.5, 1.0, 0.5},
+    D = {0.8, 0.95, 1.0},
+    Xe = {0.4, 0.6, 0.9},
+    Kr = {0.7, 0.8, 0.9},
+    Ne = {0.9, 0.4, 0.3},
+    Ar = {0.6, 0.7, 0.9}
 }
 
 local structures = {
@@ -2081,6 +2105,83 @@ local structures = {
         atoms = {{element = "Rn", x = 0, y = 0, color = ELEMENT_COLORS.Ra}},
         bonds = {},
         radioactive = true
+    },
+	
+	xenon = {
+        atoms = {{element = "Xe", x = 0, y = 0, color = ELEMENT_COLORS.Xe}},
+        bonds = {}
+    },
+    
+    krypton = {
+        atoms = {{element = "Kr", x = 0, y = 0, color = ELEMENT_COLORS.Kr}},
+        bonds = {}
+    },
+    
+    neon = {
+        atoms = {{element = "Ne", x = 0, y = 0, color = ELEMENT_COLORS.Ne}},
+        bonds = {}
+    },
+    
+    argon = {
+        atoms = {{element = "Ar", x = 0, y = 0, color = ELEMENT_COLORS.Ar}},
+        bonds = {}
+    },
+    
+    xenon_atom = {
+        atoms = {{element = "Xe", x = 0, y = 0, color = ELEMENT_COLORS.Xe}},
+        bonds = {}
+    },
+    
+    krypton_atom = {
+        atoms = {{element = "Kr", x = 0, y = 0, color = ELEMENT_COLORS.Kr}},
+        bonds = {}
+    },
+    
+    neon_atom = {
+        atoms = {{element = "Ne", x = 0, y = 0, color = ELEMENT_COLORS.Ne}},
+        bonds = {}
+    },
+    
+    argon_atom = {
+        atoms = {{element = "Ar", x = 0, y = 0, color = ELEMENT_COLORS.Ar}},
+        bonds = {}
+    },
+    
+    -- NOBLE GAS COMPOUNDS (The forbidden chemistry!)
+    xenon_difluoride = {
+        atoms = {
+            {element = "Xe", x = 0, y = 0, color = ELEMENT_COLORS.Xe},
+            {element = "F", x = -18, y = 0, color = ELEMENT_COLORS.F},
+            {element = "F", x = 18, y = 0, color = ELEMENT_COLORS.F}
+        },
+        bonds = {{1, 2}, {1, 3}},
+        linear = true,
+        noble_gas_compound = true
+    },
+    
+    xenon_tetrafluoride = {
+        atoms = {
+            {element = "Xe", x = 0, y = 0, color = ELEMENT_COLORS.Xe},
+            {element = "F", x = 0, y = -18, color = ELEMENT_COLORS.F},
+            {element = "F", x = 18, y = 0, color = ELEMENT_COLORS.F},
+            {element = "F", x = 0, y = 18, color = ELEMENT_COLORS.F},
+            {element = "F", x = -18, y = 0, color = ELEMENT_COLORS.F}
+        },
+        bonds = {{1, 2}, {1, 3}, {1, 4}, {1, 5}},
+        square_planar = true,
+        noble_gas_compound = true
+    },
+    
+    krypton_difluoride = {
+        atoms = {
+            {element = "Kr", x = 0, y = 0, color = ELEMENT_COLORS.Kr},
+            {element = "F", x = -17, y = 0, color = ELEMENT_COLORS.F},
+            {element = "F", x = 17, y = 0, color = ELEMENT_COLORS.F}
+        },
+        bonds = {{1, 2}, {1, 3}},
+        linear = true,
+        extremely_unstable = true,
+        noble_gas_compound = true
     }
 }
 
@@ -2295,6 +2396,116 @@ function Molecule:update(dt)
             self.vy = math.sin(self.wanderAngle) * WANDER_SPEED
             self.rotationSpeed = 0.3
         end
+	elseif self.type == "xenon" or self.type == "krypton" or 
+           self.type == "neon" or self.type == "argon" then
+        local nearestFluorine = nil
+        local nearestDist = DETECTION_RANGE
+        
+        for _, mol in ipairs(molecules) do
+            if (mol.type == "fluorine" or mol.type == "fluorine_atom") and mol.alive then
+                local dx = mol.x - self.x
+                local dy = mol.y - self.y
+                local dist = math.sqrt(dx * dx + dy * dy)
+                if dist < nearestDist then
+                    nearestFluorine = mol
+                    nearestDist = dist
+                end
+            end
+        end
+        
+        if nearestFluorine then
+            local dx = self.x - nearestFluorine.x
+            local dy = self.y - nearestFluorine.y
+            local dist = math.sqrt(dx * dx + dy * dy)
+            local speedMult = molConfig.speedMultiplier or 1
+            local speed = FLEE_SPEED * speedMult
+            
+            -- Neon and argon flee faster because they're more inert
+            if self.type == "neon" or self.type == "argon" then
+                speed = speed * 1.3
+            end
+            
+            self.vx = (dx / dist) * speed
+            self.vy = (dy / dist) * speed
+            self.rotationSpeed = 6
+        else
+            local speedMult = molConfig.speedMultiplier or 1
+            self.wanderAngle = self.wanderAngle + (math.random() - 0.5) * 0.06
+            self.vx = math.cos(self.wanderAngle) * (WANDER_SPEED * speedMult)
+            self.vy = math.sin(self.wanderAngle) * (WANDER_SPEED * speedMult)
+            
+            -- Noble gases have a nice gentle rotation
+            if self.type == "neon" then
+                self.rotationSpeed = 3
+            elseif self.type == "argon" or self.type == "krypton" then
+                self.rotationSpeed = 2
+            else -- xenon
+                self.rotationSpeed = 1.5
+            end
+        end
+    
+    -- Noble gas compound behavior - they hunt organics like oxidizers
+    elseif self.type == "xenon_difluoride" or self.type == "xenon_tetrafluoride" or
+           self.type == "krypton_difluoride" then
+        
+        -- Krypton difluoride slowly decomposes!
+        if self.type == "krypton_difluoride" then
+            self.unstableTimer = (self.unstableTimer or 0) + dt
+            if self.unstableTimer > 8 then  -- Decomposes after 8 seconds
+                self.health = self.health - 15 * dt
+            end
+            if self.health <= 0 then
+                self.alive = false
+            end
+        end
+        
+        local preyTypes = {"methane", "ethylene", "propane", "ethanol", "ammonia",
+                          "benzene", "caffeine", "acetone", "water",
+                          "fluoromethane", "chloromethane", "bromomethane",
+                          "cyclopropane", "cyclobutane", "cyclopentane"}
+        
+        local closest = nil
+        local detectionMult = molConfig.detectionMultiplier or 1
+        local closestDist = DETECTION_RANGE * detectionMult
+        
+        for _, mol in ipairs(molecules) do
+            for _, preyType in ipairs(preyTypes) do
+                if mol.type == preyType and mol.alive then
+                    local dx = mol.x - self.x
+                    local dy = mol.y - self.y
+                    local dist = math.sqrt(dx * dx + dy * dy)
+                    if dist < closestDist then
+                        closest = mol
+                        closestDist = dist
+                        break
+                    end
+                end
+            end
+        end
+        
+        if closest then
+            local dx = closest.x - self.x
+            local dy = closest.y - self.y
+            local dist = math.sqrt(dx * dx + dy * dy)
+            local speedMult = molConfig.speedMultiplier or 1
+            local speed = HUNT_SPEED * speedMult
+            self.vx = (dx / dist) * speed
+            self.vy = (dy / dist) * speed
+            self.rotationSpeed = 2
+            
+            local damage = molConfig.damage or 50
+            if dist < self.radius + closest.radius then
+                closest.health = closest.health - damage * dt
+                if closest.health <= 0 then
+                    closest.alive = false
+                end
+            end
+        else
+            self.wanderAngle = self.wanderAngle + (math.random() - 0.5) * 0.08
+            self.vx = math.cos(self.wanderAngle) * WANDER_SPEED
+            self.vy = math.sin(self.wanderAngle) * WANDER_SPEED
+            self.rotationSpeed = 0.4
+        end
     elseif self.type == "propane" or self.type == "cyclopropane" or self.type == "cyclopropenylidene" or
            self.type == "cyclobutane" or self.type == "cyclobutene" or self.type == "cyclopentane" or
            self.type == "benzene" or self.type == "ethylene" or self.type == "ethanol" or
@@ -2450,6 +2661,43 @@ function Molecule:draw()
             love.graphics.setColor(0.3, 0.8, 0.8, 0.1 + pulse * 0.1)
             love.graphics.circle("fill", self.x, self.y, self.radius + 5)
         end
+    end
+	
+	if self.type == "xenon" or self.type == "krypton" or 
+       self.type == "neon" or self.type == "argon" then
+        local pulse = (math.sin(love.timer.getTime() * 1.5) + 1) * 0.5
+        
+        if self.type == "xenon" then
+            love.graphics.setColor(0.4, 0.6, 0.9, 0.15 + pulse * 0.1)
+        elseif self.type == "krypton" then
+            love.graphics.setColor(0.7, 0.8, 0.9, 0.12 + pulse * 0.08)
+        elseif self.type == "neon" then
+            love.graphics.setColor(0.9, 0.4, 0.3, 0.2 + pulse * 0.15)
+        elseif self.type == "argon" then
+            love.graphics.setColor(0.6, 0.7, 0.9, 0.1 + pulse * 0.08)
+        end
+        
+        love.graphics.circle("fill", self.x, self.y, self.radius + 4)
+    end
+    
+
+    if self.type == "xenon_difluoride" or self.type == "xenon_tetrafluoride" or
+       self.type == "krypton_difluoride" then
+        local pulse = (math.sin(love.timer.getTime() * 2.5) + 1) * 0.5
+        
+        love.graphics.setColor(0.8, 0.4, 0.9, 0.15 + pulse * 0.2)
+        love.graphics.circle("fill", self.x, self.y, self.radius + 8)
+        
+        for i = 1, 2 do
+            love.graphics.setColor(0.7, 0.5, 0.9, 0.2)
+            love.graphics.circle("line", self.x, self.y, self.radius + i * 6)
+        end
+    end
+    
+    if self.type == "krypton_difluoride" and (self.unstableTimer or 0) > 8 then
+        local pulse = (math.sin(love.timer.getTime() * 4) + 1) * 0.5
+        love.graphics.setColor(0.9, 0.3, 0.9, 0.2 + pulse * 0.3)
+        love.graphics.circle("fill", self.x, self.y, self.radius + 6)
     end
 	
 	if self.type == "azidoazide_azide" then
@@ -2775,6 +3023,37 @@ function drawMoleculeTooltip(molecule)
             if molecule.unstableTimer > 0 then
                 table.insert(lines, string.format("Time to decay: %.1fs", math.max(0, 5 - molecule.unstableTimer)))
             end
+        end
+    end
+	
+	if molecule.type == "xenon" then
+        table.insert(lines, "Noble gas - anesthetic properties")
+        table.insert(lines, "Can form compounds with fluorine!")
+    elseif molecule.type == "krypton" then
+        table.insert(lines, "Noble gas - mostly inert")
+        table.insert(lines, "Rarely forms compounds")
+    elseif molecule.type == "neon" then
+        table.insert(lines, "Noble gas - completely inert")
+        table.insert(lines, "Famous for orange glow")
+    elseif molecule.type == "argon" then
+        table.insert(lines, "Noble gas - totally inert")
+        table.insert(lines, "Most common noble gas")
+    end
+    
+    if molecule.type == "xenon_difluoride" then
+        table.insert(lines, "FORBIDDEN CHEMISTRY!")
+        table.insert(lines, "Noble gas compound - shouldn't exist!")
+        table.insert(lines, "Strong oxidizing agent")
+    elseif molecule.type == "xenon_tetrafluoride" then
+        table.insert(lines, "EVEN MORE FORBIDDEN!")
+        table.insert(lines, "Square planar geometry")
+        table.insert(lines, "Very strong oxidizer")
+    elseif molecule.type == "krypton_difluoride" then
+        table.insert(lines, "EXTREMELY FORBIDDEN!")
+        table.insert(lines, "Decomposes at room temperature")
+        table.insert(lines, "One of the rarest compounds")
+        if (molecule.unstableTimer or 0) > 0 then
+            table.insert(lines, string.format("Time to decay: %.1fs", math.max(0, 8 - (molecule.unstableTimer or 0))))
         end
     end
 	
