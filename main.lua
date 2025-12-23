@@ -20,6 +20,7 @@
 -- December 22 2025 18:54 - Added deuterium compounds. (December 2025 Build 0.1.15326)
 -- ---------------------- -
 -- December 23 2025 16:29 - Added more chemicals ^_^ (December 2025 Build 0.1.15379)
+-- December 23 2025 19:52 - Changed molecule colours to fit with CPK colors (December 2025 Build 0.1.15384)
 
 local config = require("config")
 local Console = require("libs/console")
@@ -661,31 +662,124 @@ local deathFragmentations = {
 local spawnFragments
 
 local ELEMENT_COLORS = {
-    H = {0.9, 0.9, 0.9},
-    He = {0.8, 0.9, 1.0},
-    Li = {0.8, 0.5, 1.0},
-    C = {0.3, 0.3, 0.3},
-    N = {0.2, 0.4, 0.9},
-    O = {0.9, 0.2, 0.2},
-    F = {0.3, 0.9, 0.3},
-    Na = {1.0, 0.8, 0.2},
-    P = {0.9, 0.5, 0.2},
-    S = {0.9, 0.9, 0.2},
-    Cl = {0.3, 0.9, 0.6},
-    Br = {0.6, 0.2, 0.1},
-    I = {0.5, 0.0, 0.5},
-    U = {0.0, 0.8, 0.0},
-    Po = {0.7, 0.0, 0.7},
-    Ra = {0.0, 1.0, 0.5},
-    Pu = {0.8, 0.6, 0.0},
-    Sr = {0.9, 0.9, 0.5},
-    Cs = {1.0, 0.8, 0.2},
-    T = {0.5, 1.0, 0.5},
-    D = {0.8, 0.95, 1.0},
-    Xe = {0.4, 0.6, 0.9},
-    Kr = {0.7, 0.8, 0.9},
-    Ne = {0.9, 0.4, 0.3},
-    Ar = {0.6, 0.7, 0.9}
+ -- Period 1
+    H = {1.0, 1.0, 1.0},           -- Hydrogen: White
+		D = {0.9, 0.9, 1.0},           -- Deuterium: Very light blue
+		T = {0.8, 1.0, 1.0},           -- Tritium: Light cyan
+    He = {0.85, 1.0, 1.0},         -- Helium: Cyan
+    
+ -- Period 2
+    Li = {0.8, 0.5, 1.0},          -- Lithium: Violet
+    Be = {0.76, 1.0, 0.0},         -- Beryllium: Dark green
+    B = {1.0, 0.71, 0.71},         -- Boron: Peach
+    C = {0.56, 0.56, 0.56},        -- Carbon: Grey
+    N = {0.19, 0.31, 0.97},        -- Nitrogen: Blue
+    O = {1.0, 0.05, 0.05},         -- Oxygen: Red
+    F = {0.56, 0.88, 0.31},        -- Fluorine: Green
+    Ne = {0.7, 0.89, 0.96},        -- Neon: Very light cyan
+    
+	-- Period 3
+    Na = {0.67, 0.36, 0.95},       -- Sodium: Violet
+    Mg = {0.54, 1.0, 0.0},         -- Magnesium: Forest green
+    Al = {0.75, 0.65, 0.65},       -- Aluminum: Dark grey
+    Si = {0.94, 0.78, 0.63},       -- Silicon: Golden
+    P = {1.0, 0.5, 0.0},           -- Phosphorus: Orange
+    S = {1.0, 1.0, 0.19},          -- Sulfur: Yellow
+    Cl = {0.12, 0.94, 0.12},       -- Chlorine: Green
+    Ar = {0.5, 0.82, 0.89},        -- Argon: Medium cyan
+    
+ -- Period 4
+    K = {0.56, 0.25, 0.83},        -- Potassium: Violet
+    Ca = {0.24, 1.0, 0.0},         -- Calcium: Dark green
+    Sc = {0.9, 0.9, 0.9},          -- Scandium: Light grey
+    Ti = {0.75, 0.76, 0.78},       -- Titanium: Grey
+    V = {0.65, 0.65, 0.67},        -- Vanadium: Grey
+    Cr = {0.54, 0.6, 0.78},        -- Chromium: Steel grey
+    Mn = {0.61, 0.48, 0.78},       -- Manganese: Grey violet
+    Fe = {0.88, 0.4, 0.2},         -- Iron: Orange
+    Co = {0.94, 0.56, 0.63},       -- Cobalt: Pink
+    Ni = {0.31, 0.82, 0.31},       -- Nickel: Green
+    Cu = {0.78, 0.5, 0.2},         -- Copper: Brown
+    Zn = {0.49, 0.5, 0.69},        -- Zinc: Blue grey
+    Ga = {0.76, 0.56, 0.56},       -- Gallium: Red grey
+    Ge = {0.4, 0.56, 0.56},        -- Germanium: Grey
+    As = {0.74, 0.5, 0.89},        -- Arsenic: Violet
+    Se = {1.0, 0.63, 0.0},         -- Selenium: Orange
+    Br = {0.65, 0.16, 0.16},       -- Bromine: Dark red
+    Kr = {0.36, 0.72, 0.82},       -- Krypton: Light cyan
+    
+ -- Period 5
+    Rb = {0.44, 0.18, 0.69},       -- Rubidium: Dark violet
+    Sr = {0.0, 1.0, 0.0},          -- Strontium: Bright green
+    Y = {0.58, 1.0, 1.0},          -- Yttrium: Cyan
+    Zr = {0.58, 0.88, 0.88},       -- Zirconium: Cyan
+    Nb = {0.45, 0.76, 0.79},       -- Niobium: Blue grey
+    Mo = {0.33, 0.71, 0.71},       -- Molybdenum: Grey cyan
+    Tc = {0.23, 0.62, 0.62},       -- Technetium: Dark grey
+    Ru = {0.14, 0.56, 0.56},       -- Ruthenium: Teal
+    Rh = {0.04, 0.49, 0.55},       -- Rhodium: Steel blue
+    Pd = {0.0, 0.41, 0.52},        -- Palladium: Dark teal
+    Ag = {0.75, 0.75, 0.75},       -- Silver: Light grey
+    Cd = {1.0, 0.85, 0.56},        -- Cadmium: Golden
+    In = {0.65, 0.46, 0.45},       -- Indium: Grey
+    Sn = {0.4, 0.5, 0.5},          -- Tin: Grey
+    Sb = {0.62, 0.39, 0.71},       -- Antimony: Violet
+    Te = {0.83, 0.48, 0.0},        -- Tellurium: Orange
+    I = {0.58, 0.0, 0.58},         -- Iodine: Dark violet
+    Xe = {0.26, 0.62, 0.69},       -- Xenon: Dark cyan
+    
+ -- Period 6
+    Cs = {0.34, 0.09, 0.56},       -- Cesium: Dark violet
+    Ba = {0.0, 0.79, 0.0},         -- Barium: Green
+    La = {0.44, 0.83, 1.0},        -- Lanthanum: Light blue
+    Ce = {1.0, 1.0, 0.78},         -- Cerium: Light yellow
+    Pr = {0.85, 1.0, 0.78},        -- Praseodymium: Light green
+    Nd = {0.78, 1.0, 0.78},        -- Neodymium: Light green
+    Pm = {0.64, 1.0, 0.78},        -- Promethium: Green
+    Sm = {0.56, 1.0, 0.78},        -- Samarium: Green
+    Eu = {0.38, 1.0, 0.78},        -- Europium: Green
+    Gd = {0.27, 1.0, 0.78},        -- Gadolinium: Green
+    Tb = {0.19, 1.0, 0.78},        -- Terbium: Green
+    Dy = {0.12, 1.0, 0.78},        -- Dysprosium: Green
+    Ho = {0.0, 1.0, 0.61},         -- Holmium: Green
+    Er = {0.0, 0.9, 0.46},         -- Erbium: Green
+    Tm = {0.0, 0.83, 0.32},        -- Thulium: Green
+    Yb = {0.0, 0.75, 0.22},        -- Ytterbium: Green
+    Lu = {0.0, 0.67, 0.14},        -- Lutetium: Green
+    Hf = {0.3, 0.76, 1.0},         -- Hafnium: Light blue
+    Ta = {0.3, 0.65, 1.0},         -- Tantalum: Light blue
+    W = {0.13, 0.58, 0.84},        -- Tungsten: Steel blue
+    Re = {0.15, 0.49, 0.67},       -- Rhenium: Blue grey
+    Os = {0.15, 0.4, 0.59},        -- Osmium: Blue grey
+    Ir = {0.09, 0.33, 0.53},       -- Iridium: Dark blue
+    Pt = {0.82, 0.82, 0.88},       -- Platinum: Light grey
+    Au = {1.0, 0.82, 0.14},        -- Gold: Golden
+    Hg = {0.72, 0.72, 0.82},       -- Mercury: Light grey
+    Tl = {0.65, 0.33, 0.3},        -- Thallium: Brown grey
+    Pb = {0.34, 0.35, 0.38},       -- Lead: Dark grey
+    Bi = {0.62, 0.31, 0.71},       -- Bismuth: Violet
+    Po = {0.67, 0.36, 0.0},        -- Polonium: Brown
+    At = {0.46, 0.31, 0.27},       -- Astatine: Dark brown
+    Rn = {0.26, 0.51, 0.59},       -- Radon: Dark cyan
+    
+ -- Period 7
+    Fr = {0.26, 0.0, 0.4},         -- Francium: Dark violet
+    Ra = {0.0, 0.49, 0.0},         -- Radium: Dark green
+    Ac = {0.44, 0.67, 0.98},       -- Actinium: Light blue
+    Th = {0.0, 0.73, 1.0},         -- Thorium: Light blue
+    Pa = {0.0, 0.63, 1.0},         -- Protactinium: Light blue
+    U = {0.0, 0.56, 1.0},          -- Uranium: Light blue
+    Np = {0.0, 0.5, 1.0},          -- Neptunium: Light blue
+    Pu = {0.0, 0.42, 1.0},         -- Plutonium: Blue
+    Am = {0.33, 0.36, 0.95},       -- Americium: Blue violet
+    Cm = {0.47, 0.36, 0.89},       -- Curium: Violet
+    Bk = {0.54, 0.31, 0.89},       -- Berkelium: Violet
+    Cf = {0.63, 0.21, 0.83},       -- Californium: Violet
+    Es = {0.7, 0.12, 0.83},        -- Einsteinium: Violet
+    Fm = {0.7, 0.12, 0.73},        -- Fermium: Violet
+    Md = {0.7, 0.05, 0.65},        -- Mendelevium: Violet
+    No = {0.74, 0.05, 0.53},       -- Nobelium: Red violet
+    Lr = {0.78, 0.0, 0.4}          -- Lawrencium: Red violet
 }
 
 local structures = {
