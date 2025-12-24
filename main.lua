@@ -2303,6 +2303,12 @@ Molecule.__index = Molecule
 
 function Molecule:new(type, x, y)
     local molConfig = config.molecules[type]
+	
+	if not molConfig then
+        print("Warning: Tried to create unknown molecule type: " .. tostring(type))
+        return nil
+    end
+	
     local mol = {
         type = type,
         x = x,
@@ -3668,22 +3674,28 @@ spawnFragments = function(molecule)
             
             local x = molecule.x + math.cos(currentAngle) * distance
             local y = molecule.y + math.sin(currentAngle) * distance
-            local fragment = Molecule:new(rule.type, x, y)
-            local explosionSpeed = 80 + math.random() * 40
             
-            if grbIntensity > 0 then
-                explosionSpeed = explosionSpeed * (1 + (grbIntensity * 0.3))
+            -- CREATE WITH SAFETY CHECK
+            local fragment = Molecule:new(rule.type, x, y)
+            
+            -- Only add if fragment was successfully created
+            if fragment then
+                local explosionSpeed = 80 + math.random() * 40
+                
+                if grbIntensity > 0 then
+                    explosionSpeed = explosionSpeed * (1 + (grbIntensity * 0.3))
+                end
+                
+                fragment.vx = math.cos(currentAngle) * explosionSpeed
+                fragment.vy = math.sin(currentAngle) * explosionSpeed
+                table.insert(molecules, fragment)
             end
             
-            fragment.vx = math.cos(currentAngle) * explosionSpeed
-            fragment.vy = math.sin(currentAngle) * explosionSpeed
-            table.insert(molecules, fragment)
             currentAngle = currentAngle + angleStep
         end
     end
     
     if grbIntensity >= 5 then
-		-- TODO: Expand
         local gammaRays = math.floor(grbIntensity * 2)
         for i = 1, gammaRays do
             local angle = math.random() * math.pi * 2

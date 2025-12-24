@@ -18,7 +18,8 @@ libconfig.timeslider = {
         border = {0.5, 0.5, 0.5},
         normalLine = {1, 1, 1, 0.5},
         handle = {1, 1, 1},
-        handleBorder = {0.2, 0.2, 0.2}
+        handleBorder = {0.2, 0.2, 0.2},
+        text = {1, 1, 1}  -- Added missing text color
     },
     
     text = {
@@ -51,8 +52,9 @@ libconfig.console = {
         inputOffset = 30,
         lineHeight = 20,
         padding = 10,
-        helpY = -10,
-        helpScale = 0.8
+        helpY = 5,  -- Changed from -10 to 5 to position below console
+        helpScale = 0.8,
+        helpText = "Press ` to close | Type 'help' for commands"  -- Added here for consistency
     },
     
     keys = {
