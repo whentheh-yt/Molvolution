@@ -5,25 +5,26 @@
 --     |_____\___/ \____|
 --
 -- ------------------------
--- December 20 2025 12:52 - Started. Finally. Hooray. (December 2025 Build 0.1.14779)
--- December 20 2025 13:39 - Fixed subscript bug for hydroxide. (December 2025 Build 0.1.14783)
--- December 20 2025 14:29 - Added uranium compounds, fixed love:draw and fragmentationRules, and other stuff. (December 2025 Build 0.1.14897)
--- December 20 2025 15:21 - Added atom attractions. (December 2025 Build 0.1.15012)
--- December 20 2025 16:15 - HALOMETHANE EDITION - Added ALL the halomethanes! (December 2025 Build 0.1.15050)
--- ---------------------- -
--- December 21 2025 11:01 - Added 3 secret molecules and a console. (December 2025 Build 0.1.15102)
--- December 21 2025 15:31 - Added more alkanes, added sound and revamped death. Also main.lua hit 100KB. (December 2025 Build 0.1.15223)
--- December 21 2025 20:31 - Added interstellar molecules. (December 2025 Build 0.1.15256)
--- December 21 2025 20:53 - Added a time slider, fixed the camera zooming and added .\libs. (December 2025 Build 0.1.15279)
--- ---------------------- -
--- December 22 2025 10:16 - Added a secret molecule reccomended by my sister and a few more radioactive shit. (December 2025 Build 0.1.15300)
--- December 22 2025 18:54 - Added deuterium compounds. (December 2025 Build 0.1.15326)
--- ---------------------- -
--- December 23 2025 16:29 - Added more chemicals ^_^ (December 2025 Build 0.1.15379)
--- December 23 2025 19:52 - Changed molecule colours to fit with CPK colors (December 2025 Build 0.1.15384)
--- ---------------------- - 
--- December 24 2025 13:58 - Added Positronium Hydrite as a funny (December 2025 Build 0.1.15403)
--- December 24 2025 18:41 - Added Dipositronium as another funny (December 2025 Build 0.1.15441)
+-- December 20 2025 12:52  - Started. Finally. Hooray. (December 2025 Build 0.1.14779)
+-- December 20 2025 13:39  - Fixed subscript bug for hydroxide. (December 2025 Build 0.1.14783)
+-- December 20 2025 14:29  - Added uranium compounds, fixed love:draw and fragmentationRules, and other stuff. (December 2025 Build 0.1.14897)
+-- December 20 2025 15:21  - Added atom attractions. (December 2025 Build 0.1.15012)
+-- December 20 2025 16:15  - HALOMETHANE EDITION - Added ALL the halomethanes! (December 2025 Build 0.1.15050)
+-- ----------------------- -
+-- December 21 2025 11:01  - Added 3 secret molecules and a console. (December 2025 Build 0.1.15102)
+-- December 21 2025 15:31  - Added more alkanes, added sound and revamped death. Also main.lua hit 100KB. (December 2025 Build 0.1.15223)
+-- December 21 2025 20:31  - Added interstellar molecules. (December 2025 Build 0.1.15256)
+-- December 21 2025 20:53  - Added a time slider, fixed the camera zooming and added .\libs. (December 2025 Build 0.1.15279)
+-- ----------------------- -
+-- December 22 2025 10:16  - Added a secret molecule reccomended by my sister and a few more radioactive shit. (December 2025 Build 0.1.15300)
+-- December 22 2025 18:54  - Added deuterium compounds. (December 2025 Build 0.1.15326)
+-- ----------------------- -
+-- December 23 2025 16:29  - Added more chemicals ^_^ (December 2025 Build 0.1.15379)
+-- December 23 2025 19:52  - Changed molecule colours to fit with CPK colors (December 2025 Build 0.1.15384)
+-- ----------------------- - 
+-- December 24 2025 13:58  - Added Positronium Hydrite as a funny (December 2025 Build 0.1.15403)
+-- December 24 2025 18:41  - Added Dipositronium as another funny (December 2025 Build 0.1.15441)
+-- December 24 2025 20:31  - Added a geiger-like click the more radioactive molecules are on screen (December 2025 Build 0.1.15450
 
 local config = require("config")
 local Console = require("libs/console")
@@ -3085,12 +3086,41 @@ end
 
 function love.update(dt)
     dt = dt * TimeSlider.scale
+	local screenX, screenY = camera.x, camera.y
+    local screenW = love.graphics.getWidth() / camera.zoom
+    local screenH = love.graphics.getHeight() / camera.zoom
     local mouseX, mouseY = love.mouse.getPosition()
     local worldX = camera.x + mouseX / camera.zoom
     local worldY = camera.y + mouseY / camera.zoom
 
     hoveredMolecule = nil
     local closestDist = 30 / camera.zoom
+	
+    local radioactiveCount = 0
+    
+    for _, mol in ipairs(molecules) do
+        if mol.alive then
+            mol:update(dt)
+            local struct = structures[mol.type]
+            if struct and struct.radioactive then
+                if mol.x > screenX and mol.x < screenX + screenW and
+                   mol.y > screenY and mol.y < screenY + screenH then
+                    radioactiveCount = radioactiveCount + 1
+                end
+            end
+        end
+    end
+    
+    if radioactiveCount > 0 then
+        geigerTimer = (geigerTimer or 0) + dt
+        local interval = 0.5 / (radioactiveCount ^ 0.7) 
+        
+        if geigerTimer > interval then
+            local click = generateSound(2450, 0.02, 0.15)
+            click:play()
+            geigerTimer = 0
+        end
+    end
 
     for _, mol in ipairs(molecules) do
         if mol.alive then
