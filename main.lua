@@ -21,6 +21,8 @@
 -- ---------------------- -
 -- December 23 2025 16:29 - Added more chemicals ^_^ (December 2025 Build 0.1.15379)
 -- December 23 2025 19:52 - Changed molecule colours to fit with CPK colors (December 2025 Build 0.1.15384)
+-- ---------------------- - 
+-- December 24 2025 13:58 - Added Positronium Hydrite as a funny (December 2025 Build 0.1.15403)
 
 local config = require("config")
 local Console = require("libs/console")
@@ -656,6 +658,11 @@ local deathFragmentations = {
     krypton_difluoride = {
         {type = "krypton", count = 1},
         {type = "fluorine", count = 1}
+    },
+	positronium_hydride = {
+        {type = "hydrogen_atom", count = 1},
+        -- The positronium annihilates into pure energy (gamma rays)
+        -- We can't represent photons, so it just releases the hydrogen
     }
 }
 
@@ -779,7 +786,10 @@ local ELEMENT_COLORS = {
     Fm = {0.7, 0.12, 0.73},        -- Fermium: Violet
     Md = {0.7, 0.05, 0.65},        -- Mendelevium: Violet
     No = {0.74, 0.05, 0.53},       -- Nobelium: Red violet
-    Lr = {0.78, 0.0, 0.4}          -- Lawrencium: Red violet
+    Lr = {0.78, 0.0, 0.4},          -- Lawrencium: Red violet
+	
+ -- Miscellaneous
+	Ps = {1.0, 0.2, 1.0}           -- Positronium: Bright magenta
 }
 
 local structures = {
@@ -2276,6 +2286,15 @@ local structures = {
         linear = true,
         extremely_unstable = true,
         noble_gas_compound = true
+    },
+	positronium_hydride = {
+        atoms = {
+            {element = "Ps", x = -6, y = 0, color = ELEMENT_COLORS.Ps},
+            {element = "H", x = 6, y = 0, color = ELEMENT_COLORS.H}
+        },
+        bonds = {{1, 2, weak = true}},
+        antimatter = true,
+        unstable = true
     }
 }
 
@@ -2310,6 +2329,38 @@ function Molecule:update(dt)
     if not self.alive then
         return
     end
+	
+if self.type == "positronium_hydride" then
+    local molConfig = config.molecules[self.type]
+    local grbIntensity = molConfig.grb or 8
+    local pulse = (math.sin(love.timer.getTime() * 15) + 1) * 0.5
+    local decayProgress = self.unstableTimer / 0.5
+    
+    local glowIntensity = 0.3 + (grbIntensity / 10) * 0.4 + decayProgress * 0.4
+    love.graphics.setColor(1, 0.2, 1, glowIntensity)
+    love.graphics.circle("fill", self.x, self.y, self.radius + 15)
+    
+    if decayProgress > (1 - grbIntensity / 10) then
+        local rayCount = math.floor(4 + grbIntensity)
+        for i = 1, rayCount do
+            local angle = (i / rayCount) * math.pi * 2 + love.timer.getTime() * 5
+            local length = (10 + grbIntensity * 2) + pulse * (5 + grbIntensity)
+            love.graphics.setColor(1, 1, 1, 0.4 + (grbIntensity / 10) * 0.3 + pulse * 0.4)
+            love.graphics.line(
+                self.x, self.y,
+                self.x + math.cos(angle) * length,
+                self.y + math.sin(angle) * length
+            )
+        end
+    end
+    
+    -- Pulsing rings - more rings for higher GRB
+    local ringCount = math.floor(3 + grbIntensity / 2)
+    for i = 1, ringCount do
+        love.graphics.setColor(1, 0.5, 1, (0.5 + grbIntensity / 20) - i * 0.08)
+        love.graphics.circle("line", self.x, self.y, self.radius + i * (8 + pulse * 5))
+    end
+end
 
     -- Carbon tetraiodide slowly decomposes!
     if self.type == "carbon_tetraiodide" then
@@ -2813,6 +2864,33 @@ function Molecule:draw()
             love.graphics.circle("line", self.x, self.y, self.radius + i * 8)
         end
     end
+	
+	-- Positronium is VERY FUCKING unstable
+	if self.type == "positronium_hydride" then
+        local pulse = (math.sin(love.timer.getTime() * 15) + 1) * 0.5
+        local decayProgress = self.unstableTimer / 0.5
+        
+        love.graphics.setColor(1, 0.2, 1, 0.3 + decayProgress * 0.4)
+        love.graphics.circle("fill", self.x, self.y, self.radius + 15)
+        
+        if decayProgress > 0.7 then
+            for i = 1, 8 do
+                local angle = (i / 8) * math.pi * 2 + love.timer.getTime() * 5
+                local length = 20 + pulse * 15
+                love.graphics.setColor(1, 1, 1, 0.6 + pulse * 0.4)
+                love.graphics.line(
+                    self.x, self.y,
+                    self.x + math.cos(angle) * length,
+                    self.y + math.sin(angle) * length
+                )
+            end
+        end
+        
+        for i = 1, 5 do
+            love.graphics.setColor(1, 0.5, 1, 0.5 - i * 0.08)
+            love.graphics.circle("line", self.x, self.y, self.radius + i * (8 + pulse * 5))
+        end
+    end
 
     -- Triiodomethane also gets a weaker glow
     if self.type == "triiodomethane" and self.unstableTimer > 15 then
@@ -2976,6 +3054,54 @@ function love.update(dt)
     for _, mol in ipairs(molecules) do
         mol:update(dt)
     end
+	
+	for i = #molecules, 1, -1 do
+        local mol = molecules[i]
+        if mol.alive and mol.type == "positronium_hydride" then
+            for j = #molecules, 1, -1 do
+                if i ~= j and molecules[j].alive then
+                    local other = molecules[j]
+                    local dx = mol.x - other.x
+                    local dy = mol.y - other.y
+                    local dist = math.sqrt(dx * dx + dy * dy)
+                    local minDist = mol.radius + other.radius
+                    
+                    if dist < minDist then
+                        mol.alive = false
+                        other.alive = false
+                        
+                        local annihilationSound1 = generateSound(880, 0.3, 0.5)
+						local annihilationSound2 = generateSound(660, 0.6, 0.4)
+						local annihilationSound3 = generateSound(440, 0.9, 0.3)
+						local annihilationSound4 = generateSound(220, 1.2, 0.2)
+						local annihilationSound5 = generateSound(110, 1.5, 0.1)
+                        annihilationSound1:play()
+						annihilationSound2:play()
+						annihilationSound3:play()
+						annihilationSound4:play()
+						annihilationSound5:play()
+                        
+                        local burstCount = 8
+                        for k = 1, burstCount do
+                            local angle = (k / burstCount) * math.pi * 2
+                            local speed = 150 + math.random() * 100
+                            
+                            if math.random() < 0.5 then
+                                local fragment = Molecule:new("hydrogen_atom", 
+                                    mol.x + math.cos(angle) * 40,
+                                    mol.y + math.sin(angle) * 40)
+                                fragment.vx = math.cos(angle) * speed
+                                fragment.vy = math.sin(angle) * speed
+                                table.insert(molecules, fragment)
+                            end
+                        end
+                        
+                        break  -- Exit inner loop since this molecule is dead
+                    end
+                end
+            end
+        end
+    end
 
     -- Remove dead molecules
     for i = #molecules, 1, -1 do
@@ -3132,6 +3258,14 @@ function drawMoleculeTooltip(molecule)
     elseif molecule.type == "argon" then
         table.insert(lines, "Noble gas - totally inert")
         table.insert(lines, "Most common noble gas")
+    end
+	
+	if molecule.type == "positronium_hydride" then
+        table.insert(lines, "Annihilates in <1 nanosecond!")
+        if molecule.unstableTimer > 0 then
+            table.insert(lines, string.format("Annihilation in: %.2fs", math.max(0, 0.5 - molecule.unstableTimer)))
+        end
+        table.insert(lines, "Releases gamma ray burst!")
     end
     
     if molecule.type == "xenon_difluoride" then
@@ -3514,24 +3648,46 @@ spawnFragments = function(molecule)
     local angleStep = (math.pi * 2) / fragmentCount
     local currentAngle = math.random() * math.pi * 2
 
+    local molConfig = config.molecules[molecule.type]
+    local grbIntensity = molConfig.grb or 0
+    
+    if grbIntensity > 0 then
+        local burstParticles = math.floor(grbIntensity * 4)
+        for i = 1, burstParticles do
+            local angle = (i / burstParticles) * math.pi * 2
+        end
+    end
+
     for _, rule in ipairs(fragmentation) do
         for i = 1, rule.count do
             local distance = 30 + math.random() * 20
+            
+            if grbIntensity > 0 then
+                distance = distance + (grbIntensity * 10)
+            end
+            
             local x = molecule.x + math.cos(currentAngle) * distance
             local y = molecule.y + math.sin(currentAngle) * distance
             local fragment = Molecule:new(rule.type, x, y)
             local explosionSpeed = 80 + math.random() * 40
             
-            -- Bigger explosion for unstable molecules
-            if molecule.type == "carbon_tetraiodide" or molecule.type == "tnt" or 
-               molecule.type == "triiodomethane" then
-                explosionSpeed = explosionSpeed * 2
+            if grbIntensity > 0 then
+                explosionSpeed = explosionSpeed * (1 + (grbIntensity * 0.3))
             end
             
             fragment.vx = math.cos(currentAngle) * explosionSpeed
             fragment.vy = math.sin(currentAngle) * explosionSpeed
             table.insert(molecules, fragment)
             currentAngle = currentAngle + angleStep
+        end
+    end
+    
+    if grbIntensity >= 5 then
+		-- TODO: Expand
+        local gammaRays = math.floor(grbIntensity * 2)
+        for i = 1, gammaRays do
+            local angle = math.random() * math.pi * 2
+            local speed = 200 + math.random() * 100
         end
     end
 end

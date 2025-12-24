@@ -2,7 +2,7 @@ local config = {}
 
 config.game = {
     title = "Molvolution",
-    version = "December 2025 Build 0.1.15379",
+    version = "December 2025 Build 0.1.15403",
     window = {
         width = 1200,
         height = 800,
@@ -1023,6 +1023,19 @@ config.molecules = {
         atom = true,
         valence = 0,
         noble = true
+    },
+	
+	positronium_hydride = {
+        health = 15,
+        radius = 9,
+        speedMultiplier = 2.0,
+        peaceful = true,
+        exotic = true,
+        antimatter = true,
+        annihilates = true,
+        extremely_unstable = true,
+        gamma_burst = true,
+		grb = 8
     }
 }
 
@@ -1152,7 +1165,8 @@ config.initialSpawns = {
     argon = 8,
     xenon_difluoride = 2,
     xenon_tetrafluoride = 1,
-    krypton_difluoride = 1
+    krypton_difluoride = 1,
+	positronium_hydride = 3,  -- Rare because it dies SO fast
 }
 
 config.visual = {

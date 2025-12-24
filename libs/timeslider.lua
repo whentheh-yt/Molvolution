@@ -1,48 +1,54 @@
+local libconfig = require("libs/libconfig")
+local cfg = libconfig.timeslider
+
 local TimeSlider = {}
 
-TimeSlider.scale = 1.0
-TimeSlider.x = 10
-TimeSlider.y = 780
-TimeSlider.width = 200
-TimeSlider.height = 20
-TimeSlider.min = 0.1
-TimeSlider.max = 3.0
+TimeSlider.scale = cfg.scale
+TimeSlider.x = cfg.x
+TimeSlider.y = cfg.y
+TimeSlider.width = cfg.width
+TimeSlider.height = cfg.height
+TimeSlider.min = cfg.min
+TimeSlider.max = cfg.max
 TimeSlider.dragging = false
 
 function TimeSlider.draw()
     local y = TimeSlider.y
+    local colors = cfg.colors
+    local text = cfg.text
     
-    love.graphics.setColor(1, 1, 1)
-    love.graphics.print("Time Scale: " .. string.format("%.1fx", TimeSlider.scale), TimeSlider.x, y - 20)
+    love.graphics.setColor(colors.text or {1, 1, 1})
+    love.graphics.print(text.label .. string.format(text.format, TimeSlider.scale), TimeSlider.x, y + text.offsetY)
     
-    love.graphics.setColor(0.2, 0.2, 0.2)
+    love.graphics.setColor(colors.background)
     love.graphics.rectangle("fill", TimeSlider.x, y, TimeSlider.width, TimeSlider.height, 5, 5)
     
     local fillWidth = ((TimeSlider.scale - TimeSlider.min) / (TimeSlider.max - TimeSlider.min)) * TimeSlider.width
     if TimeSlider.scale < 1.0 then
-        love.graphics.setColor(0.3, 0.6, 1.0)
+        love.graphics.setColor(colors.slow)
     elseif TimeSlider.scale > 1.0 then
-        love.graphics.setColor(1.0, 0.5, 0.2)
+        love.graphics.setColor(colors.fast)
     else
-        love.graphics.setColor(0.5, 0.8, 0.5)
+        love.graphics.setColor(colors.normal)
     end
     love.graphics.rectangle("fill", TimeSlider.x, y, fillWidth, TimeSlider.height, 5, 5)
     
-    love.graphics.setColor(0.5, 0.5, 0.5)
+    love.graphics.setColor(colors.border)
     love.graphics.setLineWidth(2)
     love.graphics.rectangle("line", TimeSlider.x, y, TimeSlider.width, TimeSlider.height, 5, 5)
     
     local normalPos = ((1.0 - TimeSlider.min) / (TimeSlider.max - TimeSlider.min)) * TimeSlider.width
-    love.graphics.setColor(1, 1, 1, 0.5)
+    love.graphics.setColor(colors.normalLine)
     love.graphics.line(TimeSlider.x + normalPos, y, TimeSlider.x + normalPos, y + TimeSlider.height)
     
     local handleX = TimeSlider.x + fillWidth
-    love.graphics.setColor(1, 1, 1)
+    love.graphics.setColor(colors.handle)
     love.graphics.circle("fill", handleX, y + TimeSlider.height / 2, 8)
-    love.graphics.setColor(0.2, 0.2, 0.2)
+    love.graphics.setColor(colors.handleBorder)
     love.graphics.circle("line", handleX, y + TimeSlider.height / 2, 8)
 end
 
+-- Rest of TimeSlider functions remain the same...
 function TimeSlider.mousepressed(x, y, button)
     if button == 1 then
         if x >= TimeSlider.x and x <= TimeSlider.x + TimeSlider.width and
