@@ -2,7 +2,7 @@ local config = {}
 
 config.game = {
     title = "Molvolution",
-    version = "December 2025 Build 0.1.15427",
+    version = "December 2025 Build 0.1.15441",
     window = {
         width = 1200,
         height = 800,
@@ -1036,6 +1036,19 @@ config.molecules = {
         extremely_unstable = true,
         gamma_burst = true,
 		grb = 8
+    },
+	dipositronium = {
+        health = 8,  -- Even MORE fragile than PsH
+        radius = 12,
+        speedMultiplier = 2.5,  -- FLIES around desperately
+        peaceful = true,
+        exotic = true,
+        antimatter = true,
+        annihilates = true,
+        extremely_unstable = true,
+        gamma_burst = true,
+        grb = 15,  -- MUCH stronger burst than PsH
+        double_trouble = true
     }
 }
 
@@ -1166,7 +1179,8 @@ config.initialSpawns = {
     xenon_difluoride = 2,
     xenon_tetrafluoride = 1,
     krypton_difluoride = 1,
-	positronium_hydride = 3,  -- Rare because it dies SO fast
+	positronium_hydride = 3,
+	dipositronium = 2,
 }
 
 config.visual = {
