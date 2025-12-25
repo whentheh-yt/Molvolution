@@ -24,7 +24,9 @@
 -- ----------------------- - 
 -- December 24 2025 13:58  - Added Positronium Hydrite as a funny (December 2025 Build 0.1.15403)
 -- December 24 2025 18:41  - Added Dipositronium as another funny (December 2025 Build 0.1.15441)
--- December 24 2025 20:31  - Added a geiger-like click the more radioactive molecules are on screen (December 2025 Build 0.1.15450
+-- December 24 2025 20:31  - Added a geiger-like click the more radioactive molecules are on screen (December 2025 Build 0.1.15450)
+-- ----------------------- -
+-- December 25 2025 17:09  - Revamped the positronium graphics (December 2025 Build 0.1.15476)
 
 local config = require("config")
 local Console = require("libs/console")
@@ -105,13 +107,13 @@ function playDeathSound(moleculeType)
     local basePitch = 220
     
     if moleculeType:match("atom") then
-        basePitch = 440 -- High pitch for atoms
+        basePitch = 440
     elseif moleculeType:match("iodo") or moleculeType == "carbon_tetraiodide" then
-        basePitch = 110 -- Deep rumble for iodine compounds
+        basePitch = 110
     elseif moleculeType == "benzene" or moleculeType == "caffeine" then
-        basePitch = 165 -- Lower for large molecules
+        basePitch = 165
     elseif moleculeType:match("methane") then
-        basePitch = 330 -- Medium for halomethanes
+        basePitch = 330
     end
     
     local sound = generateSound(basePitch, 0.1, 0.3)
@@ -129,7 +131,6 @@ function playMergeSound()
 end
 
 function playTrackSound()
-    -- Short beep
     local sound = generateSound(880, 0.05, 0.2)
     sound:play()
 end
@@ -157,7 +158,6 @@ local ELEMENT_ATTRACTION = {
     I = {C = 0.8, H = 1.0, I = 0.1}
 }
 
--- molecule + molecule → new products!
 local fragmentationRules = {
     {
         reactants = {"nitric_acid", "water"},
@@ -2352,95 +2352,36 @@ function Molecule:update(dt)
     if not self.alive then
         return
     end
-	
+
     if self.type == "positronium_hydride" then
-        local molConfig = config.molecules[self.type]
-        local grbIntensity = molConfig.grb or 8
-        local pulse = (math.sin(love.timer.getTime() * 15) + 1) * 0.5
-        local decayProgress = self.unstableTimer / 0.5
-        
-        local glowIntensity = 0.3 + (grbIntensity / 10) * 0.4 + decayProgress * 0.4
-        love.graphics.setColor(1, 0.2, 1, glowIntensity)
-        love.graphics.circle("fill", self.x, self.y, self.radius + 15)
-        
-        if decayProgress > (1 - grbIntensity / 10) then
-            local rayCount = math.floor(4 + grbIntensity)
-            for i = 1, rayCount do
-                local angle = (i / rayCount) * math.pi * 2 + love.timer.getTime() * 5
-                local length = (10 + grbIntensity * 2) + pulse * (5 + grbIntensity)
-                love.graphics.setColor(1, 1, 1, 0.4 + (grbIntensity / 10) * 0.3 + pulse * 0.4)
-                love.graphics.line(
-                    self.x, self.y,
-                    self.x + math.cos(angle) * length,
-                    self.y + math.sin(angle) * length
-                )
-            end
-        end
-        
-        -- Pulsing rings - more rings for higher GRB
-        local ringCount = math.floor(3 + grbIntensity / 2)
-        for i = 1, ringCount do
-            love.graphics.setColor(1, 0.5, 1, (0.5 + grbIntensity / 20) - i * 0.08)
-            love.graphics.circle("line", self.x, self.y, self.radius + i * (8 + pulse * 5))
-        end
-    end
-	
-	if self.type == "dipositronium" then
-        local molConfig = config.molecules[self.type]
-        local grbIntensity = molConfig.grb or 15
-        local pulse = (math.sin(love.timer.getTime() * 20) + 1) * 0.5
-        local decayProgress = self.unstableTimer / 0.3
-        
-        local glowIntensity = 0.4 + (grbIntensity / 15) * 0.5 + decayProgress * 0.5
-        love.graphics.setColor(1, 0, 1, glowIntensity)
-        love.graphics.circle("fill", self.x, self.y, self.radius + 20)
-        
-        if decayProgress > 0.5 then
-            local rayCount = math.floor(8 + grbIntensity)
-            for i = 1, rayCount do
-                local angle = (i / rayCount) * math.pi * 2 + love.timer.getTime() * 8
-                local length = (15 + grbIntensity * 3) + pulse * (10 + grbIntensity)
-                love.graphics.setColor(1, 0.8, 1, 0.5 + (grbIntensity / 15) * 0.4 + pulse * 0.5)
-                love.graphics.line(
-                    self.x, self.y,
-                    self.x + math.cos(angle) * length,
-                    self.y + math.sin(angle) * length
-                )
-            end
-        end
-        
-        -- MORE pulsing rings
-        local ringCount = math.floor(5 + grbIntensity / 2)
-        for i = 1, ringCount do
-            love.graphics.setColor(1, 0.3, 1, (0.6 + grbIntensity / 20) - i * 0.08)
-            love.graphics.circle("line", self.x, self.y, self.radius + i * (10 + pulse * 8))
+        self.unstableTimer = self.unstableTimer + dt
+        if self.unstableTimer > 0.5 then
+            self.health = 0
+            self.alive = false
         end
     end
 
-    -- Carbon tetraiodide slowly decomposes!
     if self.type == "carbon_tetraiodide" then
         self.unstableTimer = self.unstableTimer + dt
-        if self.unstableTimer > 5 then  -- Decompose after 5 seconds
+        if self.unstableTimer > 5 then
             self.health = self.health - 20 * dt
-            
         end
-		if self.health >= 0 then
-		    self.alive = false
-	    end
+        if self.health <= 0 then
+            self.alive = false
+        end
     end
 
-    -- Triiodomethane also unstable but slower
     if self.type == "triiodomethane" then
         self.unstableTimer = self.unstableTimer + dt
         if self.unstableTimer > 15 then
             self.health = self.health - 5 * dt
         end
-		if self.health >= 0 then
-		    self.alive = false
-	    end
+        if self.health <= 0 then
+            self.alive = false
+        end
     end
-	
-	if self.type == "azidoazide_azide" then
+    
+    if self.type == "azidoazide_azide" then
         self.unstableTimer = self.unstableTimer + dt
         if math.random() < 0.02 * dt then
             self.health = 0
@@ -2455,14 +2396,11 @@ function Molecule:update(dt)
 
     self.rotation = self.rotation + self.rotationSpeed * dt
 
-    -- Predator/prey AI (keeping original logic + halomethanes)
     local molConfig = config.molecules[self.type]
     
-    -- Halomethanes flee from halogens and oxidizers
     if self.type:match("methane") and self.type ~= "methane" then
         local threats = {"oxygen", "ozone", "chlorine", "fluorine", "hydrogen_peroxide"}
         
-        -- Carbon tetrafluoride is basically inert - it doesn't flee much
         if self.type == "carbon_tetrafluoride" then
             self.wanderAngle = self.wanderAngle + (math.random() - 0.5) * 0.03
             self.vx = math.cos(self.wanderAngle) * WANDER_SPEED * 1.2
@@ -2516,13 +2454,12 @@ function Molecule:update(dt)
                           "chloromethane", "dichloromethane", "chloroform", "carbon_tetrachloride",
                           "bromomethane", "dibromomethane", "tribromomethane", "carbon_tetrabromide",
                           "iodomethane", "diiodomethane", "triiodomethane",
-						  "butane", "pentane", "hexane", "heptane", "octane", "nonane", "decane"}
+                          "butane", "pentane", "hexane", "heptane", "octane", "nonane", "decane"}
 
         if molConfig.prefersEthylene then
             preyTypes = {"ethylene", "tetrafluoroethylene", "cyclopropane", "benzene", "tnt", 
                         "acetylcarnitine", "methane", "propane"}
         elseif self.type == "fluorine" then
-            -- Fluorine attacks EVERYTHING except fully fluorinated compounds
             preyTypes = {"methane", "ethylene", "propane", "cyclopropane", "acetylcarnitine",
                         "ethanol", "benzene", "ammonia", "water", "caffeine", "tnt", "acetone",
                         "cyclopropenylidene", "cyclobutane", "cyclopentane", "cyclobutene",
@@ -2531,7 +2468,6 @@ function Molecule:update(dt)
                         "carbon_tetrabromide", "iodomethane", "diiodomethane", "triiodomethane",
                         "carbon_tetraiodide", "helium_hydride"}
         elseif self.type == "perchloric_acid" then
-            -- Still hunts everything
             preyTypes = {}
             for molType, _ in pairs(config.molecules) do
                 if molType ~= "perchloric_acid" then
@@ -2539,8 +2475,8 @@ function Molecule:update(dt)
                 end
             end
         end
-		
-		if self.type == "trihydrogen_cation" or self.type == "formyl_cation" then
+        
+        if self.type == "trihydrogen_cation" or self.type == "formyl_cation" then
             preyTypes = {"hydrogen_atom", "carbon_atom", "oxygen_atom", "nitrogen_atom",
                         "fluorine_atom", "chlorine_atom", "bromine_atom", "iodine_atom",
                         "helium", "water", "ammonia", "methane"}
@@ -2596,7 +2532,7 @@ function Molecule:update(dt)
             self.vy = math.sin(self.wanderAngle) * WANDER_SPEED
             self.rotationSpeed = 0.3
         end
-	elseif self.type == "xenon" or self.type == "krypton" or 
+    elseif self.type == "xenon" or self.type == "krypton" or 
            self.type == "neon" or self.type == "argon" then
         local nearestFluorine = nil
         local nearestDist = DETECTION_RANGE
@@ -2620,7 +2556,6 @@ function Molecule:update(dt)
             local speedMult = molConfig.speedMultiplier or 1
             local speed = FLEE_SPEED * speedMult
             
-            -- Neon and argon flee faster because they're more inert
             if self.type == "neon" or self.type == "argon" then
                 speed = speed * 1.3
             end
@@ -2634,24 +2569,21 @@ function Molecule:update(dt)
             self.vx = math.cos(self.wanderAngle) * (WANDER_SPEED * speedMult)
             self.vy = math.sin(self.wanderAngle) * (WANDER_SPEED * speedMult)
             
-            -- Noble gases have a nice gentle rotation
             if self.type == "neon" then
                 self.rotationSpeed = 3
             elseif self.type == "argon" or self.type == "krypton" then
                 self.rotationSpeed = 2
-            else -- xenon
+            else
                 self.rotationSpeed = 1.5
             end
         end
     
-    -- Noble gas compound behavior - they hunt organics like oxidizers
     elseif self.type == "xenon_difluoride" or self.type == "xenon_tetrafluoride" or
            self.type == "krypton_difluoride" then
         
-        -- Krypton difluoride slowly decomposes!
         if self.type == "krypton_difluoride" then
             self.unstableTimer = (self.unstableTimer or 0) + dt
-            if self.unstableTimer > 8 then  -- Decomposes after 8 seconds
+            if self.unstableTimer > 8 then
                 self.health = self.health - 15 * dt
             end
             if self.health <= 0 then
@@ -2748,7 +2680,7 @@ function Molecule:update(dt)
                 self.rotationSpeed = 4
             elseif self.type == "helium_dimer" then
                 self.rotationSpeed = 6
-		    elseif self.type == "helium_trimer" then
+            elseif self.type == "helium_trimer" then
                 self.rotationSpeed = 5.5
             else
                 self.rotationSpeed = 3
@@ -2901,7 +2833,7 @@ function Molecule:draw()
     end
 	
 	if self.type == "azidoazide_azide" then
-        local pulse = (math.sin(love.timer.getTime() * 10) + 1) * 0.5  -- Fast pulse
+        local pulse = (math.sin(love.timer.getTime() * 10) + 1) * 0.5
         love.graphics.setColor(1, 0, 0, 0.3 + pulse * 0.4)
         love.graphics.circle("fill", self.x, self.y, self.radius + 15)
         for i = 1, 5 do
@@ -2921,29 +2853,36 @@ function Molecule:draw()
     end
 	
 	-- Positronium is VERY FUCKING unstable
-	if self.type == "positronium_hydride" or self.type == "dipositronium" then
+    if self.type == "positronium_hydride" or self.type == "dipositronium" then
+        local molConfig = config.molecules[self.type]
+        local grbIntensity = molConfig.grb or 8
         local pulse = (math.sin(love.timer.getTime() * 15) + 1) * 0.5
         local decayProgress = self.unstableTimer / 0.5
         
-        love.graphics.setColor(1, 0.2, 1, 0.3 + decayProgress * 0.4)
+        for i = 1, 6 do
+            local ringRadius = self.radius + (i * 10) + (decayProgress * i * 15)
+            local alpha = (0.4 - i * 0.05) * (1 + pulse * 0.3)
+            love.graphics.setColor(1, 0.2, 1, alpha)
+            love.graphics.setLineWidth(2 + decayProgress * 2)
+            love.graphics.circle("line", self.x, self.y, ringRadius)
+        end
+        
+        local glowIntensity = 0.3 + (grbIntensity / 10) * 0.4 + decayProgress * 0.4
+        love.graphics.setColor(1, 0.2, 1, glowIntensity)
         love.graphics.circle("fill", self.x, self.y, self.radius + 15)
         
-        if decayProgress > 0.7 then
-            for i = 1, 8 do
-                local angle = (i / 8) * math.pi * 2 + love.timer.getTime() * 5
-                local length = 20 + pulse * 15
-                love.graphics.setColor(1, 1, 1, 0.6 + pulse * 0.4)
+        if decayProgress > 0.3 then
+            local rayCount = math.floor(4 + grbIntensity + decayProgress * 8)
+            for i = 1, rayCount do
+                local angle = (i / rayCount) * math.pi * 2 + love.timer.getTime() * 5 + math.random() * 0.5
+                local length = (10 + grbIntensity * 2) + pulse * (5 + grbIntensity) + decayProgress * 20
+                love.graphics.setColor(1, 1, 1, 0.4 + (grbIntensity / 10) * 0.3 + pulse * 0.4)
                 love.graphics.line(
                     self.x, self.y,
                     self.x + math.cos(angle) * length,
                     self.y + math.sin(angle) * length
                 )
             end
-        end
-        
-        for i = 1, 5 do
-            love.graphics.setColor(1, 0.5, 1, 0.5 - i * 0.08)
-            love.graphics.circle("line", self.x, self.y, self.radius + i * (8 + pulse * 5))
         end
     end
 
@@ -3155,10 +3094,10 @@ function love.update(dt)
                         other.alive = false
                         
                         local annihilationSound1 = generateSound(880, 0.3, 0.5)
-						local annihilationSound2 = generateSound(660, 0.6, 0.4)
-						local annihilationSound3 = generateSound(440, 0.9, 0.3)
-						local annihilationSound4 = generateSound(220, 1.2, 0.2)
-						local annihilationSound5 = generateSound(110, 1.5, 0.1)
+						local annihilationSound2 = generateSound(66, 6, 0.4)
+						local annihilationSound3 = generateSound(44, 9, 0.3)
+						local annihilationSound4 = generateSound(22, 12, 0.2)
+						local annihilationSound5 = generateSound(11, 15, 0.1)
                         annihilationSound1:play()
 						annihilationSound2:play()
 						annihilationSound3:play()
@@ -3203,12 +3142,12 @@ function love.update(dt)
                         other.alive = false
                         
                         -- DOUBLE annihilation sound cascade
-                        local annihilationSound1 = generateSound(1100, 0.2, 0.6)
-                        local annihilationSound2 = generateSound(880, 0.4, 0.5)
-                        local annihilationSound3 = generateSound(660, 0.6, 0.4)
-                        local annihilationSound4 = generateSound(440, 0.8, 0.3)
-                        local annihilationSound5 = generateSound(220, 1.0, 0.2)
-                        local annihilationSound6 = generateSound(110, 1.2, 0.15)
+                        local annihilationSound1 = generateSound(110, 2, 0.6)
+                        local annihilationSound2 = generateSound(88, 4, 0.5)
+                        local annihilationSound3 = generateSound(66, 6, 0.4)
+                        local annihilationSound4 = generateSound(44, 8, 0.3)
+                        local annihilationSound5 = generateSound(22, 10, 0.2)
+                        local annihilationSound6 = generateSound(11, 12, 0.15)
                         annihilationSound1:play()
                         annihilationSound2:play()
                         annihilationSound3:play()
