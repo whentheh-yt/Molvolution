@@ -27,6 +27,8 @@
 -- December 24 2025 20:31  - Added a geiger-like click the more radioactive molecules are on screen (December 2025 Build 0.1.15450)
 -- ----------------------- -
 -- December 25 2025 17:09  - Revamped the positronium graphics (December 2025 Build 0.1.15476)
+-- ----------------------- -
+-- December 26 2025 12:21  - Added some cubanes (December 2025 Build 0.1.15500)
 
 local config = require("config")
 local Console = require("libs/console")
@@ -670,6 +672,34 @@ local deathFragmentations = {
     {type = "hydrogen_atom", count = 2},
     -- Pure energy release, so we only get a couple atoms back
 	-- (WHY IS ANTIMATTER SO DAMN CONFUSING!?!??!?)
+    },
+	
+	cubane = {
+        {type = "cyclobutane", count = 2},
+        {type = "carbon_atom", count = 2},
+        {type = "hydrogen_atom", count = 4}
+    },
+    octanitrocubane = {
+        {type = "nitrogen", count = 8},
+        {type = "co2", count = 8},
+        {type = "carbon_atom", count = 4},
+        {type = "oxygen_atom", count = 8}
+    },
+    hexanitrocubane = {
+        {type = "nitrogen", count = 6},
+        {type = "co2", count = 6},
+        {type = "cubane", count = 0.5},
+        {type = "oxygen_atom", count = 6}
+    },
+    fluorocubane = {
+        {type = "cubane", count = 0.5},
+        {type = "fluorine_atom", count = 1},
+        {type = "carbon_atom", count = 2}
+    },
+    octafluorocubane = {
+        {type = "fluorocubane", count = 1},
+        {type = "fluorine_atom", count = 4},
+        {type = "carbon_atom", count = 2}
     }
 }
 
@@ -2312,6 +2342,167 @@ local structures = {
         antimatter = true,
         unstable = true,
         double_annihilation = true
+    },
+	
+	-- Cubanes
+    cubane = {
+        atoms = {
+            {element = "C", x = -10, y = -10, color = ELEMENT_COLORS.C},
+            {element = "C", x = 10, y = -10, color = ELEMENT_COLORS.C},
+            {element = "C", x = 10, y = 10, color = ELEMENT_COLORS.C},
+            {element = "C", x = -10, y = 10, color = ELEMENT_COLORS.C},
+            {element = "C", x = -5, y = -15, color = ELEMENT_COLORS.C},
+            {element = "C", x = 15, y = -15, color = ELEMENT_COLORS.C},
+            {element = "C", x = 15, y = 5, color = ELEMENT_COLORS.C},
+            {element = "C", x = -5, y = 5, color = ELEMENT_COLORS.C},
+            {element = "H", x = -18, y = -18, color = ELEMENT_COLORS.H},
+            {element = "H", x = 18, y = -18, color = ELEMENT_COLORS.H},
+            {element = "H", x = 18, y = 18, color = ELEMENT_COLORS.H},
+            {element = "H", x = -18, y = 18, color = ELEMENT_COLORS.H},
+            {element = "H", x = -10, y = -23, color = ELEMENT_COLORS.H},
+            {element = "H", x = 23, y = -23, color = ELEMENT_COLORS.H},
+            {element = "H", x = 23, y = 10, color = ELEMENT_COLORS.H},
+            {element = "H", x = -10, y = 10, color = ELEMENT_COLORS.H}
+        },
+        bonds = {
+            {1, 2}, {2, 3}, {3, 4}, {4, 1},
+            {5, 6}, {6, 7}, {7, 8}, {8, 5},
+            {1, 5}, {2, 6}, {3, 7}, {4, 8},
+            {1, 9}, {2, 10}, {3, 11}, {4, 12},
+            {5, 13}, {6, 14}, {7, 15}, {8, 16}
+        },
+        extremely_strained = true
+    },
+    
+    octanitrocubane = {
+        atoms = {
+            {element = "C", x = -10, y = -10, color = ELEMENT_COLORS.C},
+            {element = "C", x = 10, y = -10, color = ELEMENT_COLORS.C},
+            {element = "C", x = 10, y = 10, color = ELEMENT_COLORS.C},
+            {element = "C", x = -10, y = 10, color = ELEMENT_COLORS.C},
+            {element = "C", x = -5, y = -15, color = ELEMENT_COLORS.C},
+            {element = "C", x = 15, y = -15, color = ELEMENT_COLORS.C},
+            {element = "C", x = 15, y = 5, color = ELEMENT_COLORS.C},
+            {element = "C", x = -5, y = 5, color = ELEMENT_COLORS.C},
+			
+            -- NO2 groups instead of H (simplified as single N atoms)
+            {element = "N", x = -20, y = -20, color = ELEMENT_COLORS.N},
+            {element = "N", x = 20, y = -20, color = ELEMENT_COLORS.N},
+            {element = "N", x = 20, y = 20, color = ELEMENT_COLORS.N},
+            {element = "N", x = -20, y = 20, color = ELEMENT_COLORS.N},
+            {element = "N", x = -12, y = -25, color = ELEMENT_COLORS.N},
+            {element = "N", x = 25, y = -25, color = ELEMENT_COLORS.N},
+            {element = "N", x = 25, y = 12, color = ELEMENT_COLORS.N},
+            {element = "N", x = -12, y = 12, color = ELEMENT_COLORS.N}
+        },
+        bonds = {
+            {1, 2}, {2, 3}, {3, 4}, {4, 1},
+            {5, 6}, {6, 7}, {7, 8}, {8, 5},
+            {1, 5}, {2, 6}, {3, 7}, {4, 8},
+            {1, 9}, {2, 10}, {3, 11}, {4, 12},
+            {5, 13}, {6, 14}, {7, 15}, {8, 16}
+        },
+        extremely_explosive = true
+    },
+    hexanitrocubane = {
+        atoms = {
+            {element = "C", x = -10, y = -10, color = ELEMENT_COLORS.C},
+            {element = "C", x = 10, y = -10, color = ELEMENT_COLORS.C},
+            {element = "C", x = 10, y = 10, color = ELEMENT_COLORS.C},
+            {element = "C", x = -10, y = 10, color = ELEMENT_COLORS.C},
+            {element = "C", x = -5, y = -15, color = ELEMENT_COLORS.C},
+            {element = "C", x = 15, y = -15, color = ELEMENT_COLORS.C},
+            {element = "C", x = 15, y = 5, color = ELEMENT_COLORS.C},
+            {element = "C", x = -5, y = 5, color = ELEMENT_COLORS.C},
+			
+            -- Six NO2 groups (nitro groups as nitrogen atoms)
+            {element = "N", x = -20, y = -20, color = ELEMENT_COLORS.N},
+            {element = "N", x = 20, y = -20, color = ELEMENT_COLORS.N},
+            {element = "N", x = 20, y = 20, color = ELEMENT_COLORS.N},
+            {element = "N", x = -12, y = -25, color = ELEMENT_COLORS.N},
+            {element = "N", x = 25, y = -25, color = ELEMENT_COLORS.N},
+            {element = "N", x = 25, y = 12, color = ELEMENT_COLORS.N},
+			
+            -- Two remaining hydrogens (on bottom corners)
+            {element = "H", x = -20, y = 20, color = ELEMENT_COLORS.H},
+            {element = "H", x = -12, y = 12, color = ELEMENT_COLORS.H}
+        },
+        bonds = {
+            {1, 2}, {2, 3}, {3, 4}, {4, 1},
+            {5, 6}, {6, 7}, {7, 8}, {8, 5},
+            {1, 5}, {2, 6}, {3, 7}, {4, 8},
+            {1, 9}, {2, 10}, {3, 11}, {5, 12}, {6, 13}, {7, 14},
+            {4, 15}, {8, 16}
+        },
+        extremely_strained = true,
+        explosive = true
+    },
+    
+    fluorocubane = {
+        atoms = {
+            {element = "C", x = -10, y = -10, color = ELEMENT_COLORS.C},
+            {element = "C", x = 10, y = -10, color = ELEMENT_COLORS.C},
+            {element = "C", x = 10, y = 10, color = ELEMENT_COLORS.C},
+            {element = "C", x = -10, y = 10, color = ELEMENT_COLORS.C},
+            {element = "C", x = -5, y = -15, color = ELEMENT_COLORS.C},
+            {element = "C", x = 15, y = -15, color = ELEMENT_COLORS.C},
+            {element = "C", x = 15, y = 5, color = ELEMENT_COLORS.C},
+            {element = "C", x = -5, y = 5, color = ELEMENT_COLORS.C},
+			
+            -- ONE fluorine (top front corner)
+            {element = "F", x = -20, y = -20, color = ELEMENT_COLORS.F},
+			
+            -- Seven hydrogens
+            {element = "H", x = 18, y = -18, color = ELEMENT_COLORS.H},
+            {element = "H", x = 18, y = 18, color = ELEMENT_COLORS.H},
+            {element = "H", x = -18, y = 18, color = ELEMENT_COLORS.H},
+            {element = "H", x = -10, y = -23, color = ELEMENT_COLORS.H},
+            {element = "H", x = 23, y = -23, color = ELEMENT_COLORS.H},
+            {element = "H", x = 23, y = 10, color = ELEMENT_COLORS.H},
+            {element = "H", x = -10, y = 10, color = ELEMENT_COLORS.H}
+        },
+        bonds = {
+            {1, 2}, {2, 3}, {3, 4}, {4, 1},
+            {5, 6}, {6, 7}, {7, 8}, {8, 5},
+            {1, 5}, {2, 6}, {3, 7}, {4, 8},
+            {1, 9},
+            {2, 10}, {3, 11}, {4, 12}, {5, 13}, {6, 14}, {7, 15}, {8, 16}
+        },
+        extremely_strained = true,
+        fluorinated = true
+    },
+    
+    octafluorocubane = {
+        atoms = {
+            {element = "C", x = -10, y = -10, color = ELEMENT_COLORS.C},
+            {element = "C", x = 10, y = -10, color = ELEMENT_COLORS.C},
+            {element = "C", x = 10, y = 10, color = ELEMENT_COLORS.C},
+            {element = "C", x = -10, y = 10, color = ELEMENT_COLORS.C},
+            {element = "C", x = -5, y = -15, color = ELEMENT_COLORS.C},
+            {element = "C", x = 15, y = -15, color = ELEMENT_COLORS.C},
+            {element = "C", x = 15, y = 5, color = ELEMENT_COLORS.C},
+            {element = "C", x = -5, y = 5, color = ELEMENT_COLORS.C},
+			
+            -- Eight fluorines (all corners)
+            {element = "F", x = -18, y = -18, color = ELEMENT_COLORS.F},
+            {element = "F", x = 18, y = -18, color = ELEMENT_COLORS.F},
+            {element = "F", x = 18, y = 18, color = ELEMENT_COLORS.F},
+            {element = "F", x = -18, y = 18, color = ELEMENT_COLORS.F},
+            {element = "F", x = -10, y = -23, color = ELEMENT_COLORS.F},
+            {element = "F", x = 23, y = -23, color = ELEMENT_COLORS.F},
+            {element = "F", x = 23, y = 10, color = ELEMENT_COLORS.F},
+            {element = "F", x = -10, y = 10, color = ELEMENT_COLORS.F}
+        },
+        bonds = {
+            {1, 2}, {2, 3}, {3, 4}, {4, 1},
+            {5, 6}, {6, 7}, {7, 8}, {8, 5},
+            {1, 5}, {2, 6}, {3, 7}, {4, 8},
+            {1, 9}, {2, 10}, {3, 11}, {4, 12},
+            {5, 13}, {6, 14}, {7, 15}, {8, 16}
+        },
+        extremely_strained = true,
+        fluorinated = true,
+        inert = true
     }
 }
 
@@ -2368,6 +2559,24 @@ function Molecule:update(dt)
         end
         if self.health <= 0 then
             self.alive = false
+        end
+    end
+	
+    if self.type == "cubane" or self.type == "fluorocubane" then
+        self.unstableTimer = self.unstableTimer + dt
+        if self.unstableTimer > 10 then
+            self.health = self.health - 5 * dt
+        end
+    end
+    
+    if self.type == "octanitrocubane" or self.type == "hexanitrocubane" then
+        self.unstableTimer = self.unstableTimer + dt
+        local speed = math.sqrt(self.vx * self.vx + self.vy * self.vy)
+        if speed > 15 then
+            self.health = self.health - speed * 2 * dt
+        end
+        if self.unstableTimer > 8 then
+            self.health = self.health - 10 * dt
         end
     end
 
@@ -2840,6 +3049,26 @@ function Molecule:draw()
             love.graphics.setColor(1, 0.2, 0, 0.4)
             love.graphics.circle("line", self.x, self.y, self.radius + i * 10)
         end
+    end
+	
+	if self.type == "octanitrocubane" or self.type == "hexanitrocubane" then
+        local pulse = (math.sin(love.timer.getTime() * 8) + 1) * 0.5
+        local speed = math.sqrt(self.vx * self.vx + self.vy * self.vy)
+        local speedFactor = math.min(speed / 30, 1)
+        
+        love.graphics.setColor(1, 0.2, 0, 0.2 + pulse * 0.3 + speedFactor * 0.3)
+        love.graphics.circle("fill", self.x, self.y, self.radius + 12)
+        
+        for i = 1, 4 do
+            love.graphics.setColor(1, 0.5, 0, 0.3)
+            love.graphics.circle("line", self.x, self.y, self.radius + i * 8)
+        end
+    end
+    
+    if self.type:match("cubane") then
+        local pulse = (math.sin(love.timer.getTime() * 4) + 1) * 0.5
+        love.graphics.setColor(0.8, 0.2, 0.8, 0.1 + pulse * 0.15)
+        love.graphics.circle("fill", self.x, self.y, self.radius + 6)
     end
 
     -- Carbon tetraiodide gets purple glow when unstable
@@ -3369,7 +3598,7 @@ function drawMoleculeTooltip(molecule)
         if (molecule.unstableTimer or 0) > 0 then
             table.insert(lines, string.format("Time to decay: %.1fs", math.max(0, 8 - (molecule.unstableTimer or 0))))
         end
-    end
+	end
 	
 	if molecule.type == "butane" then
         table.insert(lines, "C4 alkane - lighter fuel")

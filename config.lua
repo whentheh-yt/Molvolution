@@ -2,7 +2,7 @@ local config = {}
 
 config.game = {
     title = "Molvolution",
-    version = "December 2025 Build 0.1.15476",
+    version = "December 2025 Build 0.1.15500",
     window = {
         width = 1200,
         height = 800,
@@ -1035,9 +1035,9 @@ config.molecules = {
         annihilates = true,
         extremely_unstable = true,
         gamma_burst = true,
-		grb = 8
+	grb = 8
     },
-	dipositronium = {
+    dipositronium = {
         health = 8,  -- Even MORE fragile than PsH
         radius = 12,
         speedMultiplier = 2.5,  -- FLIES around desperately
@@ -1049,6 +1049,46 @@ config.molecules = {
         gamma_burst = true,
         grb = 15,  -- MUCH stronger burst than PsH
         double_trouble = true
+    },
+	
+	-- Cubane compounds
+    cubane = {
+        health = 180,
+        radius = 28,
+        speedMultiplier = 0.7,
+        extremely_strained = true,
+        explosive = true
+    },
+    octanitrocubane = {
+        health = 250,
+        radius = 35,
+        speedMultiplier = 0.5,
+        extremely_strained = true,
+        explosive = true,
+        extremely_explosive = true,
+        most_powerful_non_nuclear = true
+    },
+    hexanitrocubane = {
+        health = 220,
+        radius = 33,
+        speedMultiplier = 0.6,
+        extremely_strained = true,
+        explosive = true
+    },
+    fluorocubane = {
+        health = 190,
+        radius = 29,
+        speedMultiplier = 0.75,
+        extremely_strained = true,
+        fluorinated = true
+    },
+    octafluorocubane = {
+        health = 210,
+        radius = 32,
+        speedMultiplier = 0.65,
+        extremely_strained = true,
+        fluorinated = true,
+        inert = true  -- Fluorination stabilizes it somewhat
     }
 }
 
@@ -1181,6 +1221,13 @@ config.initialSpawns = {
     krypton_difluoride = 1,
 	positronium_hydride = 3,
 	dipositronium = 2,
+	
+	-- Cubane compounds
+	cubane = 2,
+    octanitrocubane = 1,
+    hexanitrocubane = 1,
+    fluorocubane = 3,
+    octafluorocubane = 2
 }
 
 config.visual = {
