@@ -2,7 +2,7 @@ local config = {}
 
 config.game = {
     title = "Molvolution",
-    version = "New Years 2026 Build 1.2.100",
+    version = "New Years 2026 Build 1.2.127",
     window = {
         width = 1200,
         height = 800,
@@ -12,8 +12,8 @@ config.game = {
 }
 
 config.world = {
-    width = 10000,
-    height = 10000
+    width = 12500,
+    height = 12500
 }
 
 config.camera = {

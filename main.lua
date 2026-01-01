@@ -30,12 +30,13 @@
 -- ----------------------- -
 -- December 26 2025 12:21  - Added some cubanes (December 2025 Build 0.1.15500)
 -- ----------------------- -
--- January 1 2026          - Added a ton of stuff, including but not limited to:
+-- January 1 2026 00:00    - Added a ton of stuff, including but not limited to:
 --                         -    • Astatine compounds
 --                         -    • A programming language for it (RXN)
 --                         -    • Fluoroantimonic acid
 --                         -    • Changed buckminsterfullerene's resistance from 90% > 99%
 --                         - (New Years 2026 Build 1.2.100)
+-- January 1 2026 12:30    - Added radiation damage and fixed death mechanic (New Years 2026 Build 1.2.127)
 
 local config = require("config")
 local Console = require("libs/console")
@@ -2805,6 +2806,39 @@ function Molecule:update(dt)
     if not self.alive then
         return
     end
+	
+	local radiationDamage = 0
+    for _, other in ipairs(molecules) do
+        if other.alive and other ~= self then
+            local molConfig = config.molecules[other.type]
+            if molConfig and molConfig.radioactive then
+                local dx = other.x - self.x
+                local dy = other.y - self.y
+                local dist = math.sqrt(dx * dx + dy * dy)
+                local radiationRange = 200
+                
+                if dist < radiationRange then
+                    local intensity = 1 - (dist / radiationRange)
+                    local damage = 5 * intensity * dt
+                    
+                    if molConfig.extremely_radioactive then
+                        damage = damage * 3
+                    end
+                    
+                    radiationDamage = radiationDamage + damage
+                end
+            end
+        end
+    end
+    
+    -- Apply radiation damage
+    if radiationDamage > 0 then
+        if self.type == "fluoroantimonic_acid" then
+            self.health = self.health - radiationDamage * 5
+        elseif not (self.type:match("atom") or config.molecules[self.type].radioactive) then
+            self.health = self.health - radiationDamage * 0.5
+        end
+    end
 
     if self.type == "positronium_hydride" then
         self.unstableTimer = self.unstableTimer + dt
@@ -3368,6 +3402,12 @@ function Molecule:draw()
     local struct = structures[self.type]
     if not struct then return end
 	
+	if radiationDamage and radiationDamage > 0 then
+        local pulse = (math.sin(love.timer.getTime() * 8) + 1) * 0.5
+        love.graphics.setColor(0, 1, 0, 0.2 + pulse * 0.2)
+        love.graphics.circle("fill", self.x, self.y, self.radius + 8)
+    end
+	
     if struct.interstellar then
         local pulse = (math.sin(love.timer.getTime() * 2) + 1) * 0.5
         
@@ -3836,11 +3876,11 @@ function love.update(dt)
 
     -- Remove dead molecules
     for i = #molecules, 1, -1 do
-        if not molecules[i].alive then
+        if not molecules[i].alive or molecules[i].health <= 0 then
             if camera.followTarget == molecules[i] then
                 camera.followTarget = nil
             end
-            playDeathSound(molecules[i].type)  -- SOUND!
+            playDeathSound(molecules[i].type)
             spawnFragments(molecules[i])
             table.remove(molecules, i)
         end
@@ -4345,6 +4385,7 @@ function drawMoleculeTooltip(molecule)
         table.insert(lines, "STRONGEST SUPERACID!")
         table.insert(lines, "20 quintillion times stronger than H₂SO₄")
         table.insert(lines, "Dissolves glass, flesh, everything")
+		table.insert(lines, "Vulnerable to radiation; 5x damage from radioactive molecules")
         table.insert(lines, "Hunts: EVERYTHING except itself")
     end
 
