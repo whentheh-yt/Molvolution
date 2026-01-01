@@ -35,6 +35,7 @@
 --                         -    • A programming language for it (RXN)
 --                         -    • Fluoroantimonic acid
 --                         -    • Changed buckminsterfullerene's resistance from 90% > 99%
+--                         - (New Years 2026 Build 1.2.100)
 
 local config = require("config")
 local Console = require("libs/console")
