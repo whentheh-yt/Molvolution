@@ -1088,8 +1088,187 @@ config.molecules = {
         speedMultiplier = 0.65,
         extremely_strained = true,
         fluorinated = true,
-        inert = true  -- Fluorination stabilizes it somewhat
-    }
+        inert = true
+    },
+	
+	    -- INORGANIC ACIDS AND BASES
+    hydrogen_sulfide = {
+        health = 70,
+        radius = 17,
+        damage = 65,
+        speedMultiplier = 1.05,
+        toxic = true,
+        smells_horrible = true,
+        detectionMultiplier = 1.15
+    },
+    sulfur_trioxide = {
+        health = 90,
+        radius = 20,
+        damage = 95,
+        speedMultiplier = 0.95,
+        extremely_reactive = true,
+        detectionMultiplier = 1.6
+    },
+    phosphoric_acid = {
+        health = 85,
+        radius = 21,
+        damage = 60,
+        speedMultiplier = 0.85,
+        acid = true,
+        detectionMultiplier = 1.25
+    },
+    sodium_chloride = {
+        health = 150,
+        radius = 18,
+        speedMultiplier = 0.7,
+        peaceful = true,
+        salt = true,
+        very_stable = true
+    },
+    potassium_permanganate = {
+        health = 120,
+        radius = 24,
+        damage = 85,
+        speedMultiplier = 0.8,
+        oxidizer = true,
+        purple = true,
+        detectionMultiplier = 1.4
+    },
+    
+    -- CHLORINE COMPOUNDS
+    chlorine_trifluoride = {
+        health = 100,
+        radius = 19,
+        damage = 150,
+        speedMultiplier = 1.25,
+        extremely_reactive = true,
+        burns_everything = true,
+        hypergolic = true,
+        detectionMultiplier = 2.0
+    },
+    
+    -- PHOSPHORUS
+    white_phosphorus = {
+        health = 80,
+        radius = 22,
+        speedMultiplier = 0.9,
+        pyrophoric = true,
+        toxic = true,
+        damage = 70
+    },
+    red_phosphorus = {
+        health = 100,
+        radius = 20,
+        speedMultiplier = 0.8,
+        stable = true,
+        peaceful = true
+    },
+    
+    -- ALKALI METALS
+    sodium_atom = {
+        health = 15,
+        radius = 10,
+        speedMultiplier = 1.3,
+        peaceful = true,
+        atom = true,
+        valence = 1,
+        alkali_metal = true
+    },
+    potassium_atom = {
+        health = 15,
+        radius = 11,
+        speedMultiplier = 1.25,
+        peaceful = true,
+        atom = true,
+        valence = 1,
+        alkali_metal = true
+    },
+    sulfur_atom = {
+        health = 15,
+        radius = 9,
+        speedMultiplier = 1.1,
+        peaceful = true,
+        atom = true,
+        valence = 2
+    },
+    phosphorus_atom = {
+        health = 15,
+        radius = 9,
+        speedMultiplier = 1.15,
+        peaceful = true,
+        atom = true,
+        valence = 3
+    },
+	astatine_atom = {
+        health = 18,
+        radius = 10,
+        speedMultiplier = 0.85,
+        peaceful = true,
+        atom = true,
+        valence = 1,
+        radioactive = true,
+        extremely_radioactive = true
+    },
+	astatine = {
+        health = 75,
+        radius = 19,
+        damage = 50,
+        speedMultiplier = 0.9,
+        radioactive = true
+    },
+	astatidomethane = {
+        health = 90,
+        radius = 26,
+        speedMultiplier = 0.7,
+        radioactive = true,
+        unstable = true
+    },
+    diastatidomethane = {
+        health = 100,
+        radius = 29,
+        speedMultiplier = 0.6,
+        heavy = true,
+        radioactive = true,
+        unstable = true
+    },
+    triastatidomethane = {
+        health = 110,
+        radius = 32,
+        speedMultiplier = 0.55,
+        heavy = true,
+        radioactive = true,
+        extremely_unstable = true
+    },
+    carbon_tetrastatide = {
+        health = 60,
+        radius = 36,
+        speedMultiplier = 0.45,
+        explosive = true,
+        unstable = true,
+        heavy = true,
+        radioactive = true,
+        extremely_radioactive = true
+    },
+	hydrogen_astatide = {
+        health = 50,
+        radius = 10,
+        damage = 65,
+        speedMultiplier = 1.1,
+        toxic = true,
+        radioactive = true,
+        volatile = true
+    },
+
+    fluoroantimonic_acid = {
+        health = 200,
+        radius = 28,
+        damage = 200,
+        speedMultiplier = 1.35,
+        detectionMultiplier = 4.0,
+        superacid = true,
+        dissolves_glass = true,
+        extremely_corrosive = true
+    },
 }
 
 config.initialSpawns = {
@@ -1227,7 +1406,31 @@ config.initialSpawns = {
     octanitrocubane = 1,
     hexanitrocubane = 1,
     fluorocubane = 3,
-    octafluorocubane = 2
+    octafluorocubane = 2,
+	
+	hydrogen_sulfide = 4,
+    sulfur_trioxide = 2,
+    phosphoric_acid = 3,
+    sodium_chloride = 8,
+    potassium_permanganate = 2,
+    chlorine_trifluoride = 1,
+    white_phosphorus = 2,
+    red_phosphorus = 4,
+    sodium_atom = 5,
+    potassium_atom = 5,
+    sulfur_atom = 6,
+    phosphorus_atom = 6,
+	
+	-- Astatine compounds for inclusivity and diversity
+	astatine_atom = 2,
+    astatine = 2,
+    astatidomethane = 2,
+    diastatidomethane = 1,
+    triastatidomethane = 1,
+    carbon_tetrastatide = 1,
+    hydrogen_astatide = 2,
+	
+	fluoroantimonic_acid = 1,  -- One. ONLY ONE.
 }
 
 config.visual = {

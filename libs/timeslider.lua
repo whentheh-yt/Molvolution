@@ -48,7 +48,6 @@ function TimeSlider.draw()
     love.graphics.circle("line", handleX, y + TimeSlider.height / 2, 8)
 end
 
--- Rest of TimeSlider functions remain the same...
 function TimeSlider.mousepressed(x, y, button)
     if button == 1 then
         if x >= TimeSlider.x and x <= TimeSlider.x + TimeSlider.width and

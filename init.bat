@@ -16,13 +16,12 @@ if not defined LOVE_EXE set "LOVE_EXE=love"
 if "%LOVE_EXE%"=="love" (
     where love >nul 2>nul
     if errorlevel 1 (
-        echo ERROR: Could not find love.exe.
-        echo Put love.exe in the project folder, install LOVE, or add it to your PATH.
+        echo [ERROR] Could not find love.exe.
+        echo To fix; put love.exe in the project folder, install LOVE, or add it to your PATH.
         pause
         exit /b 1
     )
 )
 
-echo Launching LOVE with project: "%PROJECT_DIR%"
 "%LOVE_EXE%" "%PROJECT_DIR%"
 exit /b %ERRORLEVEL%

@@ -29,6 +29,12 @@
 -- December 25 2025 17:09  - Revamped the positronium graphics (December 2025 Build 0.1.15476)
 -- ----------------------- -
 -- December 26 2025 12:21  - Added some cubanes (December 2025 Build 0.1.15500)
+-- ----------------------- -
+-- January 1 2026          - Added a ton of stuff, including but not limited to:
+--                         -    • Astatine compounds
+--                         -    • A programming language for it (RXN)
+--                         -    • Fluoroantimonic acid
+--                         -    • Changed buckminsterfullerene's resistance from 90% > 99%
 
 local config = require("config")
 local Console = require("libs/console")
@@ -149,15 +155,16 @@ local ATTRACTION_FORCE = 240
 local BONDING_DISTANCE = 20
 
 local ELEMENT_ATTRACTION = {
-    H = {C = 1.5, O = 2.0, N = 1.3, H = 0.5, F = 1.0, Cl = 1.2, Br = 1.1, I = 1.0},
+    H = {C = 1.5, O = 2.0, N = 1.3, H = 0.5, F = 1.0, Cl = 1.2, Br = 1.1, I = 1.0, At = 0.9},
 	He = {C = 1.2, O = 1.2, N = 1.3, H = 3.0, F = 0.9, Cl = 0.7, Br = 0.9, I = 0.1},
-    C = {C = 0.8, H = 1.5, O = 1.8, N = 1.2, F = 1.0, Cl = 1.0, Br = 0.9, I = 0.8, S = 1.3},
+    C = {C = 0.8, H = 1.5, O = 1.8, N = 1.2, F = 1.0, Cl = 1.0, Br = 0.9, I = 0.8, At = 0.7, S = 1.3},
     O = {C = 1.8, H = 2.0, O = 0.2, N = 1.0, F = 1.5},
     N = {C = 1.2, H = 1.3, O = 1.0, N = 0.3, F = 0.8},
     F = {C = 1.0, H = 1.0, F = 0.1, U = 1.5, O = 1.5, Cl = 1.3},
     Cl = {C = 1.0, H = 1.2, Cl = 0.2, F = 1.3, O = 1.2},
     Br = {C = 0.9, H = 1.1, Br = 0.2},
-    I = {C = 0.8, H = 1.0, I = 0.1}
+    I = {C = 0.8, H = 1.0, I = 0.1},
+	At = {C = 0.7, H = 0.9, At = 0.1}
 }
 
 local fragmentationRules = {
@@ -354,6 +361,11 @@ local bondingRecipes = {
 	{atoms = {"Xe", "F", "F"}, product = "xenon_difluoride", probability = 0.3},
     {atoms = {"Xe", "F", "F", "F", "F"}, product = "xenon_tetrafluoride", probability = 0.15},
     {atoms = {"Kr", "F", "F"}, product = "krypton_difluoride", probability = 0.05},
+	
+	-- Astatine bonding 'cuz we needa be inclusive
+	{atoms = {"At", "At"}, product = "astatine", probability = 0.8},
+    {atoms = {"H", "At"}, product = "hydrogen_astatide", probability = 0.85},
+    {atoms = {"C", "H", "H", "H", "At"}, product = "astatidomethane", probability = 0.65}
 }
 
 local deathFragmentations = {
@@ -700,6 +712,68 @@ local deathFragmentations = {
         {type = "fluorocubane", count = 1},
         {type = "fluorine_atom", count = 4},
         {type = "carbon_atom", count = 2}
+    },
+	
+	    hydrogen_sulfide = {
+        {type = "sulfur_atom", count = 1},
+        {type = "hydrogen_atom", count = 2}
+    },
+    sulfur_trioxide = {
+        {type = "sulfur_dioxide", count = 1},
+        {type = "oxygen_atom", count = 1}
+    },
+    phosphoric_acid = {
+        {type = "phosphorus_atom", count = 1},
+        {type = "oxygen_atom", count = 4},
+        {type = "hydrogen_atom", count = 3}
+    },
+    sodium_chloride = {
+        {type = "sodium_atom", count = 1},
+        {type = "chlorine_atom", count = 1}
+    },
+    potassium_permanganate = {
+        {type = "potassium_atom", count = 1},
+        {type = "oxygen", count = 2},
+        {type = "oxygen_atom", count = 1}
+    },
+    chlorine_trifluoride = {
+        {type = "chlorine_atom", count = 1},
+        {type = "fluorine_atom", count = 3}
+    },
+    white_phosphorus = {
+        {type = "phosphorus_atom", count = 4}
+    },
+    red_phosphorus = {
+        {type = "phosphorus_atom", count = 4}
+    },
+	
+	astatine = {
+        {type = "astatine_atom", count = 2}
+    },
+    
+    astatidomethane = {
+        {type = "methane", count = 1},
+        {type = "astatine_atom", count = 1}
+    },
+    
+    diastatidomethane = {
+        {type = "methane", count = 1},
+        {type = "astatine_atom", count = 2}
+    },
+    
+    triastatidomethane = {
+        {type = "methane", count = 1},
+        {type = "astatine_atom", count = 3}
+    },
+    
+    carbon_tetrastatide = {
+        {type = "carbon_atom", count = 1},
+        {type = "astatine_atom", count = 4}
+    },
+    
+    hydrogen_astatide = {
+        {type = "hydrogen_atom", count = 1},
+        {type = "astatine_atom", count = 1}
     }
 }
 
@@ -2503,6 +2577,193 @@ local structures = {
         extremely_strained = true,
         fluorinated = true,
         inert = true
+    },
+	
+	hydrogen_sulfide = {
+        atoms = {
+            {element = "S", x = 0, y = 0, color = ELEMENT_COLORS.S},
+            {element = "H", x = -10, y = 8, color = ELEMENT_COLORS.H},
+            {element = "H", x = 10, y = 8, color = ELEMENT_COLORS.H}
+        },
+        bonds = {{1, 2}, {1, 3}}
+    },
+    sulfur_trioxide = {
+        atoms = {
+            {element = "S", x = 0, y = 0, color = ELEMENT_COLORS.S},
+            {element = "O", x = 0, y = -15, color = ELEMENT_COLORS.O},
+            {element = "O", x = 13, y = 7.5, color = ELEMENT_COLORS.O},
+            {element = "O", x = -13, y = 7.5, color = ELEMENT_COLORS.O}
+        },
+        bonds = {{1, 2, double = true}, {1, 3, double = true}, {1, 4, double = true}}
+    },
+    phosphoric_acid = {
+        atoms = {
+            {element = "P", x = 0, y = 0, color = ELEMENT_COLORS.P},
+            {element = "O", x = 0, y = -16, color = ELEMENT_COLORS.O},
+            {element = "O", x = 16, y = 0, color = ELEMENT_COLORS.O},
+            {element = "O", x = -8, y = 14, color = ELEMENT_COLORS.O},
+            {element = "O", x = -8, y = -14, color = ELEMENT_COLORS.O},
+            {element = "H", x = 24, y = 0, color = ELEMENT_COLORS.H},
+            {element = "H", x = -12, y = 22, color = ELEMENT_COLORS.H},
+            {element = "H", x = -12, y = -22, color = ELEMENT_COLORS.H}
+        },
+        bonds = {{1, 2, double = true}, {1, 3}, {1, 4}, {1, 5}, {3, 6}, {4, 7}, {5, 8}}
+    },
+    sodium_chloride = {
+        atoms = {
+            {element = "Na", x = -8, y = 0, color = ELEMENT_COLORS.Na},
+            {element = "Cl", x = 8, y = 0, color = ELEMENT_COLORS.Cl}
+        },
+        bonds = {{1, 2}},
+        ionic = true
+    },
+    potassium_permanganate = {
+        atoms = {
+            {element = "K", x = 0, y = 20, color = ELEMENT_COLORS.K},
+            {element = "Mn", x = 0, y = -5, color = ELEMENT_COLORS.Mn},
+            {element = "O", x = 0, y = -18, color = ELEMENT_COLORS.O},
+            {element = "O", x = 13, y = -9, color = ELEMENT_COLORS.O},
+            {element = "O", x = -13, y = -9, color = ELEMENT_COLORS.O},
+            {element = "O", x = 0, y = 8, color = ELEMENT_COLORS.O}
+        },
+        bonds = {{1, 6}, {2, 3, double = true}, {2, 4, double = true}, {2, 5, double = true}, {2, 6}}
+    },
+    chlorine_trifluoride = {
+        atoms = {
+            {element = "Cl", x = 0, y = 0, color = ELEMENT_COLORS.Cl},
+            {element = "F", x = 0, y = -16, color = ELEMENT_COLORS.F},
+            {element = "F", x = 14, y = 8, color = ELEMENT_COLORS.F},
+            {element = "F", x = -14, y = 8, color = ELEMENT_COLORS.F}
+        },
+        bonds = {{1, 2}, {1, 3}, {1, 4}}
+    },
+    white_phosphorus = {
+        atoms = {
+            {element = "P", x = 0, y = -10, color = ELEMENT_COLORS.P},
+            {element = "P", x = -10, y = 5, color = ELEMENT_COLORS.P},
+            {element = "P", x = 10, y = 5, color = ELEMENT_COLORS.P},
+            {element = "P", x = 0, y = 8, color = ELEMENT_COLORS.P}
+        },
+        bonds = {{1, 2}, {2, 3}, {3, 1}, {1, 4}, {2, 4}, {3, 4}},
+        tetrahedral = true
+    },
+    red_phosphorus = {
+        atoms = {
+            {element = "P", x = -12, y = 0, color = ELEMENT_COLORS.P},
+            {element = "P", x = 0, y = -10, color = ELEMENT_COLORS.P},
+            {element = "P", x = 12, y = 0, color = ELEMENT_COLORS.P},
+            {element = "P", x = 0, y = 10, color = ELEMENT_COLORS.P}
+        },
+        bonds = {{1, 2}, {2, 3}, {3, 4}, {4, 1}},
+        polymeric = true
+    },
+    sodium_atom = {
+        atoms = {{element = "Na", x = 0, y = 0, color = ELEMENT_COLORS.Na}},
+        bonds = {}
+    },
+    potassium_atom = {
+        atoms = {{element = "K", x = 0, y = 0, color = ELEMENT_COLORS.K}},
+        bonds = {}
+    },
+    sulfur_atom = {
+        atoms = {{element = "S", x = 0, y = 0, color = ELEMENT_COLORS.S}},
+        bonds = {}
+    },
+    phosphorus_atom = {
+        atoms = {{element = "P", x = 0, y = 0, color = ELEMENT_COLORS.P}},
+        bonds = {}
+    },
+	
+	astatine_atom = {
+        atoms = {{element = "At", x = 0, y = 0, color = ELEMENT_COLORS.At}},
+        bonds = {},
+        radioactive = true
+    },
+    
+    astatine = {
+        atoms = {
+            {element = "At", x = -10, y = 0, color = ELEMENT_COLORS.At},
+            {element = "At", x = 10, y = 0, color = ELEMENT_COLORS.At}
+        },
+        bonds = {{1, 2}},
+        radioactive = true
+    },
+    
+    astatidomethane = {
+        atoms = {
+            {element = "C", x = 0, y = 0, color = ELEMENT_COLORS.C},
+            {element = "At", x = 0, y = -20, color = ELEMENT_COLORS.At},
+            {element = "H", x = 15, y = 0, color = ELEMENT_COLORS.H},
+            {element = "H", x = -7.5, y = 13, color = ELEMENT_COLORS.H},
+            {element = "H", x = -7.5, y = -13, color = ELEMENT_COLORS.H}
+        },
+        bonds = {{1, 2}, {1, 3}, {1, 4}, {1, 5}},
+        radioactive = true
+    },
+    
+    diastatidomethane = {
+        atoms = {
+            {element = "C", x = 0, y = 0, color = ELEMENT_COLORS.C},
+            {element = "At", x = 0, y = -21, color = ELEMENT_COLORS.At},
+            {element = "At", x = 0, y = 21, color = ELEMENT_COLORS.At},
+            {element = "H", x = -13, y = 0, color = ELEMENT_COLORS.H},
+            {element = "H", x = 13, y = 0, color = ELEMENT_COLORS.H}
+        },
+        bonds = {{1, 2}, {1, 3}, {1, 4}, {1, 5}},
+        heavy = true,
+        radioactive = true
+    },
+    
+    triastatidomethane = {
+        atoms = {
+            {element = "C", x = 0, y = 0, color = ELEMENT_COLORS.C},
+            {element = "At", x = 0, y = -21, color = ELEMENT_COLORS.At},
+            {element = "At", x = 18, y = 10.5, color = ELEMENT_COLORS.At},
+            {element = "At", x = -18, y = 10.5, color = ELEMENT_COLORS.At},
+            {element = "H", x = 0, y = 18, color = ELEMENT_COLORS.H}
+        },
+        bonds = {{1, 2}, {1, 3}, {1, 4}, {1, 5}},
+        unstable = true,
+        heavy = true,
+        radioactive = true
+    },
+    
+    carbon_tetrastatide = {
+        atoms = {
+            {element = "C", x = 0, y = 0, color = ELEMENT_COLORS.C},
+            {element = "At", x = 0, y = -22, color = ELEMENT_COLORS.At},
+            {element = "At", x = 22, y = 0, color = ELEMENT_COLORS.At},
+            {element = "At", x = 0, y = 22, color = ELEMENT_COLORS.At},
+            {element = "At", x = -22, y = 0, color = ELEMENT_COLORS.At}
+        },
+        bonds = {{1, 2}, {1, 3}, {1, 4}, {1, 5}},
+        explosive = true,
+        unstable = true,
+        heavy = true,
+        radioactive = true
+    },
+    
+    hydrogen_astatide = {
+        atoms = {
+            {element = "At", x = 3, y = 0, color = ELEMENT_COLORS.At},
+            {element = "H", x = -3, y = 0, color = ELEMENT_COLORS.H}
+        },
+        bonds = {{1, 2}},
+        radioactive = true
+    },
+	
+	fluoroantimonic_acid = {
+        atoms = {
+            {element = "H", x = 0, y = -15, color = ELEMENT_COLORS.H},
+            {element = "F", x = -12, y = -8, color = ELEMENT_COLORS.F},
+            {element = "F", x = 12, y = -8, color = ELEMENT_COLORS.F},
+            {element = "Sb", x = 0, y = 5, color = ELEMENT_COLORS.Sb},
+            {element = "F", x = -15, y = 12, color = ELEMENT_COLORS.F},
+            {element = "F", x = 0, y = 15, color = ELEMENT_COLORS.F},
+            {element = "F", x = 15, y = 12, color = ELEMENT_COLORS.F}
+        },
+        bonds = {{1, 2}, {1, 3}, {2, 4}, {3, 4}, {4, 5}, {4, 6}, {4, 7}},
+        superacid = true
     }
 }
 
@@ -2556,6 +2817,26 @@ function Molecule:update(dt)
         self.unstableTimer = self.unstableTimer + dt
         if self.unstableTimer > 5 then
             self.health = self.health - 20 * dt
+        end
+        if self.health <= 0 then
+            self.alive = false
+        end
+    end
+	
+	if self.type == "carbon_tetrastatide" then
+        self.unstableTimer = self.unstableTimer + dt
+        if self.unstableTimer > 3 then  -- Even more unstable than CI4!
+            self.health = self.health - 25 * dt
+        end
+        if self.health <= 0 then
+            self.alive = false
+        end
+    end
+    
+    if self.type == "triastatidomethane" then
+        self.unstableTimer = self.unstableTimer + dt
+        if self.unstableTimer > 10 then
+            self.health = self.health - 8 * dt
         end
         if self.health <= 0 then
             self.alive = false
@@ -2663,7 +2944,8 @@ function Molecule:update(dt)
                           "chloromethane", "dichloromethane", "chloroform", "carbon_tetrachloride",
                           "bromomethane", "dibromomethane", "tribromomethane", "carbon_tetrabromide",
                           "iodomethane", "diiodomethane", "triiodomethane",
-                          "butane", "pentane", "hexane", "heptane", "octane", "nonane", "decane"}
+                          "butane", "pentane", "hexane", "heptane", "octane", "nonane", "decane",
+						  "astatidomethane", "diastatidomethane", "triastatidomethane", "carbon_tetrastatide"}
 
         if molConfig.prefersEthylene then
             preyTypes = {"ethylene", "tetrafluoroethylene", "cyclopropane", "benzene", "tnt", 
@@ -2727,7 +3009,7 @@ function Molecule:update(dt)
             if dist < self.radius + closest.radius then
                 local damageMultiplier = 1.0
                 if closest.type == "buckminsterfullerene" then
-                    damageMultiplier = 0.1
+                    damageMultiplier = 0.01
                 end
                 
                 closest.health = closest.health - (damage * damageMultiplier * dt)
@@ -2786,7 +3068,113 @@ function Molecule:update(dt)
                 self.rotationSpeed = 1.5
             end
         end
+    elseif self.type == "hydrogen_sulfide" or self.type == "sulfur_trioxide" or
+           self.type == "phosphoric_acid" or self.type == "potassium_permanganate" or
+           self.type == "chlorine_trifluoride" or self.type == "white_phosphorus" then
+        
+        local preyTypes = {"methane", "ethylene", "propane", "ethanol", "ammonia"}
+        
+        if self.type == "chlorine_trifluoride" then
+            preyTypes = {"methane", "ethylene", "propane", "water", "co2", "ammonia",
+                        "benzene", "ethanol", "sodium_chloride", "helium"}
+        elseif self.type == "white_phosphorus" then
+            preyTypes = {"oxygen", "ozone", "water", "fluoroantimonic_acid"}
+        elseif self.type == "sulfur_trioxide" then
+            preyTypes = {"water", "ammonia", "ethanol"}
+        end
+        
+        local closest = nil
+        local detectionMult = molConfig.detectionMultiplier or 1
+        local closestDist = DETECTION_RANGE * detectionMult
+        
+        for _, mol in ipairs(molecules) do
+            for _, preyType in ipairs(preyTypes) do
+                if mol.type == preyType and mol.alive then
+                    local dx = mol.x - self.x
+                    local dy = mol.y - self.y
+                    local dist = math.sqrt(dx * dx + dy * dy)
+                    if dist < closestDist then
+                        closest = mol
+                        closestDist = dist
+                        break
+                    end
+                end
+            end
+        end
+        
+        if closest then
+            local dx = closest.x - self.x
+            local dy = closest.y - self.y
+            local dist = math.sqrt(dx * dx + dy * dy)
+            local speedMult = molConfig.speedMultiplier or 1
+            local speed = HUNT_SPEED * speedMult
+            self.vx = (dx / dist) * speed
+            self.vy = (dy / dist) * speed
+            self.rotationSpeed = 2
+            
+            local damage = molConfig.damage or 50
+            if dist < self.radius + closest.radius then
+                closest.health = closest.health - damage * dt
+                if closest.health <= 0 then
+                    closest.alive = false
+                end
+            end
+        else
+            self.wanderAngle = self.wanderAngle + (math.random() - 0.5) * 0.08
+            self.vx = math.cos(self.wanderAngle) * WANDER_SPEED
+            self.vy = math.sin(self.wanderAngle) * WANDER_SPEED
+            self.rotationSpeed = 0.4
+        end
+	elseif self.type == "fluoroantimonic_acid" then
+        local preyTypes = {}
+        for molType, _ in pairs(config.molecules) do
+            if molType ~= "fluoroantimonic_acid" then
+                table.insert(preyTypes, molType)
+            end
+        end
+        
+        local closest = nil
+        local detectionMult = molConfig.detectionMultiplier or 1
+        local closestDist = DETECTION_RANGE * detectionMult
     
+        for _, mol in ipairs(molecules) do
+            for _, preyType in ipairs(preyTypes) do
+                if mol.type == preyType and mol.alive then
+                    local dx = mol.x - self.x
+                    local dy = mol.y - self.y
+                    local dist = math.sqrt(dx * dx + dy * dy)
+                    if dist < closestDist then
+                        closest = mol
+                        closestDist = dist
+                        break
+                    end
+                end
+            end
+        end
+    
+        if closest then
+            local dx = closest.x - self.x
+            local dy = closest.y - self.y
+            local dist = math.sqrt(dx * dx + dy * dy)
+            local speedMult = molConfig.speedMultiplier or 1
+            local speed = HUNT_SPEED * speedMult
+            self.vx = (dx / dist) * speed
+            self.vy = (dy / dist) * speed
+            self.rotationSpeed = 2
+    
+            local damage = molConfig.damage or 50
+            if dist < self.radius + closest.radius then
+                closest.health = closest.health - damage * dt
+                if closest.health <= 0 then
+                    closest.alive = false
+                end
+            end
+        else
+            self.wanderAngle = self.wanderAngle + (math.random() - 0.5) * 0.1
+            self.vx = math.cos(self.wanderAngle) * WANDER_SPEED
+            self.vy = math.sin(self.wanderAngle) * WANDER_SPEED
+            self.rotationSpeed = 0.3
+        end
     elseif self.type == "xenon_difluoride" or self.type == "xenon_tetrafluoride" or
            self.type == "krypton_difluoride" then
         
@@ -2856,7 +3244,8 @@ function Molecule:update(dt)
            self.type == "cyanoacetylene" or self.type == "acetonitrile" then
         local threats = {"oxygen", "ozone", "chlorine", "fluorine", "hydrogen_peroxide", 
                         "sulfuric_acid", "hydrochloric_acid", "perchloric_acid", "formaldehyde",
-                        "hypobromous_acid", "trihydrogen_cation", "formyl_cation", "ethynyl_radical"}
+                        "hypobromous_acid", "trihydrogen_cation", "formyl_cation", "ethynyl_radical",
+						"fluoroantimonic_acid"}
         local nearestThreat = nil
         local nearestDist = DETECTION_RANGE
 
@@ -3004,6 +3393,27 @@ function Molecule:draw()
         end
     end
 	
+	if self.type == "chlorine_trifluoride" then
+        local pulse = (math.sin(love.timer.getTime() * 4) + 1) * 0.5
+        love.graphics.setColor(1, 0.5, 0, 0.2 + pulse * 0.3)
+        love.graphics.circle("fill", self.x, self.y, self.radius + 12)
+        for i = 1, 3 do
+            love.graphics.setColor(1, 0.3, 0, 0.3)
+            love.graphics.circle("line", self.x, self.y, self.radius + i * 7)
+        end
+    end
+    
+    if self.type == "white_phosphorus" then
+        local pulse = (math.sin(love.timer.getTime() * 3) + 1) * 0.5
+        love.graphics.setColor(1, 1, 0.5, 0.15 + pulse * 0.2)
+        love.graphics.circle("fill", self.x, self.y, self.radius + 8)
+    end
+    
+    if self.type == "potassium_permanganate" then
+        love.graphics.setColor(0.6, 0, 0.6, 0.2)
+        love.graphics.circle("fill", self.x, self.y, self.radius + 5)
+    end
+	
 	if self.type == "xenon" or self.type == "krypton" or 
        self.type == "neon" or self.type == "argon" then
         local pulse = (math.sin(love.timer.getTime() * 1.5) + 1) * 0.5
@@ -3080,6 +3490,7 @@ function Molecule:draw()
             love.graphics.circle("line", self.x, self.y, self.radius + i * 8)
         end
     end
+
 	
 	-- Positronium is VERY FUCKING unstable
     if self.type == "positronium_hydride" or self.type == "dipositronium" then
@@ -3240,6 +3651,7 @@ function love.load()
     love.window.setTitle(config.game.title)
     love.window.setMode(config.game.window.width, config.game.window.height)
     
+    -- Spawn initial molecules
     for molType, count in pairs(config.initialSpawns) do
         for i = 1, count do
             table.insert(molecules, Molecule:new(molType, 
@@ -3250,6 +3662,18 @@ function love.load()
 
     camera.x = WORLD_WIDTH / 2 - love.graphics.getWidth() / 2
     camera.y = WORLD_HEIGHT / 2 - love.graphics.getHeight() / 2
+    
+    if love.filesystem.getInfo("autoexec.rxn") then
+        print("Found AUTOEXEC.RXN, executing...")
+        local Console = require("libs/console")
+        local context = {
+            molecules = molecules,
+            camera = camera,
+            config = config,
+            Molecule = Molecule
+        }
+        Console.executeRXN("autoexec.rxn", context)
+    end
 end
 
 function love.update(dt)
@@ -3542,7 +3966,7 @@ function drawMoleculeTooltip(molecule)
     if molecule.type:match("bromo") or molecule.type == "carbon_tetrabromide" then
         table.insert(lines, "Brominated - heavy")
     end
-    if molecule.type:match("iodo") or molecule.type == "carbon_tetraiodide" then
+    if molecule.type:match("iodo") or molecule.type == "carbon_tetraiodide" or molecule.type == "astatidomethane" or molecule.type == "diastatidomethane" or molecule.type == "triastatidomethane" then
         table.insert(lines, "Iodinated - UNSTABLE!")
         if molecule.type == "carbon_tetraiodide" then
             table.insert(lines, "PURPLE EXPLOSIVE!")
@@ -3798,6 +4222,36 @@ function drawMoleculeTooltip(molecule)
     if config.molecules[molecule.type].radioactive then
         table.insert(lines, "[!] RADIOACTIVE [!]")
     end
+	    if config.molecules[molecule.type].pyrophoric then
+        table.insert(lines, "[PYROPHORIC - ignites in air]")
+    end
+    if config.molecules[molecule.type].hypergolic then
+        table.insert(lines, "[HYPERGOLIC - spontaneous ignition]")
+    end
+    if config.molecules[molecule.type].extremely_reactive then
+        table.insert(lines, "[EXTREMELY REACTIVE]")
+    end
+    if config.molecules[molecule.type].smells_horrible then
+        table.insert(lines, "[Smells like rotten eggs]")
+    end
+    if config.molecules[molecule.type].burns_everything then
+        table.insert(lines, "[!!! BURNS EVERYTHING !!!]")
+    end
+    if config.molecules[molecule.type].very_stable then
+        table.insert(lines, "[Very stable - hard to break]")
+    end
+    if config.molecules[molecule.type].purple then
+        table.insert(lines, "[Purple color]")
+    end
+    if config.molecules[molecule.type].alkali_metal then
+        table.insert(lines, "[Alkali metal - highly reactive]")
+    end
+    if config.molecules[molecule.type].salt then
+        table.insert(lines, "[Ionic salt compound]")
+    end
+    if config.molecules[molecule.type].oxidizer then
+        table.insert(lines, "[Strong oxidizer]")
+    end
 	
     if molecule.type == "trihydrogen_cation" then
         table.insert(lines, "Most abundant ion in space!")
@@ -3827,6 +4281,70 @@ function drawMoleculeTooltip(molecule)
         table.insert(lines, "Extremely stable fullerene")
         table.insert(lines, "Found in planetary nebulae!")
         table.insert(lines, "[90% damage resistance]")
+    end
+	    if molecule.type == "hydrogen_sulfide" then
+        table.insert(lines, "H2S - Rotten egg gas")
+        table.insert(lines, "Toxic and flammable")
+        table.insert(lines, "Smells HORRIBLE")
+    end
+    if molecule.type == "sulfur_trioxide" then
+        table.insert(lines, "SO3 - Extremely reactive")
+        table.insert(lines, "Reacts violently with water")
+        table.insert(lines, "Forms sulfuric acid")
+    end
+    if molecule.type == "phosphoric_acid" then
+        table.insert(lines, "H3PO4 - Weaker acid")
+        table.insert(lines, "Used in soft drinks")
+        table.insert(lines, "Rust remover")
+    end
+    if molecule.type == "sodium_chloride" then
+        table.insert(lines, "NaCl - Table salt")
+        table.insert(lines, "Very stable ionic compound")
+        table.insert(lines, "Essential for life")
+    end
+    if molecule.type == "potassium_permanganate" then
+        table.insert(lines, "KMnO4 - Purple crystals")
+        table.insert(lines, "Strong oxidizing agent")
+        table.insert(lines, "Used as disinfectant")
+    end
+    if molecule.type == "chlorine_trifluoride" then
+        table.insert(lines, "ClF3 - NIGHTMARE FUEL")
+        table.insert(lines, "Sets EVERYTHING on fire")
+        table.insert(lines, "Burns water, sand, concrete")
+        table.insert(lines, "Attacks ALL molecules!")
+    end
+    if molecule.type == "white_phosphorus" then
+        table.insert(lines, "P4 - Pyrophoric")
+        table.insert(lines, "Spontaneously combusts in air")
+        table.insert(lines, "Extremely toxic")
+        table.insert(lines, "Used in incendiary weapons")
+    end
+    if molecule.type == "red_phosphorus" then
+        table.insert(lines, "P4 - Stable form")
+        table.insert(lines, "Used in matches")
+        table.insert(lines, "Much safer than white")
+    end
+    if molecule.type == "sodium_atom" then
+        table.insert(lines, "Alkali metal - very reactive")
+        table.insert(lines, "Explodes in water")
+    end
+    if molecule.type == "potassium_atom" then
+        table.insert(lines, "Alkali metal - MORE reactive")
+        table.insert(lines, "Purple flame in water")
+    end
+    if molecule.type == "sulfur_atom" then
+        table.insert(lines, "Yellow nonmetal")
+        table.insert(lines, "Forms many compounds")
+    end
+    if molecule.type == "phosphorus_atom" then
+        table.insert(lines, "Essential for life")
+        table.insert(lines, "Found in DNA and ATP")
+    end
+	if molecule.type == "fluoroantimonic_acid" then
+        table.insert(lines, "STRONGEST SUPERACID!")
+        table.insert(lines, "20 quintillion times stronger than H₂SO₄")
+        table.insert(lines, "Dissolves glass, flesh, everything")
+        table.insert(lines, "Hunts: EVERYTHING except itself")
     end
 
     -- Atom info
@@ -3946,6 +4464,32 @@ function getMoleculeBehaviorInfo(molecule)
 	
 	if molecule.type == "buckminsterfullerene" then
         table.insert(info.huntedBy, "almost nothing!")
+	elseif molecule.type == "hydrogen_sulfide" then
+        table.insert(info.hunts, "organics")
+        table.insert(info.huntedBy, "oxidizers")
+    elseif molecule.type == "sulfur_trioxide" then
+        table.insert(info.hunts, "water")
+        table.insert(info.hunts, "alcohols")
+    elseif molecule.type == "phosphoric_acid" then
+        table.insert(info.hunts, "bases")
+        table.insert(info.huntedBy, "strong bases")
+    elseif molecule.type == "potassium_permanganate" then
+        table.insert(info.hunts, "organics")
+        table.insert(info.hunts, "reducing agents")
+    elseif molecule.type == "chlorine_trifluoride" then
+        table.insert(info.hunts, "LITERALLY EVERYTHING")
+        table.insert(info.hunts, "water, CO2, sand, asbestos")
+    elseif molecule.type == "white_phosphorus" then
+        table.insert(info.hunts, "oxygen")
+        table.insert(info.huntedBy, "air itself")
+    elseif molecule.type == "red_phosphorus" then
+        table.insert(info.huntedBy, "strong oxidizers")
+    elseif molecule.type == "sodium_chloride" then
+        table.insert(info.huntedBy, "almost nothing")
+    elseif molecule.type == "sodium_chloride" then
+        table.insert(info.huntedBy, "strong acids (slowly)")
+    elseif molecule.type == "red_phosphorus" then
+        table.insert(info.huntedBy, "strong oxidizers only")
     end
 
     return info
