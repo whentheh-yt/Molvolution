@@ -37,6 +37,8 @@
 --                         -    • Changed buckminsterfullerene's resistance from 90% > 99%
 --                         - (New Years 2026 Build 1.2.100)
 -- January 1 2026 12:30    - Added radiation damage and fixed death mechanic (New Years 2026 Build 1.2.127)
+--                         -
+-- January 2 2026 21:38    - Added population graph (New Years 2026 Build 1.2.154)
 
 local config = require("config")
 local Console = require("libs/console")
@@ -60,6 +62,12 @@ local camera = {
     maxZoom = config.camera.maxZoom,
     followTarget = nil
 }
+
+local populationHistory = {}
+local maxHistoryLength = 300  -- 5 seconds at 60fps
+local historyUpdateTimer = 0
+local historyUpdateInterval = 0.1
+local showGraph = true
 
 local deathFragments = {
     carbon_tetraiodide = {
@@ -776,7 +784,20 @@ local deathFragmentations = {
     hydrogen_astatide = {
         {type = "hydrogen_atom", count = 1},
         {type = "astatine_atom", count = 1}
-    }
+    },
+	
+	glycine = {
+        {type = "nitrogen_atom", count = 1},
+        {type = "carbon_atom", count = 2},
+        {type = "oxygen_atom", count = 2},
+        {type = "hydrogen_atom", count = 5}
+    },
+    alanine = {
+        {type = "nitrogen_atom", count = 1},
+        {type = "carbon_atom", count = 3},
+        {type = "oxygen_atom", count = 2},
+        {type = "hydrogen_atom", count = 7}
+    },
 }
 
 local spawnFragments
@@ -2766,7 +2787,47 @@ local structures = {
         },
         bonds = {{1, 2}, {1, 3}, {2, 4}, {3, 4}, {4, 5}, {4, 6}, {4, 7}},
         superacid = true
-    }
+    },
+	
+	glycine = {
+        atoms = {
+            {element = "N", x = -20, y = 0, color = ELEMENT_COLORS.N},
+            {element = "H", x = -26, y = -8, color = ELEMENT_COLORS.H},
+            {element = "H", x = -26, y = 8, color = ELEMENT_COLORS.H},
+            {element = "C", x = -8, y = 0, color = ELEMENT_COLORS.C},
+            {element = "H", x = -8, y = -12, color = ELEMENT_COLORS.H},
+            {element = "H", x = -8, y = 12, color = ELEMENT_COLORS.H},
+            {element = "C", x = 8, y = 0, color = ELEMENT_COLORS.C},
+            {element = "O", x = 16, y = -10, color = ELEMENT_COLORS.O},
+            {element = "O", x = 16, y = 10, color = ELEMENT_COLORS.O},
+            {element = "H", x = 24, y = 14, color = ELEMENT_COLORS.H}
+        },
+        bonds = {
+            {1, 2}, {1, 3}, {1, 4}, {4, 5}, {4, 6}, {4, 7},
+            {7, 8, double = true}, {7, 9}, {9, 10}
+        }
+    },
+    alanine = {
+        atoms = {
+            {element = "N", x = -24, y = 0, color = ELEMENT_COLORS.N},
+            {element = "H", x = -30, y = -8, color = ELEMENT_COLORS.H},
+            {element = "H", x = -30, y = 8, color = ELEMENT_COLORS.H},
+            {element = "C", x = -10, y = 0, color = ELEMENT_COLORS.C},
+            {element = "H", x = -10, y = -12, color = ELEMENT_COLORS.H},
+            {element = "C", x = -10, y = 16, color = ELEMENT_COLORS.C},
+            {element = "H", x = -18, y = 20, color = ELEMENT_COLORS.H},
+            {element = "H", x = -10, y = 26, color = ELEMENT_COLORS.H},
+            {element = "H", x = -2, y = 20, color = ELEMENT_COLORS.H},
+            {element = "C", x = 6, y = 0, color = ELEMENT_COLORS.C},
+            {element = "O", x = 14, y = -10, color = ELEMENT_COLORS.O},
+            {element = "O", x = 14, y = 10, color = ELEMENT_COLORS.O},
+            {element = "H", x = 22, y = 14, color = ELEMENT_COLORS.H}
+        },
+        bonds = {
+            {1, 2}, {1, 3}, {1, 4}, {4, 5}, {4, 6}, {6, 7}, {6, 8}, {6, 9},
+            {4, 10}, {10, 11, double = true}, {10, 12}, {12, 13}
+        }
+    },
 }
 
 local Molecule = {}
@@ -2980,11 +3041,12 @@ function Molecule:update(dt)
                           "bromomethane", "dibromomethane", "tribromomethane", "carbon_tetrabromide",
                           "iodomethane", "diiodomethane", "triiodomethane",
                           "butane", "pentane", "hexane", "heptane", "octane", "nonane", "decane",
-						  "astatidomethane", "diastatidomethane", "triastatidomethane", "carbon_tetrastatide"}
+						  "astatidomethane", "diastatidomethane", "triastatidomethane", "carbon_tetrastatide",
+						  "glycine", "alanine"}
 
         if molConfig.prefersEthylene then
             preyTypes = {"ethylene", "tetrafluoroethylene", "cyclopropane", "benzene", "tnt", 
-                        "acetylcarnitine", "methane", "propane"}
+                        "acetylcarnitine", "methane", "propane", "glycine", "alanine"}
         elseif self.type == "fluorine" then
             preyTypes = {"methane", "ethylene", "propane", "cyclopropane", "acetylcarnitine",
                         "ethanol", "benzene", "ammonia", "water", "caffeine", "tnt", "acetone",
@@ -2992,7 +3054,7 @@ function Molecule:update(dt)
                         "helium_dimer", "helium_trimer", "helium", "chloromethane", "dichloromethane", "chloroform",
                         "carbon_tetrachloride", "bromomethane", "dibromomethane", "tribromomethane",
                         "carbon_tetrabromide", "iodomethane", "diiodomethane", "triiodomethane",
-                        "carbon_tetraiodide", "helium_hydride"}
+                        "carbon_tetraiodide", "helium_hydride", "glycine", "alanine"}
         elseif self.type == "perchloric_acid" then
             preyTypes = {}
             for molType, _ in pairs(config.molecules) do
@@ -3719,6 +3781,29 @@ end
 
 function love.update(dt)
     dt = dt * TimeSlider.scale
+    
+
+    historyUpdateTimer = historyUpdateTimer + dt
+    if historyUpdateTimer >= historyUpdateInterval then
+        historyUpdateTimer = 0
+        
+        local counts = {}
+        for _, mol in ipairs(molecules) do
+            if mol.alive then
+                counts[mol.type] = (counts[mol.type] or 0) + 1
+            end
+        end
+        
+        table.insert(populationHistory, {
+            time = love.timer.getTime(),
+            counts = counts
+        })
+        
+        if #populationHistory > maxHistoryLength then
+            table.remove(populationHistory, 1)
+        end
+    end
+	
 	local screenX, screenY = camera.x, camera.y
     local screenW = love.graphics.getWidth() / camera.zoom
     local screenH = love.graphics.getHeight() / camera.zoom
@@ -3920,14 +4005,114 @@ function love.update(dt)
     end
 end
 
+function drawPopulationGraph()
+    if not showGraph or #populationHistory < 2 then return end
+    
+    local graphX = love.graphics.getWidth() - 410
+    local graphY = 10
+    local graphWidth = 400
+    local graphHeight = 200
+    local padding = 40
+
+    love.graphics.setColor(0.1, 0.1, 0.15, 0.95)
+    love.graphics.rectangle("fill", graphX, graphY, graphWidth, graphHeight, 5, 5)
+    love.graphics.setColor(0.3, 0.3, 0.4)
+    love.graphics.setLineWidth(2)
+    love.graphics.rectangle("line", graphX, graphY, graphWidth, graphHeight, 5, 5)
+
+    local maxPop = 0
+    for _, entry in ipairs(populationHistory) do
+        local total = 0
+        for _, count in pairs(entry.counts) do
+            total = total + count
+        end
+        if total > maxPop then maxPop = total end
+    end
+    
+    if maxPop == 0 then return end
+
+    love.graphics.setColor(0.2, 0.2, 0.25)
+    for i = 1, 4 do
+        local y = graphY + padding + (graphHeight - padding * 2) * (i / 5)
+        love.graphics.line(graphX + padding, y, graphX + graphWidth - 10, y)
+    end
+    
+    local typeTotals = {}
+    for _, entry in ipairs(populationHistory) do
+        for molType, count in pairs(entry.counts) do
+            typeTotals[molType] = (typeTotals[molType] or 0) + count
+        end
+    end
+    
+    local topTypes = {}
+    for molType, total in pairs(typeTotals) do
+        table.insert(topTypes, {type = molType, total = total})
+    end
+    table.sort(topTypes, function(a, b) return a.total > b.total end)
+    
+    local colors = {
+        {1, 0.3, 0.3},    -- Red
+        {0.3, 0.8, 1},    -- Blue
+        {0.3, 1, 0.3},    -- Green
+        {1, 1, 0.3},      -- Yellow
+        {1, 0.5, 0.3},    -- Orange
+    }
+    
+    local typeColors = {}
+    for i = 1, math.min(5, #topTypes) do
+        typeColors[topTypes[i].type] = colors[i]
+    end
+    
+    for molType, color in pairs(typeColors) do
+        love.graphics.setColor(color)
+        love.graphics.setLineWidth(2)
+        
+        local points = {}
+        for i, entry in ipairs(populationHistory) do
+            local count = entry.counts[molType] or 0
+            local x = graphX + padding + ((i - 1) / (#populationHistory - 1)) * (graphWidth - padding - 10)
+            local y = graphY + graphHeight - padding - (count / maxPop) * (graphHeight - padding * 2)
+            table.insert(points, x)
+            table.insert(points, y)
+        end
+        
+        if #points >= 4 then
+            love.graphics.line(points)
+        end
+    end
+    
+    love.graphics.setColor(0.5, 0.5, 0.5)
+    love.graphics.setLineWidth(2)
+    love.graphics.line(graphX + padding, graphY + padding, 
+                      graphX + padding, graphY + graphHeight - padding)
+    love.graphics.line(graphX + padding, graphY + graphHeight - padding, 
+                      graphX + graphWidth - 10, graphY + graphHeight - padding)
+    
+    love.graphics.setColor(1, 1, 1)
+    love.graphics.print("Population", graphX + 5, graphY + 5, 0, 0.8, 0.8)
+    love.graphics.print(maxPop, graphX + 5, graphY + padding, 0, 0.7, 0.7)
+    love.graphics.print("0", graphX + 5, graphY + graphHeight - padding - 5, 0, 0.7, 0.7)
+    
+    local legendY = graphY + graphHeight - padding - 90
+    for i, entry in ipairs(topTypes) do
+        if i > 5 then break end
+        local color = typeColors[entry.type]
+        love.graphics.setColor(color)
+        love.graphics.rectangle("fill", graphX + padding + 5, legendY + (i - 1) * 18, 10, 10)
+        love.graphics.setColor(1, 1, 1)
+        love.graphics.print(entry.type, graphX + padding + 20, legendY + (i - 1) * 18 - 2, 0, 0.7, 0.7)
+    end
+end
+
 function love.draw()
     drawWorld()
     drawUI()
-	TimeSlider.draw()
+    drawPopulationGraph()
+    TimeSlider.draw()
     if hoveredMolecule then
         drawMoleculeTooltip(hoveredMolecule)
     end
-    Console.draw()  -- Draw console on top
+    Console.draw()
 end
 
 function drawWorld()
@@ -3981,7 +4166,7 @@ function drawUI()
         y = y + 20
     end
 
-    love.graphics.print("Arrow keys: Move  |  +/- : Zoom  |  ESC: Unfollow", 10, y)
+    love.graphics.print("Arrow keys: Move  |  +/- : Zoom  |  ESC: Unfollow | G: Show population graph", 10, y)
     y = y + 20
     love.graphics.print("Middle-click: Focus on molecule  |  ` : Console", 10, y)
 end
@@ -4388,6 +4573,14 @@ function drawMoleculeTooltip(molecule)
 		table.insert(lines, "Vulnerable to radiation; 5x damage from radioactive molecules")
         table.insert(lines, "Hunts: EVERYTHING except itself")
     end
+	if molecule.type == "glycine" then
+        table.insert(lines, "[Amino acid]")
+		table.insert(lines, "Smallest amino acid - no side chain")
+    end
+	if molecule.type == "alanine" then
+        table.insert(lines, "[Amino acid]")
+		table.insert(lines, "2nd smallest amino acid behind glycine - methane side chain")
+    end
 
     -- Atom info
     if molecule.element then
@@ -4600,7 +4793,6 @@ spawnFragments = function(molecule)
 end
 
 function love.keypressed(key)
-    -- Console gets first priority
     local context = {
         molecules = molecules,
         camera = camera,
@@ -4609,15 +4801,17 @@ function love.keypressed(key)
     }
     
     if Console.keypressed(key, context) then
-        return  -- Console handled it
+        return
     end
     
-    -- Normal game keys
     if key == "escape" then
         camera.followTarget = nil
     end
     if key == "0" then
         camera.zoom = config.camera.defaultZoom
+    end
+    if key == "g" then
+        showGraph = not showGraph
     end
 end
 

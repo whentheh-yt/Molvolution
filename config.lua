@@ -2,7 +2,7 @@ local config = {}
 
 config.game = {
     title = "Molvolution",
-    version = "New Years 2026 Build 1.2.127",
+    version = "New Years 2026 Build 1.2.154",
     window = {
         width = 1200,
         height = 800,
@@ -1269,6 +1269,17 @@ config.molecules = {
         dissolves_glass = true,
         extremely_corrosive = true
     },
+	
+	glycine = {
+        health = 140,
+        radius = 26,
+        speedMultiplier = 0.82
+    },
+    alanine = {
+        health = 150,
+        radius = 28,
+        speedMultiplier = 0.80
+    },
 }
 
 config.initialSpawns = {
@@ -1431,6 +1442,10 @@ config.initialSpawns = {
     hydrogen_astatide = 2,
 	
 	fluoroantimonic_acid = 1,  -- One. ONLY ONE.
+	
+	--Amino acids
+	glycine = 6,
+    alanine = 6
 }
 
 config.visual = {
