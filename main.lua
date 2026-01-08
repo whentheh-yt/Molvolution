@@ -37,12 +37,15 @@
 --                         -    • Changed buckminsterfullerene's resistance from 90% > 99%
 --                         - (New Years 2026 Build 1.2.100)
 -- January 1 2026 12:30    - Added radiation damage and fixed death mechanic (New Years 2026 Build 1.2.127)
---                         -
+-- ----------------------- -
 -- January 2 2026 21:38    - Added population graph (New Years 2026 Build 1.2.154)
+-- ----------------------- -
+-- January 8 2026 13:24    - Fixed debug detection circles and nitroglycerin (New Years 2026 Build 1.2.168)
 
 local config = require("config")
 local Console = require("libs/console")
 local TimeSlider = require("libs/timeslider")
+local MusicManager = require("libs/musicmanager")
 
 function love.mousereleased(x, y, button)
     TimeSlider.mousereleased(x, y, button)
@@ -64,7 +67,7 @@ local camera = {
 }
 
 local populationHistory = {}
-local maxHistoryLength = 300  -- 5 seconds at 60fps
+local maxHistoryLength = 300
 local historyUpdateTimer = 0
 local historyUpdateInterval = 0.1
 local showGraph = true
@@ -3026,6 +3029,47 @@ function Molecule:update(dt)
                 self.rotationSpeed = 0.5
             end
         end
+	elseif self.type == "nitroglycerin" then
+        local speed = math.sqrt(self.vx * self.vx + self.vy * self.vy)
+        
+        if speed > 50 then
+            self.unstableTimer = self.unstableTimer + dt * (speed / 50)
+            self.health = self.health - (speed * 0.1 * dt)
+        end
+        
+        local targets = {}
+        for _, mol in ipairs(molecules) do
+            if mol ~= self and mol.alive then
+                local dx = mol.x - self.x
+                local dy = mol.y - self.y
+                local dist = math.sqrt(dx * dx + dy * dy)
+                if dist < DETECTION_RANGE * 1.2 then
+                    table.insert(targets, {mol = mol, dist = dist})
+                end
+            end
+        end
+        
+        if #targets > 0 then
+            self.wanderAngle = self.wanderAngle + (math.random() - 0.5) * 0.3
+            self.vx = math.cos(self.wanderAngle) * WANDER_SPEED * 0.6
+            self.vy = math.sin(self.wanderAngle) * WANDER_SPEED * 0.6
+            self.rotationSpeed = 4
+            
+            for _, target in ipairs(targets) do
+                if target.dist < self.radius + target.mol.radius then
+                    if speed > 100 or math.random() < 0.1 then
+                        self.health = 0
+                        self.alive = false
+                        break
+                    end
+                end
+            end
+        else
+            self.wanderAngle = self.wanderAngle + (math.random() - 0.5) * 0.05
+            self.vx = math.cos(self.wanderAngle) * WANDER_SPEED * 0.6
+            self.vy = math.sin(self.wanderAngle) * WANDER_SPEED * 0.6
+            self.rotationSpeed = 1
+        end
     elseif self.type == "oxygen" or self.type == "ozone" or self.type == "chlorine" or 
            self.type == "fluorine" or self.type == "hydrogen_peroxide" or
            self.type == "sulfuric_acid" or self.type == "hydrochloric_acid" or
@@ -3740,8 +3784,15 @@ function Molecule:draw()
 
     -- Debug visualization
     if love.keyboard.isDown("d") then
+        local molConfig = config.molecules[self.type]
+        local detectionMult = molConfig.detectionMultiplier or 1
         love.graphics.setColor(1, 1, 1, 0.1)
-        love.graphics.circle("line", self.x, self.y, DETECTION_RANGE)
+        love.graphics.circle("line", self.x, self.y, DETECTION_RANGE * detectionMult)
+        
+        if detectionMult ~= 1 then
+            love.graphics.setColor(1, 1, 0, 0.5)
+            love.graphics.print(string.format("×%.1f", detectionMult), self.x + 5, self.y - 20)
+        end
     end
 
     if self.element then
@@ -3762,6 +3813,8 @@ function love.load()
                 math.random(100, WORLD_HEIGHT - 100)))
         end
     end
+	
+	MusicManager.load()
 
     camera.x = WORLD_WIDTH / 2 - love.graphics.getWidth() / 2
     camera.y = WORLD_HEIGHT / 2 - love.graphics.getHeight() / 2
@@ -3781,8 +3834,7 @@ end
 
 function love.update(dt)
     dt = dt * TimeSlider.scale
-    
-
+	
     historyUpdateTimer = historyUpdateTimer + dt
     if historyUpdateTimer >= historyUpdateInterval then
         historyUpdateTimer = 0
@@ -3872,16 +3924,7 @@ function love.update(dt)
                         mol.alive = false
                         other.alive = false
                         
-                        local annihilationSound1 = generateSound(880, 0.3, 0.5)
-						local annihilationSound2 = generateSound(66, 6, 0.4)
-						local annihilationSound3 = generateSound(44, 9, 0.3)
-						local annihilationSound4 = generateSound(22, 12, 0.2)
-						local annihilationSound5 = generateSound(11, 15, 0.1)
-                        annihilationSound1:play()
-						annihilationSound2:play()
-						annihilationSound3:play()
-						annihilationSound4:play()
-						annihilationSound5:play()
+                        MusicManager.playStinger("annihilation")
                         
                         local burstCount = 8
                         for k = 1, burstCount do
@@ -3898,7 +3941,7 @@ function love.update(dt)
                             end
                         end
                         
-                        break  -- Exit inner loop since this molecule is dead
+                        break
                     end
                 end
             end
@@ -3920,27 +3963,13 @@ function love.update(dt)
                         mol.alive = false
                         other.alive = false
                         
-                        -- DOUBLE annihilation sound cascade
-                        local annihilationSound1 = generateSound(110, 2, 0.6)
-                        local annihilationSound2 = generateSound(88, 4, 0.5)
-                        local annihilationSound3 = generateSound(66, 6, 0.4)
-                        local annihilationSound4 = generateSound(44, 8, 0.3)
-                        local annihilationSound5 = generateSound(22, 10, 0.2)
-                        local annihilationSound6 = generateSound(11, 12, 0.15)
-                        annihilationSound1:play()
-                        annihilationSound2:play()
-                        annihilationSound3:play()
-                        annihilationSound4:play()
-                        annihilationSound5:play()
-                        annihilationSound6:play()
+                        MusicManager.playStinger("annihilation")
                         
-                        -- MASSIVE particle burst
-                        local burstCount = 16  -- DOUBLE the particles
+                        local burstCount = 16
                         for k = 1, burstCount do
                             local angle = (k / burstCount) * math.pi * 2
                             local speed = 200 + math.random() * 150
                             
-                            -- Create various atoms from the annihilation
                             local atomTypes = {"hydrogen_atom", "hydrogen_atom", "helium"}
                             local atomType = atomTypes[math.random(1, #atomTypes)]
                             
@@ -4003,6 +4032,8 @@ function love.update(dt)
         camera.x = worldCenterX - screenCenterX / camera.zoom
         camera.y = worldCenterY - screenCenterY / camera.zoom
     end
+	
+	MusicManager.update(dt, molecules, camera)
 end
 
 function drawPopulationGraph()

@@ -793,6 +793,25 @@ function Console.execute(command, context)
         end
         
         Console.createRXN(filename)
+	elseif cmd == "music" then
+        local subcmd = args[2]
+        
+        if subcmd == "volume" then
+            local vol = tonumber(args[3])
+            if vol then
+                local MusicManager = require("libs/musicmanager")
+                MusicManager.setVolume(vol)
+                Console.log("Music volume set to " .. vol)
+            else
+                Console.log("Usage: music volume <0.0-1.0>")
+            end
+        elseif subcmd == "current" then
+            local MusicManager = require("libs/musicmanager")
+            Console.log("Current track: " .. (MusicManager.currentTrack or "none"))
+            Console.log("Target track: " .. (MusicManager.targetTrack or "none"))
+        else
+            Console.log("Usage: music <volume|current>")
+        end
 	else
         Console.log("Unknown command: " .. cmd)
         Console.log("Type 'help' for available commands")
