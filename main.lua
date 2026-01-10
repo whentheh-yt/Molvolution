@@ -41,11 +41,14 @@
 -- January 2 2026 21:38    - Added population graph (New Years 2026 Build 1.2.154)
 -- ----------------------- -
 -- January 8 2026 13:24    - Fixed debug detection circles and nitroglycerin (New Years 2026 Build 1.2.168)
+-- ----------------------- -
+-- January 10 2026 17:39   - Added autoupdate (New Years 2026 Build 1.2.184)
 
 local config = require("config")
 local Console = require("libs/console")
 local TimeSlider = require("libs/timeslider")
 local MusicManager = require("libs/musicmanager")
+local VersionManager = require("libs/versionmanager")
 
 function love.mousereleased(x, y, button)
     TimeSlider.mousereleased(x, y, button)
@@ -3804,6 +3807,9 @@ end
 function love.load()
     love.window.setTitle(config.game.title)
     love.window.setMode(config.game.window.width, config.game.window.height)
+	
+	VersionManager.load()
+    VersionManager.checkForUpdates()  -- Check on startup
     
     -- Spawn initial molecules
     for molType, count in pairs(config.initialSpawns) do
@@ -3834,6 +3840,8 @@ end
 
 function love.update(dt)
     dt = dt * TimeSlider.scale
+	
+	VersionManager.update(dt)
 	
     historyUpdateTimer = historyUpdateTimer + dt
     if historyUpdateTimer >= historyUpdateInterval then
@@ -4136,6 +4144,7 @@ function drawPopulationGraph()
 end
 
 function love.draw()
+    VersionManager.draw()
     drawWorld()
     drawUI()
     drawPopulationGraph()
@@ -4852,6 +4861,9 @@ end
 
 function love.mousepressed(x, y, button)
     if TimeSlider.mousepressed(x, y, button) then
+        return
+    end
+	if VersionManager.mousepressed(x, y, button) then
         return
     end
     if button == 3 then
