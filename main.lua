@@ -43,11 +43,11 @@
 -- January 8 2026 13:24    - Fixed debug detection circles and nitroglycerin (New Years 2026 Build 1.2.168)
 -- ----------------------- -
 -- January 10 2026 17:39   - Added autoupdate (New Years 2026 Build 1.2.184)
+-- January 10 2026 17:45   - Fixed crash because I incorrectly deleted MusicManager. (New Years 2026 Build 1.2.185)
 
 local config = require("config")
 local Console = require("libs/console")
 local TimeSlider = require("libs/timeslider")
-local MusicManager = require("libs/musicmanager")
 local VersionManager = require("libs/versionmanager")
 
 function love.mousereleased(x, y, button)
@@ -3820,7 +3820,6 @@ function love.load()
         end
     end
 	
-	MusicManager.load()
 
     camera.x = WORLD_WIDTH / 2 - love.graphics.getWidth() / 2
     camera.y = WORLD_HEIGHT / 2 - love.graphics.getHeight() / 2
@@ -3932,8 +3931,6 @@ function love.update(dt)
                         mol.alive = false
                         other.alive = false
                         
-                        MusicManager.playStinger("annihilation")
-                        
                         local burstCount = 8
                         for k = 1, burstCount do
                             local angle = (k / burstCount) * math.pi * 2
@@ -3970,8 +3967,6 @@ function love.update(dt)
                     if dist < minDist then
                         mol.alive = false
                         other.alive = false
-                        
-                        MusicManager.playStinger("annihilation")
                         
                         local burstCount = 16
                         for k = 1, burstCount do
@@ -4040,8 +4035,6 @@ function love.update(dt)
         camera.x = worldCenterX - screenCenterX / camera.zoom
         camera.y = worldCenterY - screenCenterY / camera.zoom
     end
-	
-	MusicManager.update(dt, molecules, camera)
 end
 
 function drawPopulationGraph()
