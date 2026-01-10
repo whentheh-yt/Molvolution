@@ -2,7 +2,7 @@ local config = {}
 
 config.game = {
     title = "Molvolution",
-    version = "New Years 2026 Build 1.2.185",
+    version = "New Years 2026 Build 1.2.197",
     window = {
         width = 1200,
         height = 800,
@@ -12,12 +12,12 @@ config.game = {
 }
 
 config.world = {
-    width = 12500,
-    height = 12500
+    width = 16384,
+    height = 16384
 }
 
 config.camera = {
-    minZoom = 0.3,
+    minZoom = 0.1,
     maxZoom = 2.0,
     defaultZoom = 1.0,
     moveSpeed = 300
@@ -1270,6 +1270,7 @@ config.molecules = {
         extremely_corrosive = true
     },
 	
+	-- Amino acids
 	glycine = {
         health = 140,
         radius = 26,
@@ -1279,6 +1280,72 @@ config.molecules = {
         health = 150,
         radius = 28,
         speedMultiplier = 0.80
+    },
+	
+	-- Boron screwing up everything
+	boron_atom = {
+        health = 14,
+        radius = 7,
+        speedMultiplier = 1.1,
+        peaceful = true,
+        atom = true,
+        valence = 3
+    },
+    diborane = {  -- B2H6
+        health = 85,
+        radius = 24,
+        speedMultiplier = 1.1,
+        pyrophoric = true,
+        toxic = true,
+        three_center_bonds = true,
+        unstable = true
+    },
+    tetrahydrodiborane = {  -- B2H4
+        health = 70,
+        radius = 20,
+        speedMultiplier = 1.15,
+        pyrophoric = true,
+        toxic = true,
+        extremely_unstable = true,
+        intermediate = true
+    },
+    dihydrodiborane = {  -- B2H2
+        health = 50,
+        radius = 16,
+        speedMultiplier = 1.25,
+        pyrophoric = true,
+        toxic = true,
+        extremely_unstable = true,
+        reactive = true
+    },
+    boron_trifluoride = {
+        health = 95,
+        radius = 20,
+        speedMultiplier = 1.0,
+        lewis_acid = true,
+        electron_deficient = true
+    },
+    boron_trichloride = {
+        health = 100,
+        radius = 22,
+        speedMultiplier = 0.95,
+        lewis_acid = true,
+        reactive_with_water = true
+    },
+    borax = {
+        health = 180,
+        radius = 28,
+        speedMultiplier = 0.7,
+        peaceful = true,
+        salt = true,
+        cleaning_agent = true
+    },
+    boric_acid = {
+        health = 120,
+        radius = 22,
+        speedMultiplier = 0.85,
+        weak_acid = true,
+        antiseptic = true
     },
 }
 
@@ -1445,7 +1512,17 @@ config.initialSpawns = {
 	
 	--Amino acids
 	glycine = 6,
-    alanine = 6
+    alanine = 6,
+	
+	-- Boron <3
+	boron_atom = 5,
+    diborane = 3,
+    tetrahydrodiborane = 2,
+    dihydrodiborane = 1,
+    boron_trifluoride = 3,
+    boron_trichloride = 3,
+    borax = 4,
+    boric_acid = 4,
 }
 
 config.visual = {

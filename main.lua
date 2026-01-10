@@ -44,11 +44,11 @@
 -- ----------------------- -
 -- January 10 2026 17:39   - Added autoupdate (New Years 2026 Build 1.2.184)
 -- January 10 2026 17:45   - Fixed crash because I incorrectly deleted MusicManager. (New Years 2026 Build 1.2.185)
+-- January 10 2026 22:16   - Fixed boron compounds and autoupdate. (New Years 2026 Build 1.2.197)
 
 local config = require("config")
 local Console = require("libs/console")
 local TimeSlider = require("libs/timeslider")
-local VersionManager = require("libs/versionmanager")
 
 function love.mousereleased(x, y, button)
     TimeSlider.mousereleased(x, y, button)
@@ -697,9 +697,9 @@ local deathFragmentations = {
         -- We can't represent photons, so it just releases the hydrogen
     },
 	dipositronium = {
-    {type = "hydrogen_atom", count = 2},
-    -- Pure energy release, so we only get a couple atoms back
-	-- (WHY IS ANTIMATTER SO DAMN CONFUSING!?!??!?)
+        {type = "hydrogen_atom", count = 2},
+        -- Pure energy release, so we only get a couple atoms back
+	    -- (WHY IS ANTIMATTER SO DAMN CONFUSING!?!??!?)
     },
 	
 	cubane = {
@@ -803,6 +803,44 @@ local deathFragmentations = {
         {type = "carbon_atom", count = 3},
         {type = "oxygen_atom", count = 2},
         {type = "hydrogen_atom", count = 7}
+    },
+	
+	diborane = {
+        {type = "tetrahydrodiborane", count = 1},
+        {type = "hydrogen", count = 1}
+    },
+    
+    tetrahydrodiborane = {
+        {type = "dihydrodiborane", count = 1},
+        {type = "hydrogen", count = 1}
+    },
+    
+    dihydrodiborane = {
+        {type = "boron_atom", count = 2},
+        {type = "hydrogen_atom", count = 2}
+    },
+    
+    boron_trifluoride = {
+        {type = "boron_atom", count = 1},
+        {type = "fluorine_atom", count = 3}
+    },
+    
+    boron_trichloride = {
+        {type = "boron_atom", count = 1},
+        {type = "chlorine_atom", count = 3}
+    },
+    
+    borax = {
+        {type = "sodium_atom", count = 2},
+        {type = "boron_atom", count = 2},
+        {type = "oxygen_atom", count = 5},
+        {type = "water", count = 5}
+    },
+    
+    boric_acid = {
+        {type = "boron_atom", count = 1},
+        {type = "oxygen_atom", count = 3},
+        {type = "hydrogen_atom", count = 3}
     },
 }
 
@@ -2834,6 +2872,124 @@ local structures = {
             {4, 10}, {10, 11, double = true}, {10, 12}, {12, 13}
         }
     },
+	
+	boron_atom = {
+        atoms = {{element = "B", x = 0, y = 0, color = ELEMENT_COLORS.B}},
+        bonds = {}
+    },
+    
+    diborane = {  -- B2H6
+        atoms = {
+            {element = "B", x = -10, y = 0, color = ELEMENT_COLORS.B},
+            {element = "B", x = 10, y = 0, color = ELEMENT_COLORS.B},
+            {element = "H", x = -15, y = -12, color = ELEMENT_COLORS.H},
+            {element = "H", x = -15, y = 12, color = ELEMENT_COLORS.H},
+            {element = "H", x = 15, y = -12, color = ELEMENT_COLORS.H},
+            {element = "H", x = 15, y = 12, color = ELEMENT_COLORS.H},
+            {element = "H", x = 0, y = -8, color = ELEMENT_COLORS.H},
+            {element = "H", x = 0, y = 8, color = ELEMENT_COLORS.H}
+        },
+        bonds = {
+            {1, 3}, {1, 4}, {2, 5}, {2, 6},
+            {1, 7}, {2, 7}, -- Three-center bonds
+            {1, 8}, {2, 8}
+        },
+        pyrophoric = true,
+        three_center_bonds = true
+    },
+    
+    tetrahydrodiborane = {  -- B2H4
+        atoms = {
+            {element = "B", x = -10, y = 0, color = ELEMENT_COLORS.B},
+            {element = "B", x = 10, y = 0, color = ELEMENT_COLORS.B},
+            {element = "H", x = -18, y = -10, color = ELEMENT_COLORS.H},
+            {element = "H", x = -18, y = 10, color = ELEMENT_COLORS.H},
+            {element = "H", x = 0, y = -8, color = ELEMENT_COLORS.H},
+            {element = "H", x = 0, y = 8, color = ELEMENT_COLORS.H}
+        },
+        bonds = {
+            {1, 3}, {1, 4},
+            {1, 5}, {2, 5}, -- Three-center bond
+            {1, 6}, {2, 6}
+        },
+        pyrophoric = true,
+        extremely_unstable = true
+    },
+    
+    dihydrodiborane = {  -- B2H2
+        atoms = {
+            {element = "B", x = -10, y = 0, color = ELEMENT_COLORS.B},
+            {element = "B", x = 10, y = 0, color = ELEMENT_COLORS.B},
+            {element = "H", x = 0, y = -8, color = ELEMENT_COLORS.H},
+            {element = "H", x = 0, y = 8, color = ELEMENT_COLORS.H}
+        },
+        bonds = {
+            {1, 2},
+            {1, 3}, {2, 3}, -- Three-center bond
+            {1, 4}, {2, 4}
+        },
+        pyrophoric = true,
+        extremely_unstable = true
+    },
+    
+    boron_trifluoride = {
+        atoms = {
+            {element = "B", x = 0, y = 0, color = ELEMENT_COLORS.B},
+            {element = "F", x = 0, y = -16, color = ELEMENT_COLORS.F},
+            {element = "F", x = 14, y = 8, color = ELEMENT_COLORS.F},
+            {element = "F", x = -14, y = 8, color = ELEMENT_COLORS.F}
+        },
+        bonds = {{1, 2}, {1, 3}, {1, 4}},
+        trigonal_planar = true,
+        lewis_acid = true
+    },
+    
+    boron_trichloride = {
+        atoms = {
+            {element = "B", x = 0, y = 0, color = ELEMENT_COLORS.B},
+            {element = "Cl", x = 0, y = -17, color = ELEMENT_COLORS.Cl},
+            {element = "Cl", x = 15, y = 8.5, color = ELEMENT_COLORS.Cl},
+            {element = "Cl", x = -15, y = 8.5, color = ELEMENT_COLORS.Cl}
+        },
+        bonds = {{1, 2}, {1, 3}, {1, 4}},
+        trigonal_planar = true,
+        lewis_acid = true
+    },
+    
+    borax = {
+        atoms = {
+            {element = "Na", x = -20, y = -15, color = ELEMENT_COLORS.Na},
+            {element = "Na", x = -20, y = 15, color = ELEMENT_COLORS.Na},
+            {element = "B", x = 0, y = -10, color = ELEMENT_COLORS.B},
+            {element = "B", x = 0, y = 10, color = ELEMENT_COLORS.B},
+            {element = "O", x = -10, y = -15, color = ELEMENT_COLORS.O},
+            {element = "O", x = -10, y = 15, color = ELEMENT_COLORS.O},
+            {element = "O", x = 10, y = -15, color = ELEMENT_COLORS.O},
+            {element = "O", x = 10, y = 15, color = ELEMENT_COLORS.O},
+            {element = "O", x = 20, y = 0, color = ELEMENT_COLORS.O},
+            {element = "H", x = 30, y = -5, color = ELEMENT_COLORS.H},
+            {element = "H", x = 30, y = 5, color = ELEMENT_COLORS.H}
+        },
+        bonds = {
+            {1, 5}, {2, 6}, {3, 5}, {3, 7}, {4, 6}, {4, 8},
+            {3, 4}, {7, 9}, {8, 9}, {9, 10}, {9, 11}
+        },
+        salt = true
+    },
+    
+    boric_acid = {
+        atoms = {
+            {element = "B", x = 0, y = 0, color = ELEMENT_COLORS.B},
+            {element = "O", x = 0, y = -15, color = ELEMENT_COLORS.O},
+            {element = "O", x = 13, y = 7.5, color = ELEMENT_COLORS.O},
+            {element = "O", x = -13, y = 7.5, color = ELEMENT_COLORS.O},
+            {element = "H", x = 0, y = -25, color = ELEMENT_COLORS.H},
+            {element = "H", x = 22, y = 12, color = ELEMENT_COLORS.H},
+            {element = "H", x = -22, y = 12, color = ELEMENT_COLORS.H}
+        },
+        bonds = {{1, 2}, {1, 3}, {1, 4}, {2, 5}, {3, 6}, {4, 7}},
+        weak_acid = true
+    },
 }
 
 local Molecule = {}
@@ -2870,6 +3026,7 @@ function Molecule:new(type, x, y)
 end
 
 function Molecule:update(dt)
+    local molConfig = config.molecules[self.type]
     if not self.alive then
         return
     end
@@ -2898,7 +3055,6 @@ function Molecule:update(dt)
         end
     end
     
-    -- Apply radiation damage
     if radiationDamage > 0 then
         if self.type == "fluoroantimonic_acid" then
             self.health = self.health - radiationDamage * 5
@@ -2927,7 +3083,7 @@ function Molecule:update(dt)
 	
 	if self.type == "carbon_tetrastatide" then
         self.unstableTimer = self.unstableTimer + dt
-        if self.unstableTimer > 3 then  -- Even more unstable than CI4!
+        if self.unstableTimer > 3 then
             self.health = self.health - 25 * dt
         end
         if self.health <= 0 then
@@ -2984,13 +3140,107 @@ function Molecule:update(dt)
             self.health = self.health - speed * 0.5 * dt
         end
         self.health = self.health - 2 * dt
-    end
-
-    self.rotation = self.rotation + self.rotationSpeed * dt
-
-    local molConfig = config.molecules[self.type]
+        self.rotation = self.rotation + self.rotationSpeed * dt
+	elseif self.type == "diborane" or self.type == "tetrahydrodiborane" or 
+           self.type == "dihydrodiborane" then
+        local preyTypes = {"oxygen", "ozone", "water"}
+        local closest = nil
+        local closestDist = DETECTION_RANGE * 1.3
+        
+        for _, mol in ipairs(molecules) do
+            for _, preyType in ipairs(preyTypes) do
+                if mol.type == preyType and mol.alive then
+                    local dx = mol.x - self.x
+                    local dy = mol.y - self.y
+                    local dist = math.sqrt(dx * dx + dy * dy)
+                    if dist < closestDist then
+                        closest = mol
+                        closestDist = dist
+                        break
+                    end
+                end
+            end
+        end
+        
+        if closest then
+            local dx = closest.x - self.x
+            local dy = closest.y - self.y
+            local dist = math.sqrt(dx * dx + dy * dy)
+            local speedMult = molConfig.speedMultiplier or 1
+            local speed = HUNT_SPEED * speedMult
+            self.vx = (dx / dist) * speed
+            self.vy = (dy / dist) * speed
+            self.rotationSpeed = 4
+            
+            if dist < self.radius + closest.radius then
+                self.health = 0
+                closest.health = closest.health - 80 * dt
+                if closest.health <= 0 then
+                    closest.alive = false
+                end
+            end
+        else
+            self.wanderAngle = self.wanderAngle + (math.random() - 0.5) * 0.08
+            self.vx = math.cos(self.wanderAngle) * (WANDER_SPEED * 1.2)
+            self.vy = math.sin(self.wanderAngle) * (WANDER_SPEED * 1.2)
+            self.rotationSpeed = 2
+        end
+    elseif self.type == "boron_trifluoride" or self.type == "boron_trichloride" then
+        local preyTypes = {"ammonia", "water", "hydroxide", "ethanol", "acetone"}
+        
+        if self.type == "boron_trichloride" then
+            preyTypes = {"water", "ammonia", "hydroxide", "ethanol"}
+        end
+        
+        local closest = nil
+        local closestDist = DETECTION_RANGE * 1.2
+        
+        for _, mol in ipairs(molecules) do
+            for _, preyType in ipairs(preyTypes) do
+                if mol.type == preyType and mol.alive then
+                    local dx = mol.x - self.x
+                    local dy = mol.y - self.y
+                    local dist = math.sqrt(dx * dx + dy * dy)
+                    if dist < closestDist then
+                        closest = mol
+                        closestDist = dist
+                        break
+                    end
+                end
+            end
+        end
+        
+        if closest then
+            local dx = closest.x - self.x
+            local dy = closest.y - self.y
+            local dist = math.sqrt(dx * dx + dy * dy)
+            local speedMult = molConfig.speedMultiplier or 1
+            local speed = HUNT_SPEED * speedMult
+            self.vx = (dx / dist) * speed
+            self.vy = (dy / dist) * speed
+            self.rotationSpeed = 2
+            
+            local damage = self.type == "boron_trichloride" and 60 or 45
+            if dist < self.radius + closest.radius then
+                closest.health = closest.health - damage * dt
+                if closest.health <= 0 then
+                    closest.alive = false
+                end
+            end
+        else
+            self.wanderAngle = self.wanderAngle + (math.random() - 0.5) * 0.06
+            self.vx = math.cos(self.wanderAngle) * WANDER_SPEED
+            self.vy = math.sin(self.wanderAngle) * WANDER_SPEED
+            self.rotationSpeed = 0.4
+        end
     
-    if self.type:match("methane") and self.type ~= "methane" then
+    elseif self.type == "borax" or self.type == "boric_acid" then
+        local speedMult = molConfig.speedMultiplier or 1
+        self.wanderAngle = self.wanderAngle + (math.random() - 0.5) * 0.05
+        self.vx = math.cos(self.wanderAngle) * (WANDER_SPEED * speedMult)
+        self.vy = math.sin(self.wanderAngle) * (WANDER_SPEED * speedMult)
+        self.rotationSpeed = 0.3
+    elseif self.type:match("methane") and self.type ~= "methane" then
         local threats = {"oxygen", "ozone", "chlorine", "fluorine", "hydrogen_peroxide"}
         
         if self.type == "carbon_tetrafluoride" then
@@ -3080,16 +3330,16 @@ function Molecule:update(dt)
            self.type == "hypobromous_acid" or self.type == "ethynyl_radical" or
            self.type == "trihydrogen_cation" or self.type == "formyl_cation" then
         local preyTypes = {"methane", "ethylene", "propane", "cyclopropane", "acetylcarnitine", 
-                          "ethanol", "benzene", "ammonia", "caffeine", "tnt", "acetone",
-                          "cyclopropenylidene", "cyclobutane", "cyclopentane", "cyclobutene",
-                          "helium_dimer", "helium_trimer", "tetrafluoroethylene", 
-                          "fluoromethane", "difluoromethane", "trifluoromethane",
-                          "chloromethane", "dichloromethane", "chloroform", "carbon_tetrachloride",
-                          "bromomethane", "dibromomethane", "tribromomethane", "carbon_tetrabromide",
-                          "iodomethane", "diiodomethane", "triiodomethane",
-                          "butane", "pentane", "hexane", "heptane", "octane", "nonane", "decane",
-						  "astatidomethane", "diastatidomethane", "triastatidomethane", "carbon_tetrastatide",
-						  "glycine", "alanine"}
+                           "ethanol", "benzene", "ammonia", "caffeine", "tnt", "acetone",
+                           "cyclopropenylidene", "cyclobutane", "cyclopentane", "cyclobutene",
+                           "helium_dimer", "helium_trimer", "tetrafluoroethylene", 
+                           "fluoromethane", "difluoromethane", "trifluoromethane",
+                           "chloromethane", "dichloromethane", "chloroform", "carbon_tetrachloride",
+                           "bromomethane", "dibromomethane", "tribromomethane", "carbon_tetrabromide",
+                           "iodomethane", "diiodomethane", "triiodomethane",
+                           "butane", "pentane", "hexane", "heptane", "octane", "nonane", "decane",
+                           "astatidomethane", "diastatidomethane", "triastatidomethane", "carbon_tetrastatide",
+                           "glycine", "alanine", "diborane", "tetrahydrodiborane", "dihydrodiborane"}
 
         if molConfig.prefersEthylene then
             preyTypes = {"ethylene", "tetrafluoroethylene", "cyclopropane", "benzene", "tnt", 
@@ -3807,9 +4057,6 @@ end
 function love.load()
     love.window.setTitle(config.game.title)
     love.window.setMode(config.game.window.width, config.game.window.height)
-	
-	VersionManager.load()
-    VersionManager.checkForUpdates()  -- Check on startup
     
     -- Spawn initial molecules
     for molType, count in pairs(config.initialSpawns) do
@@ -3839,8 +4086,6 @@ end
 
 function love.update(dt)
     dt = dt * TimeSlider.scale
-	
-	VersionManager.update(dt)
 	
     historyUpdateTimer = historyUpdateTimer + dt
     if historyUpdateTimer >= historyUpdateInterval then
@@ -4137,7 +4382,6 @@ function drawPopulationGraph()
 end
 
 function love.draw()
-    VersionManager.draw()
     drawWorld()
     drawUI()
     drawPopulationGraph()
@@ -4211,21 +4455,16 @@ function drawMoleculeTooltip(molecule)
     local mouseX, mouseY = love.mouse.getPosition()
     local lines = {}
 
-    -- Basic info
     table.insert(lines, "Type: " .. molecule.type)
     table.insert(lines, "Health: " .. math.floor(molecule.health) .. "/" .. molecule.maxHealth)
 
-    -- Special properties for halomethanes
     if molecule.type:match("fluoro") or molecule.type == "carbon_tetrafluoride" then
         table.insert(lines, "Fluorinated - resistant to attack")
-    end
-    if molecule.type:match("chloro") or molecule.type == "carbon_tetrachloride" then
+    elseif molecule.type:match("chloro") or molecule.type == "carbon_tetrachloride" then
         table.insert(lines, "Chlorinated")
-    end
-    if molecule.type:match("bromo") or molecule.type == "carbon_tetrabromide" then
+    elseif molecule.type:match("bromo") or molecule.type == "carbon_tetrabromide" then
         table.insert(lines, "Brominated - heavy")
-    end
-    if molecule.type:match("iodo") or molecule.type == "carbon_tetraiodide" or molecule.type == "astatidomethane" or molecule.type == "diastatidomethane" or molecule.type == "triastatidomethane" then
+    elseif molecule.type:match("iodo") or molecule.type == "carbon_tetraiodide" or molecule.type == "astatidomethane" or molecule.type == "diastatidomethane" or molecule.type == "triastatidomethane" then
         table.insert(lines, "Iodinated - UNSTABLE!")
         if molecule.type == "carbon_tetraiodide" then
             table.insert(lines, "PURPLE EXPLOSIVE!")
@@ -4233,9 +4472,7 @@ function drawMoleculeTooltip(molecule)
                 table.insert(lines, string.format("Time to decay: %.1fs", math.max(0, 5 - molecule.unstableTimer)))
             end
         end
-    end
-	
-	if molecule.type == "xenon" then
+	elseif molecule.type == "xenon" then
         table.insert(lines, "Noble gas - anesthetic properties")
         table.insert(lines, "Can form compounds with fluorine!")
     elseif molecule.type == "krypton" then
@@ -4247,26 +4484,20 @@ function drawMoleculeTooltip(molecule)
     elseif molecule.type == "argon" then
         table.insert(lines, "Noble gas - totally inert")
         table.insert(lines, "Most common noble gas")
-    end
-	
-	if molecule.type == "positronium_hydride" then
+	elseif molecule.type == "positronium_hydride" then
         table.insert(lines, "Annihilates in <1 nanosecond!")
         if molecule.unstableTimer > 0 then
             table.insert(lines, string.format("Annihilation in: %.2fs", math.max(0, 0.5 - molecule.unstableTimer)))
         end
         table.insert(lines, "Releases gamma ray burst!")
-    end
-	
-	if molecule.type == "dipositronium" then
+	elseif molecule.type == "dipositronium" then
         table.insert(lines, "Annihilates in <0.3 nanoseconds!")
         if molecule.unstableTimer > 0 then
             table.insert(lines, string.format("Annihilation in: %.2fs", math.max(0, 0.3 - molecule.unstableTimer)))
         end
         table.insert(lines, "Releases MASSIVE gamma ray burst!")
         table.insert(lines, "[GRB Intensity: 15]")
-    end
-    
-    if molecule.type == "xenon_difluoride" then
+    elseif molecule.type == "xenon_difluoride" then
         table.insert(lines, "FORBIDDEN CHEMISTRY!")
         table.insert(lines, "Noble gas compound - shouldn't exist!")
         table.insert(lines, "Strong oxidizing agent")
@@ -4281,9 +4512,7 @@ function drawMoleculeTooltip(molecule)
         if (molecule.unstableTimer or 0) > 0 then
             table.insert(lines, string.format("Time to decay: %.1fs", math.max(0, 8 - (molecule.unstableTimer or 0))))
         end
-	end
-	
-	if molecule.type == "butane" then
+	elseif molecule.type == "butane" then
         table.insert(lines, "C4 alkane - lighter fuel")
     elseif molecule.type == "pentane" then
         table.insert(lines, "C5 alkane - volatile liquid")
@@ -4297,9 +4526,7 @@ function drawMoleculeTooltip(molecule)
         table.insert(lines, "C9 alkane - diesel component")
     elseif molecule.type == "decane" then
         table.insert(lines, "C10 alkane - getting waxy")
-    end
-	
-	if molecule.type == "deuterium" or molecule.type == "deuterium_atom" then
+	elseif molecule.type == "deuterium" or molecule.type == "deuterium_atom" then
         table.insert(lines, "Heavy hydrogen isotope - 2H")
     elseif molecule.type == "heavy_water" then
         table.insert(lines, "D2O - neutron moderator")
@@ -4312,308 +4539,221 @@ function drawMoleculeTooltip(molecule)
         table.insert(lines, "ND3 - NMR solvent")
     elseif molecule.type == "deuterated_methane" then
         table.insert(lines, "CD4 - deuterated fuel")
-    end
-
-    if molecule.type == "cyclopropane" or molecule.type == "cyclopropenylidene" or 
+    elseif molecule.type == "cyclopropane" or molecule.type == "cyclopropenylidene" or 
        molecule.type == "cyclobutane" or molecule.type == "cyclobutene" then
         table.insert(lines, "Ring strain - unstable!")
-    end
-    if molecule.type == "benzene" then
+    elseif molecule.type == "benzene" then
         table.insert(lines, "Aromatic - very stable")
-    end
-    if molecule.type == "caffeine" then
+    elseif molecule.type == "caffeine" then
         table.insert(lines, "Stimulant - speeds things up!")
-    end
-    if molecule.type == "tnt" then
+    elseif molecule.type == "tnt" then
         table.insert(lines, "EXPLOSIVE!")
-    end
-    if molecule.type == "helium_dimer" then
+    elseif molecule.type == "helium_dimer" then
         table.insert(lines, "Weakly bound - very fragile")
-    end
-	if molecule.type == "helium_trimer" then
+	elseif molecule.type == "helium_trimer" then
         table.insert(lines, "More weakly bound - even more fragile than helium dimer")
-    end
-    if molecule.type == "helium" then
+    elseif molecule.type == "helium" then
         table.insert(lines, "Noble gas - inert")
-    end
-    if molecule.type == "acetylcarnitine" then
+    elseif molecule.type == "acetylcarnitine" then
         table.insert(lines, "Large biomolecule")
-    end
-    if molecule.type == "ethanol" then
+    elseif molecule.type == "ethanol" then
         table.insert(lines, "Alcohol - flammable")
-    end
-    if molecule.type == "ammonia" then
+    elseif molecule.type == "ammonia" then
         table.insert(lines, "Base - pungent smell")
-    end
-    if molecule.type == "squaric_acid" then
+    elseif molecule.type == "squaric_acid" then
         table.insert(lines, "Aromatic acid - square!")
-    end
-    if molecule.type == "cyclopentane" then
+    elseif molecule.type == "cyclopentane" then
         table.insert(lines, "Five-membered ring - stable")
-    end
-    if molecule.type == "propane" then
+    elseif molecule.type == "propane" then
         table.insert(lines, "Simple alkane - fuel")
-    end
-    if molecule.type == "methane" then
+    elseif molecule.type == "methane" then
         table.insert(lines, "Simplest alkane - natural gas")
-    end
-    if molecule.type == "ethylene" then
+    elseif molecule.type == "ethylene" then
         table.insert(lines, "Alkene - plant hormone")
-    end
-    if molecule.type == "acetone" then
+    elseif molecule.type == "acetone" then
         table.insert(lines, "Ketone - solvent")
-    end
-    if molecule.type == "tetrafluoroethylene" then
+    elseif molecule.type == "tetrafluoroethylene" then
         table.insert(lines, "Precursor to Teflon")
-    end
-    if molecule.type == "water" then
+    elseif molecule.type == "water" then
         table.insert(lines, "Universal solvent")
-    end
-	if molecule.type == "helium_hydride" then
+	elseif molecule.type == "helium_hydride" then
         table.insert(lines, "One of the lightest molecules")
-    end
-    if molecule.type == "co2" then
+    elseif molecule.type == "co2" then
         table.insert(lines, "Carbon dioxide - greenhouse gas")
-    end
-    if molecule.type == "oxygen" then
+    elseif molecule.type == "oxygen" then
         table.insert(lines, "Oxidizer - essential for life")
-    end
-    if molecule.type == "ozone" then
+    elseif molecule.type == "ozone" then
         table.insert(lines, "Triatomic oxygen - UV shield")
         table.insert(lines, "Prefers alkenes!")
-    end
-    if molecule.type == "chlorine" then
+    elseif molecule.type == "chlorine" then
         table.insert(lines, "Diatomic halogen - reactive")
-    end
-    if molecule.type == "fluorine" then
+    elseif molecule.type == "fluorine" then
         table.insert(lines, "MOST reactive element!")
         table.insert(lines, "Attacks everything!")
-    end
-    if molecule.type == "hydrogen_peroxide" then
+    elseif molecule.type == "hydrogen_peroxide" then
         table.insert(lines, "Oxidizer - bleaching agent")
-    end
-    if molecule.type == "sulfuric_acid" then
+    elseif molecule.type == "sulfuric_acid" then
         table.insert(lines, "Strong acid - corrosive")
-    end
-	if molecule.type == "hypobromous_acid" then
+	elseif molecule.type == "hypobromous_acid" then
         table.insert(lines, "Strong acid - corrosive")
-    end
-	if molecule.type == "formaldehyde" then
+	elseif molecule.type == "formaldehyde" then
         table.insert(lines, "Simplest aldehyde")
-    end
-    if molecule.type == "hydrochloric_acid" then
+    elseif molecule.type == "hydrochloric_acid" then
         table.insert(lines, "Weak acid")
-    end
-    if molecule.type == "perchloric_acid" then
+    elseif molecule.type == "perchloric_acid" then
         table.insert(lines, "SUPERACID - strongest!")
         table.insert(lines, "Hunts EVERYTHING!")
-    end
-    if molecule.type == "lithium_hydroxide" then
+    elseif molecule.type == "lithium_hydroxide" then
         table.insert(lines, "Strong base - CO2 scrubber")
-    end
-    if molecule.type == "sodium_hydroxide" then
+    elseif molecule.type == "sodium_hydroxide" then
         table.insert(lines, "Strong base - lye")
-    end
-    if molecule.type == "hydroxide" then
+    elseif molecule.type == "hydroxide" then
         table.insert(lines, "Base ion - OH⁻")
         table.insert(lines, "Neutralizes acids!")
-    end
-    if molecule.type == "hydronium" then
+    elseif molecule.type == "hydronium" then
         table.insert(lines, "Acid ion - H3O⁺")
         table.insert(lines, "Neutralizes bases!")
-    end
-	if molecule.type == "miau" then
+	elseif molecule.type == "miau" then
         table.insert(lines, "My sister requested I add this.")
         table.insert(lines, "I just couldn't say no.")
-    end
-    if molecule.type == "uranyl" then
+    elseif molecule.type == "uranyl" then
         table.insert(lines, "Uranium(VI) ion - UO2²⁺")
         table.insert(lines, "Soluble, seeks hydroxide")
-    end
-    if molecule.type == "uranium_hexafluoride" then
+    elseif molecule.type == "uranium_hexafluoride" then
         table.insert(lines, "Enrichment compound")
         table.insert(lines, "Highly reactive and toxic")
-    end
-    if molecule.type == "uranium_atom" then
+    elseif molecule.type == "uranium_atom" then
         table.insert(lines, "Actinide - fissile")
-    end
-    if molecule.type == "hydrogen_atom" then
+    elseif molecule.type == "hydrogen_atom" then
         table.insert(lines, "Most abundant element")
-    end
-    if molecule.type == "carbon_atom" then
+    elseif molecule.type == "carbon_atom" then
         table.insert(lines, "Basis of organic chemistry")
-    end
-    if molecule.type == "oxygen_atom" then
+    elseif molecule.type == "oxygen_atom" then
         table.insert(lines, "Essential for combustion")
-    end
-    if molecule.type == "nitrogen_atom" then
+    elseif molecule.type == "nitrogen_atom" then
         table.insert(lines, "78% of atmosphere")
-    end
-    if molecule.type == "nitrogen_positive1_atom" then
+    elseif molecule.type == "nitrogen_positive1_atom" then
         table.insert(lines, "Nitrogen cation - N⁺")
-    end
-    if molecule.type == "fluorine_atom" then
+    elseif molecule.type == "fluorine_atom" then
         table.insert(lines, "Most electronegative")
-    end
-    if molecule.type == "chlorine_atom" then
+    elseif molecule.type == "chlorine_atom" then
         table.insert(lines, "Halogen - reactive")
-    end
-    if molecule.type == "bromine_atom" then
+    elseif molecule.type == "bromine_atom" then
         table.insert(lines, "Heavy halogen")
-    end
-    if molecule.type == "iodine_atom" then
+    elseif molecule.type == "iodine_atom" then
         table.insert(lines, "Heaviest stable halogen")
         table.insert(lines, "Purple!")
-    end
-
-    if config.molecules[molecule.type].refrigerant then
+    elseif config.molecules[molecule.type].refrigerant then
         table.insert(lines, "Refrigerant (CFC)")
-    end
-    if config.molecules[molecule.type].anesthetic then
+    elseif config.molecules[molecule.type].anesthetic then
         table.insert(lines, "Anesthetic properties")
-    end
-    if config.molecules[molecule.type].toxic then
+    elseif config.molecules[molecule.type].toxic then
         table.insert(lines, "TOXIC")
-    end
-    if config.molecules[molecule.type].inert then
+    elseif config.molecules[molecule.type].inert then
         table.insert(lines, "INERT - super stable!")
-    end
-    if config.molecules[molecule.type].radioactive then
+    elseif config.molecules[molecule.type].radioactive then
         table.insert(lines, "[!] RADIOACTIVE [!]")
-    end
-	    if config.molecules[molecule.type].pyrophoric then
+	elseif config.molecules[molecule.type].pyrophoric then
         table.insert(lines, "[PYROPHORIC - ignites in air]")
-    end
-    if config.molecules[molecule.type].hypergolic then
+    elseif config.molecules[molecule.type].hypergolic then
         table.insert(lines, "[HYPERGOLIC - spontaneous ignition]")
-    end
-    if config.molecules[molecule.type].extremely_reactive then
+    elseif config.molecules[molecule.type].extremely_reactive then
         table.insert(lines, "[EXTREMELY REACTIVE]")
-    end
-    if config.molecules[molecule.type].smells_horrible then
+    elseif config.molecules[molecule.type].smells_horrible then
         table.insert(lines, "[Smells like rotten eggs]")
-    end
-    if config.molecules[molecule.type].burns_everything then
+    elseif config.molecules[molecule.type].burns_everything then
         table.insert(lines, "[!!! BURNS EVERYTHING !!!]")
-    end
-    if config.molecules[molecule.type].very_stable then
+    elseif config.molecules[molecule.type].very_stable then
         table.insert(lines, "[Very stable - hard to break]")
-    end
-    if config.molecules[molecule.type].purple then
+    elseif config.molecules[molecule.type].purple then
         table.insert(lines, "[Purple color]")
-    end
-    if config.molecules[molecule.type].alkali_metal then
+    elseif config.molecules[molecule.type].alkali_metal then
         table.insert(lines, "[Alkali metal - highly reactive]")
-    end
-    if config.molecules[molecule.type].salt then
+    elseif config.molecules[molecule.type].salt then
         table.insert(lines, "[Ionic salt compound]")
-    end
-    if config.molecules[molecule.type].oxidizer then
+    elseif config.molecules[molecule.type].oxidizer then
         table.insert(lines, "[Strong oxidizer]")
-    end
-	
-    if molecule.type == "trihydrogen_cation" then
+    elseif molecule.type == "trihydrogen_cation" then
         table.insert(lines, "Most abundant ion in space!")
         table.insert(lines, "Electron hungry - hunts atoms")
-    end
-    if molecule.type == "tricarbon" then
+    elseif molecule.type == "tricarbon" then
         table.insert(lines, "Linear carbon chain")
         table.insert(lines, "Found in molecular clouds")
-    end
-    if molecule.type == "cyanoacetylene" then
+    elseif molecule.type == "cyanoacetylene" then
         table.insert(lines, "Common in space")
         table.insert(lines, "Precursor to complex organics")
-    end
-    if molecule.type == "ethynyl_radical" then
+    elseif molecule.type == "ethynyl_radical" then
         table.insert(lines, "Highly reactive radical")
         table.insert(lines, "Key in interstellar chemistry")
-    end
-    if molecule.type == "formyl_cation" then
+    elseif molecule.type == "formyl_cation" then
         table.insert(lines, "2nd most abundant ion")
         table.insert(lines, "Proton affinity marker")
-    end
-    if molecule.type == "acetonitrile" then
+    elseif molecule.type == "acetonitrile" then
         table.insert(lines, "Complex organic")
         table.insert(lines, "Found near star-forming regions")
-    end
-    if molecule.type == "buckminsterfullerene" then
+    elseif molecule.type == "buckminsterfullerene" then
         table.insert(lines, "Extremely stable fullerene")
         table.insert(lines, "Found in planetary nebulae!")
         table.insert(lines, "[90% damage resistance]")
-    end
-	    if molecule.type == "hydrogen_sulfide" then
+	elseif molecule.type == "hydrogen_sulfide" then
         table.insert(lines, "H2S - Rotten egg gas")
         table.insert(lines, "Toxic and flammable")
         table.insert(lines, "Smells HORRIBLE")
-    end
-    if molecule.type == "sulfur_trioxide" then
+    elseif molecule.type == "sulfur_trioxide" then
         table.insert(lines, "SO3 - Extremely reactive")
         table.insert(lines, "Reacts violently with water")
         table.insert(lines, "Forms sulfuric acid")
-    end
-    if molecule.type == "phosphoric_acid" then
+    elseif molecule.type == "phosphoric_acid" then
         table.insert(lines, "H3PO4 - Weaker acid")
         table.insert(lines, "Used in soft drinks")
         table.insert(lines, "Rust remover")
-    end
-    if molecule.type == "sodium_chloride" then
+    elseif molecule.type == "sodium_chloride" then
         table.insert(lines, "NaCl - Table salt")
         table.insert(lines, "Very stable ionic compound")
         table.insert(lines, "Essential for life")
-    end
-    if molecule.type == "potassium_permanganate" then
+    elseif molecule.type == "potassium_permanganate" then
         table.insert(lines, "KMnO4 - Purple crystals")
         table.insert(lines, "Strong oxidizing agent")
         table.insert(lines, "Used as disinfectant")
-    end
-    if molecule.type == "chlorine_trifluoride" then
+    elseif molecule.type == "chlorine_trifluoride" then
         table.insert(lines, "ClF3 - NIGHTMARE FUEL")
         table.insert(lines, "Sets EVERYTHING on fire")
         table.insert(lines, "Burns water, sand, concrete")
         table.insert(lines, "Attacks ALL molecules!")
-    end
-    if molecule.type == "white_phosphorus" then
+    elseif molecule.type == "white_phosphorus" then
         table.insert(lines, "P4 - Pyrophoric")
         table.insert(lines, "Spontaneously combusts in air")
         table.insert(lines, "Extremely toxic")
         table.insert(lines, "Used in incendiary weapons")
-    end
-    if molecule.type == "red_phosphorus" then
+    elseif molecule.type == "red_phosphorus" then
         table.insert(lines, "P4 - Stable form")
         table.insert(lines, "Used in matches")
         table.insert(lines, "Much safer than white")
-    end
-    if molecule.type == "sodium_atom" then
+    elseif molecule.type == "sodium_atom" then
         table.insert(lines, "Alkali metal - very reactive")
         table.insert(lines, "Explodes in water")
-    end
-    if molecule.type == "potassium_atom" then
+    elseif molecule.type == "potassium_atom" then
         table.insert(lines, "Alkali metal - MORE reactive")
         table.insert(lines, "Purple flame in water")
-    end
-    if molecule.type == "sulfur_atom" then
+    elseif molecule.type == "sulfur_atom" then
         table.insert(lines, "Yellow nonmetal")
         table.insert(lines, "Forms many compounds")
-    end
-    if molecule.type == "phosphorus_atom" then
+    elseif molecule.type == "phosphorus_atom" then
         table.insert(lines, "Essential for life")
         table.insert(lines, "Found in DNA and ATP")
-    end
-	if molecule.type == "fluoroantimonic_acid" then
+	elseif molecule.type == "fluoroantimonic_acid" then
         table.insert(lines, "STRONGEST SUPERACID!")
         table.insert(lines, "20 quintillion times stronger than H₂SO₄")
         table.insert(lines, "Dissolves glass, flesh, everything")
 		table.insert(lines, "Vulnerable to radiation; 5x damage from radioactive molecules")
         table.insert(lines, "Hunts: EVERYTHING except itself")
-    end
-	if molecule.type == "glycine" then
+	elseif molecule.type == "glycine" then
         table.insert(lines, "[Amino acid]")
 		table.insert(lines, "Smallest amino acid - no side chain")
-    end
-	if molecule.type == "alanine" then
+	elseif molecule.type == "alanine" then
         table.insert(lines, "[Amino acid]")
 		table.insert(lines, "2nd smallest amino acid behind glycine - methane side chain")
-    end
+	end
 
     -- Atom info
     if molecule.element then
@@ -4703,9 +4843,7 @@ function getMoleculeBehaviorInfo(molecule)
         table.insert(info.hunts, "organics")
     elseif molecule.type == "uranyl" then
         table.insert(info.hunts, "hydroxide")
-    end
-
-    if molecule.type:match("methane") or molecule.type == "ethylene" or molecule.type == "benzene" or
+    elseif molecule.type:match("methane") or molecule.type == "ethylene" or molecule.type == "benzene" or
        molecule.type == "cyclopropane" or molecule.type == "cyclopentane" or
        molecule.type == "cyclobutane" or molecule.type == "cyclobutene" or
        molecule.type == "propane" or molecule.type == "ethanol" or
@@ -4720,17 +4858,11 @@ function getMoleculeBehaviorInfo(molecule)
         table.insert(info.huntedBy, "F2")
         table.insert(info.huntedBy, "acids")
         table.insert(info.huntedBy, "radicals")
-    end
-
-    if molecule.type == "helium" then
+    elseif molecule.type == "helium" then
         table.insert(info.huntedBy, "F2 (only!)")
-    end
-
-    if molecule.type == "water" or molecule.type == "co2" then
+    elseif molecule.type == "water" or molecule.type == "co2" then
         table.insert(info.huntedBy, "bases")
-    end
-	
-	if molecule.type == "buckminsterfullerene" then
+	elseif molecule.type == "buckminsterfullerene" then
         table.insert(info.huntedBy, "almost nothing!")
 	elseif molecule.type == "hydrogen_sulfide" then
         table.insert(info.hunts, "organics")
@@ -4758,6 +4890,16 @@ function getMoleculeBehaviorInfo(molecule)
         table.insert(info.huntedBy, "strong acids (slowly)")
     elseif molecule.type == "red_phosphorus" then
         table.insert(info.huntedBy, "strong oxidizers only")
+    elseif molecule.type == "diborane" or molecule.type == "tetrahydrodiborane" or 
+        molecule.type == "dihydrodiborane" then
+        table.insert(info.hunts, "oxygen")
+        table.insert(info.hunts, "water")
+        table.insert(info.huntedBy, "oxidizers")
+    elseif molecule.type == "boron_trifluoride" or molecule.type == "boron_trichloride" then
+        table.insert(info.hunts, "bases")
+        table.insert(info.hunts, "nucleophiles")
+    elseif molecule.type == "borax" or molecule.type == "boric_acid" then
+        table.insert(info.huntedBy, "strong acids")
     end
 
     return info
@@ -4854,9 +4996,6 @@ end
 
 function love.mousepressed(x, y, button)
     if TimeSlider.mousepressed(x, y, button) then
-        return
-    end
-	if VersionManager.mousepressed(x, y, button) then
         return
     end
     if button == 3 then

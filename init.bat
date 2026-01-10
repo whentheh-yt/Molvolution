@@ -1,5 +1,10 @@
 @echo off
 
+python --version >nul 2>&1
+if %errorlevel% == 0 (
+    start /B python update.py --check-only
+)
+
 set "PROJECT_DIR=%~dp0"
 if "%PROJECT_DIR:~-1%"=="\" set "PROJECT_DIR=%PROJECT_DIR:~0,-1%"
 
