@@ -4,7 +4,7 @@
 --     | |__| |_| | |_| |
 --     |_____\___/ \____|
 --
--- ------------------------
+-- ----------------------- -
 -- December 20 2025 12:52  - Started. Finally. Hooray. (December 2025 Build 0.1.14779)
 -- December 20 2025 13:39  - Fixed subscript bug for hydroxide. (December 2025 Build 0.1.14783)
 -- December 20 2025 14:29  - Added uranium compounds, fixed love:draw and fragmentationRules, and other stuff. (December 2025 Build 0.1.14897)
@@ -45,6 +45,8 @@
 -- January 10 2026 17:39   - Added autoupdate (New Years 2026 Build 1.2.184)
 -- January 10 2026 17:45   - Fixed crash because I incorrectly deleted MusicManager. (New Years 2026 Build 1.2.185)
 -- January 10 2026 22:16   - Fixed boron compounds and autoupdate. (New Years 2026 Build 1.2.197)
+-- ----------------------- -
+-- January 11 2026 20:31   - Fixed spin. (New Years 2026 Build 1.2.200)
 
 local config = require("config")
 local Console = require("libs/console")
@@ -3746,6 +3748,7 @@ function Molecule:update(dt)
         self.rotationSpeed = 0.5
     end
 
+    self.rotation = self.rotation + self.rotationSpeed * dt
     self.x = self.x + self.vx * dt
     self.y = self.y + self.vy * dt
 

@@ -2,7 +2,7 @@
 
 python --version >nul 2>&1
 if %errorlevel% == 0 (
-    start /B python update.py --check-only
+    start /B python libs\update.py --check-only
 )
 
 set "PROJECT_DIR=%~dp0"
