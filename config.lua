@@ -2,7 +2,7 @@ local config = {}
 
 config.game = {
     title = "Molvolution",
-    version = "New Years 2026 Build 1.2.200",
+    version = "New Years 2026 Build 1.2.216",
     window = {
         width = 1200,
         height = 800,
@@ -1347,6 +1347,68 @@ config.molecules = {
         weak_acid = true,
         antiseptic = true
     },
+	
+	-- neptunium ^,^
+	neptunium_atom = {
+        health = 52,
+        radius = 13,
+        speedMultiplier = 0.72,
+        peaceful = true,
+        atom = true,
+        valence = 5,
+        radioactive = true,
+        transuranic = true
+    },
+    
+    neptunyl = {
+        health = 115,
+        radius = 22,
+        speedMultiplier = 0.87,
+        radioactive = true,
+        ion = true,
+        charge = 2,
+        oxidizing = true
+    },
+	
+	propylene = {
+        health = 130,
+        radius = 24,
+        speedMultiplier = 0.88,
+        unsaturated = true
+    },
+    
+    butene = {
+        health = 150,
+        radius = 28,
+        speedMultiplier = 0.85,
+        unsaturated = true
+    },
+    
+    -- ALKYNES
+    acetylene = {
+        health = 100,
+        radius = 18,
+        speedMultiplier = 1.0,
+        unsaturated = true,
+        triple_bond = true,
+        flammable = true
+    },
+    
+    propyne = {
+        health = 120,
+        radius = 22,
+        speedMultiplier = 0.95,
+        unsaturated = true,
+        triple_bond = true
+    },
+    
+    butyne = {
+        health = 140,
+        radius = 26,
+        speedMultiplier = 0.90,
+        unsaturated = true,
+        triple_bond = true
+    },
 }
 
 config.initialSpawns = {
@@ -1390,6 +1452,11 @@ config.initialSpawns = {
 
     -- Normal molecules
     propane = 12,
+	propylene = 10,
+    butene = 8,
+    acetylene = 8,
+    propyne = 7,
+    butyne = 6,
     cyclopropane = 8,
     cyclopropenylidene = 3,
     cyclobutane = 8,

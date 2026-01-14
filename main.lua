@@ -47,6 +47,8 @@
 -- January 10 2026 22:16   - Fixed boron compounds and autoupdate. (New Years 2026 Build 1.2.197)
 -- ----------------------- -
 -- January 11 2026 20:31   - Fixed spin. (New Years 2026 Build 1.2.200)
+-- ----------------------- -
+-- January 14 2026 20:26   - Added alkenes and alkynes. (New Years 2026 Build 1.2.216)
 
 local config = require("config")
 local Console = require("libs/console")
@@ -843,6 +845,36 @@ local deathFragmentations = {
         {type = "boron_atom", count = 1},
         {type = "oxygen_atom", count = 3},
         {type = "hydrogen_atom", count = 3}
+    },
+	
+	neptunium_trioxide = {
+        {type = "neptunium_atom", count = 1},
+        {type = "oxygen_atom", count = 3}
+    },
+    	propylene = {
+        {type = "ethylene", count = 0.5},
+        {type = "methane", count = 0.5},
+        {type = "carbon_atom", count = 1}
+    },
+    
+    butene = {
+        {type = "ethylene", count = 2}
+    },
+    
+    acetylene = {
+        {type = "carbon_atom", count = 2},
+        {type = "hydrogen_atom", count = 2}
+    },
+    
+    propyne = {
+        {type = "acetylene", count = 0.5},
+        {type = "methane", count = 0.5},
+        {type = "carbon_atom", count = 1}
+    },
+    
+    butyne = {
+        {type = "acetylene", count = 1},
+        {type = "ethylene", count = 1}
     },
 }
 
@@ -2992,6 +3024,74 @@ local structures = {
         bonds = {{1, 2}, {1, 3}, {1, 4}, {2, 5}, {3, 6}, {4, 7}},
         weak_acid = true
     },
+	propylene = {
+        atoms = {
+            {element = "C", x = -15, y = 0, color = ELEMENT_COLORS.C},
+            {element = "C", x = 0, y = 0, color = ELEMENT_COLORS.C},
+            {element = "C", x = 15, y = 0, color = ELEMENT_COLORS.C},
+            {element = "H", x = -20, y = -10, color = ELEMENT_COLORS.H},
+            {element = "H", x = -20, y = 10, color = ELEMENT_COLORS.H},
+            {element = "H", x = 0, y = -12, color = ELEMENT_COLORS.H},
+            {element = "H", x = 20, y = -10, color = ELEMENT_COLORS.H},
+            {element = "H", x = 20, y = 10, color = ELEMENT_COLORS.H}
+        },
+        bonds = {{1, 2, double = true}, {2, 3}, {1, 4}, {1, 5}, {2, 6}, {3, 7}, {3, 8}}
+    },
+    
+    butene = {
+        atoms = {
+            {element = "C", x = -20, y = 0, color = ELEMENT_COLORS.C},
+            {element = "C", x = -5, y = 0, color = ELEMENT_COLORS.C},
+            {element = "C", x = 10, y = 0, color = ELEMENT_COLORS.C},
+            {element = "C", x = 25, y = 0, color = ELEMENT_COLORS.C},
+            {element = "H", x = -25, y = -10, color = ELEMENT_COLORS.H},
+            {element = "H", x = -25, y = 10, color = ELEMENT_COLORS.H},
+            {element = "H", x = -5, y = -12, color = ELEMENT_COLORS.H},
+            {element = "H", x = 10, y = -12, color = ELEMENT_COLORS.H},
+            {element = "H", x = 30, y = -10, color = ELEMENT_COLORS.H},
+            {element = "H", x = 30, y = 10, color = ELEMENT_COLORS.H}
+        },
+        bonds = {{1, 2, double = true}, {2, 3}, {3, 4}, {1, 5}, {1, 6}, {2, 7}, {3, 8}, {4, 9}, {4, 10}}
+    },
+    
+    acetylene = {
+        atoms = {
+            {element = "C", x = -10, y = 0, color = ELEMENT_COLORS.C},
+            {element = "C", x = 10, y = 0, color = ELEMENT_COLORS.C},
+            {element = "H", x = -20, y = 0, color = ELEMENT_COLORS.H},
+            {element = "H", x = 20, y = 0, color = ELEMENT_COLORS.H}
+        },
+        bonds = {{1, 2, triple = true}, {1, 3}, {2, 4}}
+    },
+    
+    propyne = {
+        atoms = {
+            {element = "C", x = -15, y = 0, color = ELEMENT_COLORS.C},
+            {element = "C", x = 0, y = 0, color = ELEMENT_COLORS.C},
+            {element = "C", x = 15, y = 0, color = ELEMENT_COLORS.C},
+            {element = "H", x = -20, y = -10, color = ELEMENT_COLORS.H},
+            {element = "H", x = -20, y = 10, color = ELEMENT_COLORS.H},
+            {element = "H", x = -25, y = 0, color = ELEMENT_COLORS.H},
+            {element = "H", x = 25, y = 0, color = ELEMENT_COLORS.H}
+        },
+        bonds = {{1, 2}, {2, 3, triple = true}, {1, 4}, {1, 5}, {1, 6}, {3, 7}}
+    },
+    
+    butyne = {
+        atoms = {
+            {element = "C", x = -20, y = 0, color = ELEMENT_COLORS.C},
+            {element = "C", x = -5, y = 0, color = ELEMENT_COLORS.C},
+            {element = "C", x = 10, y = 0, color = ELEMENT_COLORS.C},
+            {element = "C", x = 25, y = 0, color = ELEMENT_COLORS.C},
+            {element = "H", x = -25, y = -10, color = ELEMENT_COLORS.H},
+            {element = "H", x = -25, y = 10, color = ELEMENT_COLORS.H},
+            {element = "H", x = -25, y = 0, color = ELEMENT_COLORS.H},
+            {element = "H", x = 30, y = -10, color = ELEMENT_COLORS.H},
+            {element = "H", x = 30, y = 10, color = ELEMENT_COLORS.H},
+            {element = "H", x = 35, y = 0, color = ELEMENT_COLORS.H}
+        },
+        bonds = {{1, 2}, {2, 3, triple = true}, {3, 4}, {1, 5}, {1, 6}, {1, 7}, {4, 8}, {4, 9}, {4, 10}}
+    },
 }
 
 local Molecule = {}
@@ -3331,7 +3431,9 @@ function Molecule:update(dt)
            self.type == "hydronium" or self.type == "formaldehyde" or
            self.type == "hypobromous_acid" or self.type == "ethynyl_radical" or
            self.type == "trihydrogen_cation" or self.type == "formyl_cation" then
-        local preyTypes = {"methane", "ethylene", "propane", "cyclopropane", "acetylcarnitine", 
+        local preyTypes = {"methane", "ethylene", "propylene", "butene", 
+                           "acetylene", "propyne", "butyne",
+                           "propane", "cyclopropane", "acetylcarnitine",  
                            "ethanol", "benzene", "ammonia", "caffeine", "tnt", "acetone",
                            "cyclopropenylidene", "cyclobutane", "cyclopentane", "cyclobutene",
                            "helium_dimer", "helium_trimer", "tetrafluoroethylene", 
@@ -3631,7 +3733,9 @@ function Molecule:update(dt)
             self.vy = math.sin(self.wanderAngle) * WANDER_SPEED
             self.rotationSpeed = 0.4
         end
-    elseif self.type == "propane" or self.type == "cyclopropane" or self.type == "cyclopropenylidene" or
+    elseif self.type == "propane" or self.type == "cyclopropane" or 
+           self.type == "ethylene" or self.type == "propylene" or self.type == "butene" or
+           self.type == "acetylene" or self.type == "propyne" or self.type == "butyne" or self.type == "cyclopropenylidene" or
            self.type == "cyclobutane" or self.type == "cyclobutene" or self.type == "cyclopentane" or
            self.type == "benzene" or self.type == "ethylene" or self.type == "ethanol" or
            self.type == "ammonia" or self.type == "caffeine" or self.type == "tnt" or
@@ -4590,6 +4694,21 @@ function drawMoleculeTooltip(molecule)
         table.insert(lines, "Prefers alkenes!")
     elseif molecule.type == "chlorine" then
         table.insert(lines, "Diatomic halogen - reactive")
+	elseif molecule.type == "propylene" then
+        table.insert(lines, "C3 alkene - propene")
+        table.insert(lines, "Plastic precursor")
+    elseif molecule.type == "butene" then
+        table.insert(lines, "C4 alkene - 1-butene")
+        table.insert(lines, "Used in polymer production")
+    elseif molecule.type == "acetylene" then
+        table.insert(lines, "C2 alkyne - HIGHLY reactive")
+        table.insert(lines, "Welding fuel - burns HOT!")
+    elseif molecule.type == "propyne" then
+        table.insert(lines, "C3 alkyne - methylacetylene")
+        table.insert(lines, "Reactive triple bond")
+    elseif molecule.type == "butyne" then
+        table.insert(lines, "C4 alkyne - 1-butyne")
+        table.insert(lines, "Industrial chemical")
     elseif molecule.type == "fluorine" then
         table.insert(lines, "MOST reactive element!")
         table.insert(lines, "Attacks everything!")
