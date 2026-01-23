@@ -49,6 +49,8 @@
 -- January 11 2026 20:31   - Fixed spin. (New Years 2026 Build 1.2.200)
 -- ----------------------- -
 -- January 14 2026 20:26   - Added alkenes and alkynes. (New Years 2026 Build 1.2.216)
+-- ----------------------- -
+-- January 23 2026 23:10   - Revamped radioactive damage system. (New Years 2026 Build 1.2.247)
 
 local config = require("config")
 local Console = require("libs/console")
@@ -78,6 +80,9 @@ local maxHistoryLength = 300
 local historyUpdateTimer = 0
 local historyUpdateInterval = 0.1
 local showGraph = true
+local radiationGrid = {}
+local radiationGridSize = 300
+local radiationGridDirty = true
 
 local deathFragments = {
     carbon_tetraiodide = {
@@ -128,8 +133,6 @@ function generateSound(frequency, duration, volume)
     source:setPitch(TimeSlider.scale)
     return source
 end
-
-
 
 function playDeathSound(moleculeType)
     local basePitch = 220
@@ -3132,26 +3135,29 @@ function Molecule:update(dt)
     if not self.alive then
         return
     end
-	
-	local radiationDamage = 0
-    for _, other in ipairs(molecules) do
-        if other.alive and other ~= self then
-            local molConfig = config.molecules[other.type]
-            if molConfig and molConfig.radioactive then
-                local dx = other.x - self.x
-                local dy = other.y - self.y
-                local dist = math.sqrt(dx * dx + dy * dy)
-                local radiationRange = 200
-                
-                if dist < radiationRange then
-                    local intensity = 1 - (dist / radiationRange)
-                    local damage = 5 * intensity * dt
+    	
+    local radiationDamage = 0
+    local radiationRange = 200
+    
+    local gridX = math.floor(self.x / radiationGridSize)
+    local gridY = math.floor(self.y / radiationGridSize)
+
+    for dx = -1, 1 do
+        for dy = -1, 1 do
+            local key = (gridX + dx) .. "," .. (gridY + dy)
+            local sources = radiationGrid[key]
+            
+            if sources then
+                for _, source in ipairs(sources) do
+                    local dx = source.x - self.x
+                    local dy = source.y - self.y
+                    local dist = math.sqrt(dx * dx + dy * dy)
                     
-                    if molConfig.extremely_radioactive then
-                        damage = damage * 3
+                    if dist < radiationRange then
+                        local intensity = 1 - (dist / radiationRange)
+                        local damage = 5 * intensity * source.intensity * dt
+                        radiationDamage = radiationDamage + damage
                     end
-                    
-                    radiationDamage = radiationDamage + damage
                 end
             end
         end
@@ -4153,6 +4159,26 @@ function Molecule:draw()
             love.graphics.setColor(1, 1, 0, 0.5)
             love.graphics.print(string.format("×%.1f", detectionMult), self.x + 5, self.y - 20)
         end
+        
+        if molConfig.radioactive then
+            local radiationRange = 200
+            
+            for i = 1, 5 do
+                local radius = radiationRange * (i / 5)
+                local alpha = 0.05 * (6 - i)
+                love.graphics.setColor(0, 1, 0, alpha)
+                love.graphics.setLineWidth(1)
+                love.graphics.circle("line", self.x, self.y, radius)
+            end
+            
+            if molConfig.extremely_radioactive then
+                love.graphics.setColor(1, 0, 0, 0.8)
+                love.graphics.print("Radioactive", self.x + 5, self.y + 10)
+            else
+                love.graphics.setColor(0, 1, 0, 0.8)
+                love.graphics.print("Radioactive", self.x + 5, self.y + 10)
+            end
+        end
     end
 
     if self.element then
@@ -4191,8 +4217,36 @@ function love.load()
     end
 end
 
+function buildRadiationGrid()
+    radiationGrid = {}
+    for _, mol in ipairs(molecules) do
+        if mol.alive then
+            local molConfig = config.molecules[mol.type]
+            if molConfig and molConfig.radioactive then
+                local gridX = math.floor(mol.x / radiationGridSize)
+                local gridY = math.floor(mol.y / radiationGridSize)
+                local key = gridX .. "," .. gridY
+                
+                if not radiationGrid[key] then
+                    radiationGrid[key] = {}
+                end
+                
+                table.insert(radiationGrid[key], {
+                    x = mol.x,
+                    y = mol.y,
+                    intensity = molConfig.extremely_radioactive and 3 or 1
+                })
+            end
+        end
+    end
+    radiationGridDirty = false
+end
+
 function love.update(dt)
     dt = dt * TimeSlider.scale
+	buildRadiationGrid()
+    
+    historyUpdateTimer = historyUpdateTimer + dt
 	
     historyUpdateTimer = historyUpdateTimer + dt
     if historyUpdateTimer >= historyUpdateInterval then
