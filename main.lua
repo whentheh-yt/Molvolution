@@ -53,6 +53,7 @@
 -- January 23 2026 23:10   - Revamped radioactive damage system. (New Years 2026 Build 1.2.247)
 -- ----------------------- -
 -- January 24 2026 15:25   - Revamped camera system. (New Years 2026 Build 1.2.256)
+-- January 24 2026 15:25   - Added 8 new molecules. (New Years 2026 Build 1.2.301)
 
 local config = require("config")
 local Console = require("libs/console")
@@ -881,6 +882,48 @@ local deathFragmentations = {
     butyne = {
         {type = "acetylene", count = 1},
         {type = "ethylene", count = 1}
+    },
+	
+	nitrogen_triiodide = {
+        {type = "nitrogen_atom", count = 1},
+        {type = "iodine_atom", count = 3}
+    },
+    
+    dioxygen_difluoride = {
+        {type = "oxygen", count = 1},
+        {type = "fluorine", count = 1}
+    },
+    
+    chlorine_pentafluoride = {
+        {type = "chlorine_atom", count = 1},
+        {type = "fluorine_atom", count = 5}
+    },
+    
+    hydrazine = {
+        {type = "nitrogen", count = 1},
+        {type = "hydrogen", count = 2}
+    },
+    
+    dimethylmercury = {
+        {type = "methane", count = 2},
+        {type = "hydrogen_atom", count = 2}
+    },
+    
+    chlorine_dioxide = {
+        {type = "chlorine_atom", count = 1},
+        {type = "oxygen_atom", count = 2}
+    },
+    
+    sulfur_mustard = {
+        {type = "sulfur_atom", count = 1},
+        {type = "chlorine", count = 1},
+        {type = "ethylene", count = 1}
+    },
+    
+    ammonium_nitrate = {
+        {type = "nitrogen", count = 2},
+        {type = "water", count = 2},
+        {type = "oxygen", count = 0.5}
     },
 }
 
@@ -3098,6 +3141,110 @@ local structures = {
         },
         bonds = {{1, 2}, {2, 3, triple = true}, {3, 4}, {1, 5}, {1, 6}, {1, 7}, {4, 8}, {4, 9}, {4, 10}}
     },
+	
+	nitrogen_triiodide = {
+        atoms = {
+            {element = "N", x = 0, y = 0, color = ELEMENT_COLORS.N},
+            {element = "I", x = 0, y = -22, color = ELEMENT_COLORS.I},
+            {element = "I", x = 19, y = 11, color = ELEMENT_COLORS.I},
+            {element = "I", x = -19, y = 11, color = ELEMENT_COLORS.I}
+        },
+        bonds = {{1, 2}, {1, 3}, {1, 4}},
+        extremely_unstable = true,
+        explosive = true
+    },
+    
+    dioxygen_difluoride = {
+        atoms = {
+            {element = "F", x = -20, y = 0, color = ELEMENT_COLORS.F},
+            {element = "O", x = -8, y = 0, color = ELEMENT_COLORS.O},
+            {element = "O", x = 8, y = 0, color = ELEMENT_COLORS.O},
+            {element = "F", x = 20, y = 0, color = ELEMENT_COLORS.F}
+        },
+        bonds = {{1, 2}, {2, 3}, {3, 4}},
+        worse_than_foof = true
+    },
+    
+    chlorine_pentafluoride = {
+        atoms = {
+            {element = "Cl", x = 0, y = 0, color = ELEMENT_COLORS.Cl},
+            {element = "F", x = 0, y = -18, color = ELEMENT_COLORS.F},
+            {element = "F", x = 17, y = -6, color = ELEMENT_COLORS.F},
+            {element = "F", x = 11, y = 15, color = ELEMENT_COLORS.F},
+            {element = "F", x = -11, y = 15, color = ELEMENT_COLORS.F},
+            {element = "F", x = -17, y = -6, color = ELEMENT_COLORS.F}
+        },
+        bonds = {{1, 2}, {1, 3}, {1, 4}, {1, 5}, {1, 6}},
+        square_pyramidal = true
+    },
+    
+    hydrazine = {
+        atoms = {
+            {element = "N", x = -6, y = 0, color = ELEMENT_COLORS.N},
+            {element = "N", x = 6, y = 0, color = ELEMENT_COLORS.N},
+            {element = "H", x = -12, y = -10, color = ELEMENT_COLORS.H},
+            {element = "H", x = -12, y = 10, color = ELEMENT_COLORS.H},
+            {element = "H", x = 12, y = -10, color = ELEMENT_COLORS.H},
+            {element = "H", x = 12, y = 10, color = ELEMENT_COLORS.H}
+        },
+        bonds = {{1, 2}, {1, 3}, {1, 4}, {2, 5}, {2, 6}}
+    },
+    
+    dimethylmercury = {
+        atoms = {
+            {element = "Hg", x = 0, y = 0, color = ELEMENT_COLORS.Hg},
+            {element = "C", x = -18, y = 0, color = ELEMENT_COLORS.C},
+            {element = "C", x = 18, y = 0, color = ELEMENT_COLORS.C},
+            {element = "H", x = -25, y = -8, color = ELEMENT_COLORS.H},
+            {element = "H", x = -25, y = 8, color = ELEMENT_COLORS.H},
+            {element = "H", x = -28, y = 0, color = ELEMENT_COLORS.H},
+            {element = "H", x = 25, y = -8, color = ELEMENT_COLORS.H},
+            {element = "H", x = 25, y = 8, color = ELEMENT_COLORS.H},
+            {element = "H", x = 28, y = 0, color = ELEMENT_COLORS.H}
+        },
+        bonds = {{1, 2}, {1, 3}, {2, 4}, {2, 5}, {2, 6}, {3, 7}, {3, 8}, {3, 9}}
+    },
+    
+    chlorine_dioxide = {
+        atoms = {
+            {element = "Cl", x = 0, y = 0, color = ELEMENT_COLORS.Cl},
+            {element = "O", x = -12, y = -8, color = ELEMENT_COLORS.O},
+            {element = "O", x = 12, y = -8, color = ELEMENT_COLORS.O}
+        },
+        bonds = {{1, 2, double = true}, {1, 3, double = true}},
+        bent = true
+    },
+    
+    sulfur_mustard = {
+        atoms = {
+            {element = "S", x = 0, y = 0, color = ELEMENT_COLORS.S},
+            {element = "C", x = -15, y = -10, color = ELEMENT_COLORS.C},
+            {element = "C", x = 15, y = -10, color = ELEMENT_COLORS.C},
+            {element = "C", x = -25, y = -18, color = ELEMENT_COLORS.C},
+            {element = "C", x = 25, y = -18, color = ELEMENT_COLORS.C},
+            {element = "Cl", x = -35, y = -25, color = ELEMENT_COLORS.Cl},
+            {element = "Cl", x = 35, y = -25, color = ELEMENT_COLORS.Cl},
+            {element = "H", x = -15, y = 2, color = ELEMENT_COLORS.H},
+            {element = "H", x = 15, y = 2, color = ELEMENT_COLORS.H}
+        },
+        bonds = {{1, 2}, {1, 3}, {2, 4}, {3, 5}, {4, 6}, {5, 7}, {2, 8}, {3, 9}}
+    },
+    
+    ammonium_nitrate = {
+        atoms = {
+            {element = "N", x = -15, y = 0, color = ELEMENT_COLORS.N},
+            {element = "H", x = -20, y = -10, color = ELEMENT_COLORS.H},
+            {element = "H", x = -20, y = 10, color = ELEMENT_COLORS.H},
+            {element = "H", x = -27, y = 0, color = ELEMENT_COLORS.H},
+            {element = "H", x = -10, y = 0, color = ELEMENT_COLORS.H},
+            {element = "N", x = 15, y = 0, color = ELEMENT_COLORS.N},
+            {element = "O", x = 15, y = -15, color = ELEMENT_COLORS.O},
+            {element = "O", x = 25, y = 8, color = ELEMENT_COLORS.O},
+            {element = "O", x = 5, y = 8, color = ELEMENT_COLORS.O}
+        },
+        bonds = {{1, 2}, {1, 3}, {1, 4}, {1, 5}, {6, 7, double = true}, {6, 8, double = true}, {6, 9}},
+        ionic = true
+    },
 }
 
 local Molecule = {}
@@ -3860,14 +4007,383 @@ function Molecule:update(dt)
             self.vy = math.sin(self.wanderAngle) * (WANDER_SPEED * speedMult)
             self.rotationSpeed = 0.3
         end
+	elseif self.type == "nitrogen_triiodide" then
+        for _, mol in ipairs(molecules) do
+            if mol ~= self and mol.alive then
+                local dx = self.x - mol.x
+                local dy = self.y - mol.y
+                local dist = math.sqrt(dx * dx + dy * dy)
+                if dist < self.radius + mol.radius + 5 then
+                    self.health = 0
+                    self.alive = false
+                    break
+                end
+            end
+        end
+    elseif self.type == "ammonium_nitrate" then
+        local explosiveTypes = {"tnt", "nitroglycerin", "nitrogen_triiodide", 
+                                "azidoazide_azide", "carbon_tetraiodide"}
+        for _, mol in ipairs(molecules) do
+            if mol.alive then
+                for _, expType in ipairs(explosiveTypes) do
+                    if mol.type == expType then
+                        local dx = self.x - mol.x
+                        local dy = self.y - mol.y
+                        local dist = math.sqrt(dx * dx + dy * dy)
+                        if dist < 100 then
+                            self.health = self.health - 50 * dt
+                            if self.health <= 0 then
+                                self.alive = false
+                            end
+                        end
+                    end
+                end
+            end
+        end
+    elseif self.type == "nitrogen_triiodide" then
+        self.unstableTimer = self.unstableTimer + dt
+		
+        if self.unstableTimer > 3 then
+            self.health = self.health - 30 * dt
+        end
+        
+        for _, mol in ipairs(molecules) do
+            if mol ~= self and mol.alive then
+                local dx = self.x - mol.x
+                local dy = self.y - mol.y
+                local dist = math.sqrt(dx * dx + dy * dy)
+                if dist < self.radius + mol.radius + 10 then
+                    self.health = 0
+                    self.alive = false
+                    mol.health = mol.health - 100
+                    if mol.health <= 0 then
+                        mol.alive = false
+                    end
+                    break
+                end
+            end
+        end
+        
+        self.wanderAngle = self.wanderAngle + (math.random() - 0.5) * 0.15
+        self.vx = math.cos(self.wanderAngle) * (WANDER_SPEED * 0.4)
+        self.vy = math.sin(self.wanderAngle) * (WANDER_SPEED * 0.4)
+        self.rotationSpeed = 8
+    
+    elseif self.type == "dioxygen_difluoride" then
+        local preyTypes = {}
+        for molType, _ in pairs(config.molecules) do
+            if molType ~= "dioxygen_difluoride" then
+                table.insert(preyTypes, molType)
+            end
+        end
+        
+        local closest = nil
+        local closestDist = DETECTION_RANGE * 2.8
+        
+        for _, mol in ipairs(molecules) do
+            if mol.type ~= "dioxygen_difluoride" and mol.alive then
+                local dx = mol.x - self.x
+                local dy = mol.y - self.y
+                local dist = math.sqrt(dx * dx + dy * dy)
+                if dist < closestDist then
+                    closest = mol
+                    closestDist = dist
+                end
+            end
+        end
+        
+        if closest then
+            local dx = closest.x - self.x
+            local dy = closest.y - self.y
+            local dist = math.sqrt(dx * dx + dy * dy)
+            local speed = HUNT_SPEED * 1.5
+            self.vx = (dx / dist) * speed
+            self.vy = (dy / dist) * speed
+            self.rotationSpeed = 3
+            
+            if dist < self.radius + closest.radius then
+                closest.health = closest.health - 200 * dt
+                if closest.health <= 0 then
+                    closest.alive = false
+                end
+            end
+        else
+            self.wanderAngle = self.wanderAngle + (math.random() - 0.5) * 0.12
+            self.vx = math.cos(self.wanderAngle) * WANDER_SPEED * 1.5
+            self.vy = math.sin(self.wanderAngle) * WANDER_SPEED * 1.5
+            self.rotationSpeed = 0.5
+        end
+    elseif self.type == "chlorine_pentafluoride" then
+        local preyTypes = {"methane", "ethylene", "propane", "water", "co2", "ammonia",
+                           "benzene", "ethanol", "sodium_chloride", "helium", "nitrogen",
+                           "cyclopropane", "caffeine", "tnt", "acetone", "ice", "sand",
+                           "concrete", "your_hopes_and_dreams"}
+        
+        local closest = nil
+        local closestDist = DETECTION_RANGE * 2.2
+        
+        for _, mol in ipairs(molecules) do
+            if mol.type ~= "chlorine_pentafluoride" and mol.alive then
+                local dx = mol.x - self.x
+                local dy = mol.y - self.y
+                local dist = math.sqrt(dx * dx + dy * dy)
+                if dist < closestDist then
+                    closest = mol
+                    closestDist = dist
+                end
+            end
+        end
+        
+        if closest then
+            local dx = closest.x - self.x
+            local dy = closest.y - self.y
+            local dist = math.sqrt(dx * dx + dy * dy)
+            local speed = HUNT_SPEED * 1.3
+            self.vx = (dx / dist) * speed
+            self.vy = (dy / dist) * speed
+            self.rotationSpeed = 2.5
+            
+            if dist < self.radius + closest.radius then
+                closest.health = closest.health - 170 * dt
+                if closest.health <= 0 then
+                    closest.alive = false
+                end
+            end
+        else
+            self.wanderAngle = self.wanderAngle + (math.random() - 0.5) * 0.1
+            self.vx = math.cos(self.wanderAngle) * WANDER_SPEED * 1.3
+            self.vy = math.sin(self.wanderAngle) * WANDER_SPEED * 1.3
+            self.rotationSpeed = 0.4
+        end
+    elseif self.type == "hydrazine" then
+        local preyTypes = {"oxygen", "ozone", "hydrogen_peroxide", "nitric_acid",
+                           "nitrogen_tetroxide", "fluorine", "chlorine"}
+        
+        local closest = nil
+        local closestDist = DETECTION_RANGE * 1.2
+        
+        for _, mol in ipairs(molecules) do
+            for _, preyType in ipairs(preyTypes) do
+                if mol.type == preyType and mol.alive then
+                    local dx = mol.x - self.x
+                    local dy = mol.y - self.y
+                    local dist = math.sqrt(dx * dx + dy * dy)
+                    if dist < closestDist then
+                        closest = mol
+                        closestDist = dist
+                        break
+                    end
+                end
+            end
+        end
+        
+        if closest then
+            local dx = closest.x - self.x
+            local dy = closest.y - self.y
+            local dist = math.sqrt(dx * dx + dy * dy)
+            local speed = HUNT_SPEED * 0.95
+            self.vx = (dx / dist) * speed
+            self.vy = (dy / dist) * speed
+            self.rotationSpeed = 2
+            
+            if dist < self.radius + closest.radius then
+                self.health = 0
+                closest.health = 0
+                self.alive = false
+                closest.alive = false
+            end
+        else
+            self.wanderAngle = self.wanderAngle + (math.random() - 0.5) * 0.06
+            self.vx = math.cos(self.wanderAngle) * WANDER_SPEED * 0.95
+            self.vy = math.sin(self.wanderAngle) * WANDER_SPEED * 0.95
+            self.rotationSpeed = 0.3
+        end
+    elseif self.type == "dimethylmercury" then
+        local preyTypes = {"methane", "ethylene", "propane", "water", "ammonia",
+                           "ethanol", "benzene", "caffeine", "acetone", "cyclopropane"}
+        
+        local closest = nil
+        local closestDist = DETECTION_RANGE * 1.4
+        
+        for _, mol in ipairs(molecules) do
+            for _, preyType in ipairs(preyTypes) do
+                if mol.type == preyType and mol.alive then
+                    local dx = mol.x - self.x
+                    local dy = mol.y - self.y
+                    local dist = math.sqrt(dx * dx + dy * dy)
+                    if dist < closestDist then
+                        closest = mol
+                        closestDist = dist
+                        break
+                    end
+                end
+            end
+        end
+        
+        if closest then
+            local dx = closest.x - self.x
+            local dy = closest.y - self.y
+            local dist = math.sqrt(dx * dx + dy * dy)
+            local speed = HUNT_SPEED * 1.1
+            self.vx = (dx / dist) * speed
+            self.vy = (dy / dist) * speed
+            self.rotationSpeed = 1.5
+            
+            if dist < self.radius + closest.radius then
+                closest.health = closest.health - 120 * dt
+                if closest.type == "buckminsterfullerene" then
+                    closest.health = closest.health - 50 * dt
+                end
+                if closest.health <= 0 then
+                    closest.alive = false
+                end
+            end
+        else
+            self.wanderAngle = self.wanderAngle + (math.random() - 0.5) * 0.08
+            self.vx = math.cos(self.wanderAngle) * WANDER_SPEED * 1.1
+            self.vy = math.sin(self.wanderAngle) * WANDER_SPEED * 1.1
+            self.rotationSpeed = 0.4
+        end
+    elseif self.type == "chlorine_dioxide" then
+        self.unstableTimer = self.unstableTimer + dt
+        
+        if self.unstableTimer > 8 then
+            self.health = self.health - 15 * dt
+        end
+        
+        local preyTypes = {"methane", "ethylene", "propane", "ammonia", "ethanol",
+                           "benzene", "cyclopropane", "acetone"}
+        
+        local closest = nil
+        local closestDist = DETECTION_RANGE * 1.3
+        
+        for _, mol in ipairs(molecules) do
+            for _, preyType in ipairs(preyTypes) do
+                if mol.type == preyType and mol.alive then
+                    local dx = mol.x - self.x
+                    local dy = mol.y - self.y
+                    local dist = math.sqrt(dx * dx + dy * dy)
+                    if dist < closestDist then
+                        closest = mol
+                        closestDist = dist
+                        break
+                    end
+                end
+            end
+        end
+        
+        if closest then
+            local dx = closest.x - self.x
+            local dy = closest.y - self.y
+            local dist = math.sqrt(dx * dx + dy * dy)
+            local speed = HUNT_SPEED * 1.25
+            self.vx = (dx / dist) * speed
+            self.vy = (dy / dist) * speed
+            self.rotationSpeed = 2
+            
+            if dist < self.radius + closest.radius then
+                closest.health = closest.health - 85 * dt
+                if math.random() < 0.05 * dt then
+                    self.health = 0
+                    self.alive = false
+                end
+                if closest.health <= 0 then
+                    closest.alive = false
+                end
+            end
+        else
+            self.wanderAngle = self.wanderAngle + (math.random() - 0.5) * 0.09
+            self.vx = math.cos(self.wanderAngle) * WANDER_SPEED * 1.25
+            self.vy = math.sin(self.wanderAngle) * WANDER_SPEED * 1.25
+            self.rotationSpeed = 0.5
+        end
+    elseif self.type == "sulfur_mustard" then
+        local preyTypes = {"methane", "ethylene", "water", "ammonia", "ethanol",
+                           "benzene", "caffeine", "acetone", "propane", "cyclopropane",
+                           "hydrogen_atom", "carbon_atom", "oxygen_atom", "nitrogen_atom"}
+        
+        local closest = nil
+        local closestDist = DETECTION_RANGE * 1.5
+        
+        for _, mol in ipairs(molecules) do
+            for _, preyType in ipairs(preyTypes) do
+                if mol.type == preyType and mol.alive then
+                    local dx = mol.x - self.x
+                    local dy = mol.y - self.y
+                    local dist = math.sqrt(dx * dx + dy * dy)
+                    if dist < closestDist then
+                        closest = mol
+                        closestDist = dist
+                        break
+                    end
+                end
+            end
+        end
+        
+        if closest then
+            local dx = closest.x - self.x
+            local dy = closest.y - self.y
+            local dist = math.sqrt(dx * dx + dy * dy)
+            local speed = HUNT_SPEED * 0.8
+            self.vx = (dx / dist) * speed
+            self.vy = (dy / dist) * speed
+            self.rotationSpeed = 1
+            
+            for _, mol in ipairs(molecules) do
+                if mol ~= self and mol.alive then
+                    local mdx = mol.x - self.x
+                    local mdy = mol.y - self.y
+                    local mdist = math.sqrt(mdx * mdx + mdy * mdy)
+                    if mdist < 80 then
+                        mol.health = mol.health - 30 * dt * (1 - mdist / 80)
+                        if mol.health <= 0 then
+                            mol.alive = false
+                        end
+                    end
+                end
+            end
+        else
+            self.wanderAngle = self.wanderAngle + (math.random() - 0.5) * 0.05
+            self.vx = math.cos(self.wanderAngle) * WANDER_SPEED * 0.8
+            self.vy = math.sin(self.wanderAngle) * WANDER_SPEED * 0.8
+            self.rotationSpeed = 0.2
+        end
+    elseif self.type == "ammonium_nitrate" then
+        local explosiveTypes = {"tnt", "nitroglycerin", "nitrogen_triiodide", 
+                                "azidoazide_azide", "carbon_tetraiodide",
+                                "octanitrocubane", "hexanitrocubane"}
+        local triggered = false
+        for _, mol in ipairs(molecules) do
+            if mol.alive then
+                for _, expType in ipairs(explosiveTypes) do
+                    if mol.type == expType then
+                        local dx = self.x - mol.x
+                        local dy = self.y - mol.y
+                        local dist = math.sqrt(dx * dx + dy * dy)
+                        if dist < 120 then
+                            self.health = self.health - 40 * dt
+                            triggered = true
+                            self.rotationSpeed = 5
+                            break
+                        end
+                    end
+                end
+                if triggered then break end
+            end
+        end
+        
+        if not triggered then
+            self.wanderAngle = self.wanderAngle + (math.random() - 0.5) * 0.04
+            self.vx = math.cos(self.wanderAngle) * WANDER_SPEED * 0.7
+            self.vy = math.sin(self.wanderAngle) * WANDER_SPEED * 0.7
+            self.rotationSpeed = 0.2
+    	end
     elseif self.type == "buckminsterfullerene" then
-        -- C60 is extremely stable and barely moves
         self.wanderAngle = self.wanderAngle + (math.random() - 0.5) * 0.02
         self.vx = math.cos(self.wanderAngle) * (WANDER_SPEED * 0.4)
         self.vy = math.sin(self.wanderAngle) * (WANDER_SPEED * 0.4)
         self.rotationSpeed = 0.1
     else
-        -- Default wander for everything else
         self.wanderAngle = self.wanderAngle + (math.random() - 0.5) * 0.08
         self.vx = math.cos(self.wanderAngle) * WANDER_SPEED
         self.vy = math.sin(self.wanderAngle) * WANDER_SPEED
@@ -3894,6 +4410,14 @@ function Molecule:draw()
         local pulse = (math.sin(love.timer.getTime() * 8) + 1) * 0.5
         love.graphics.setColor(0, 1, 0, 0.2 + pulse * 0.2)
         love.graphics.circle("fill", self.x, self.y, self.radius + 8)
+    end
+	
+	if self.type == "sulfur_mustard" then
+        local pulse = (math.sin(love.timer.getTime() * 1) + 1) * 0.5
+        love.graphics.setColor(0.6, 0.7, 0.2, 0.2 + pulse * 0.15)
+        love.graphics.circle("fill", self.x, self.y, self.radius + 25)
+        love.graphics.setColor(0.5, 0.6, 0.1, 0.1)
+        love.graphics.circle("fill", self.x, self.y, 80)
     end
 	
     if struct.interstellar then
@@ -4100,6 +4624,11 @@ function Molecule:draw()
             love.graphics.setColor(0.6, 0.6, 0.6)
             love.graphics.line(atom1.x, atom1.y - 2, atom2.x, atom2.y - 2)
             love.graphics.line(atom1.x, atom1.y + 2, atom2.x, atom2.y + 2)
+		elseif bond.triple then
+            love.graphics.setColor(0.5, 0.5, 0.5)
+            love.graphics.line(atom1.x, atom1.y - 3, atom2.x, atom2.y - 3)
+            love.graphics.line(atom1.x, atom1.y, atom2.x, atom2.y)
+            love.graphics.line(atom1.x, atom1.y + 3, atom2.x, atom2.y + 3)
         elseif bond.resonance then
             love.graphics.setColor(0.7, 0.5, 0.9, 0.8)
             local steps = 5
@@ -4960,6 +5489,36 @@ function drawMoleculeTooltip(molecule)
 	elseif molecule.type == "alanine" then
         table.insert(lines, "[Amino acid]")
 		table.insert(lines, "2nd smallest amino acid behind glycine - methane side chain")
+	elseif molecule.type == "nitrogen_triiodide" then
+        table.insert(lines, "NI₃ - EXPLODES IF TOUCHED!")
+        table.insert(lines, "Don't breathe near it")
+        table.insert(lines, "Purple crystals of DOOM")
+        if molecule.unstableTimer and molecule.unstableTimer > 0 then
+            table.insert(lines, string.format("Decay timer: %.1fs", molecule.unstableTimer))
+        end
+    elseif molecule.type == "dioxygen_difluoride" then
+        table.insert(lines, "Burns things at -180°C")
+        table.insert(lines, "Hunts: EVERYTHING")
+    elseif molecule.type == "chlorine_pentafluoride" then
+        table.insert(lines, "5 fluorines of fury")
+        table.insert(lines, "Square pyramidal nightmare")
+    elseif molecule.type == "hydrazine" then
+        table.insert(lines, "Hypergolic with oxidizers")
+        table.insert(lines, "Toxic + carcinogenic")
+    elseif molecule.type == "dimethylmercury" then
+        table.insert(lines, "Penetrates latex gloves")
+        table.insert(lines, "Kills slowly and surely")
+        table.insert(lines, "Even damages buckyballs!")
+    elseif molecule.type == "chlorine_dioxide" then
+        table.insert(lines, "Used to purify water somehow")
+        table.insert(lines, "Decays over time")
+    elseif molecule.type == "sulfur_mustard" then
+        table.insert(lines, "Blistering agent")
+        table.insert(lines, "Leaves toxic zone (80 radius)")
+        table.insert(lines, "[Geneva Convention violation]")
+    elseif molecule.type == "ammonium_nitrate" then
+        table.insert(lines, "NH₄NO₃ - Innocent fertilizer")
+        table.insert(lines, "...until it meets explosives")
 	end
 
     -- Atom info

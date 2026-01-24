@@ -2,7 +2,7 @@ local config = {}
 
 config.game = {
     title = "Molvolution",
-    version = "New Years 2026 Build 1.2.256",
+    version = "New Years 2026 Build 1.2.301",
     window = {
         width = 1200,
         height = 800,
@@ -1409,6 +1409,87 @@ config.molecules = {
         unsaturated = true,
         triple_bond = true
     },
+	
+	nitrogen_triiodide = {
+        health = 30,
+        radius = 22,
+        speedMultiplier = 0.4,
+        explosive = true,
+        extremely_unstable = true,
+        explodes_if_touched = true,
+        damage = 180
+    },
+    
+    dioxygen_difluoride = {
+        health = 100,
+        radius = 19,
+        damage = 200,
+        speedMultiplier = 1.5,
+        detectionMultiplier = 2.8,
+        burns_at_minus_180 = true,
+        worse_than_foof = true
+    },
+    
+    chlorine_pentafluoride = {
+        health = 110,
+        radius = 20,
+        damage = 170,
+        speedMultiplier = 1.3,
+        detectionMultiplier = 2.2,
+        extremely_reactive = true,
+        hypergolic = true
+    },
+    
+    hydrazine = {
+        health = 90,
+        radius = 21,
+        speedMultiplier = 0.95,
+        hypergolic = true,
+        toxic = true,
+        carcinogenic = true,
+        rocket_fuel = true
+    },
+    
+    dimethylmercury = {
+        health = 85,
+        radius = 24,
+        damage = 120,
+        speedMultiplier = 1.1,
+        detectionMultiplier = 1.4,
+        extremely_toxic = true,
+        penetrates_everything = true,
+        delayed_death = true
+    },
+    
+    chlorine_dioxide = {
+        health = 60,
+        radius = 18,
+        damage = 85,
+        speedMultiplier = 1.25,
+        explosive = true,
+        unstable = true,
+        bleach_properties = true
+    },
+    
+    sulfur_mustard = {
+        health = 110,
+        radius = 26,
+        damage = 95,
+        speedMultiplier = 0.8,
+        extremely_toxic = true,
+        war_crime = true,
+        leaves_toxic_zone = true,
+        blistering_agent = true
+    },
+    
+    ammonium_nitrate = {
+        health = 150,
+        radius = 25,
+        speedMultiplier = 0.7,
+        peaceful = true,
+        fertilizer = true,
+        explosive_when_triggered = true
+    },
 }
 
 config.initialSpawns = {
@@ -1590,6 +1671,15 @@ config.initialSpawns = {
     boron_trichloride = 3,
     borax = 4,
     boric_acid = 4,
+	
+	nitrogen_triiodide = 1,
+    dioxygen_difluoride = 1,
+    chlorine_pentafluoride = 2,
+    hydrazine = 4,
+    dimethylmercury = 2,
+    chlorine_dioxide = 3,
+    sulfur_mustard = 1,  -- War crime in a bottle
+    ammonium_nitrate = 8,
 }
 
 config.visual = {
