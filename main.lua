@@ -51,6 +51,8 @@
 -- January 14 2026 20:26   - Added alkenes and alkynes. (New Years 2026 Build 1.2.216)
 -- ----------------------- -
 -- January 23 2026 23:10   - Revamped radioactive damage system. (New Years 2026 Build 1.2.247)
+-- ----------------------- -
+-- January 24 2026 15:25   - Revamped camera system. (New Years 2026 Build 1.2.256)
 
 local config = require("config")
 local Console = require("libs/console")
@@ -66,6 +68,7 @@ end
 
 local molecules = {}
 local hoveredMolecule = nil
+local pilotedMolecule = nil
 local camera = {
     x = 0,
     y = 0,
@@ -3135,6 +3138,19 @@ function Molecule:update(dt)
     if not self.alive then
         return
     end
+    
+    if pilotedMolecule == self then
+        self.rotation = self.rotation + self.rotationSpeed * dt
+        self.x = self.x + self.vx * dt
+        self.y = self.y + self.vy * dt
+        
+        if self.x < 0 then self.x = WORLD_WIDTH end
+        if self.x > WORLD_WIDTH then self.x = 0 end
+        if self.y < 0 then self.y = WORLD_HEIGHT end
+        if self.y > WORLD_HEIGHT then self.y = 0 end
+        
+        return
+    end
     	
     local radiationDamage = 0
     local radiationRange = 200
@@ -4050,6 +4066,18 @@ function Molecule:draw()
         love.graphics.setColor(1, 1, 0, 0.3)
         love.graphics.circle("fill", self.x, self.y, self.radius + 10)
     end
+	
+	if pilotedMolecule == self then
+        love.graphics.setColor(0, 1, 1, 0.4)
+        love.graphics.circle("fill", self.x, self.y, self.radius + 15)
+        local arrowDist = self.radius + 25
+        love.graphics.setLineWidth(2)
+        love.graphics.setColor(0, 1, 1, 0.6)
+        love.graphics.line(self.x, self.y - arrowDist, self.x, self.y - arrowDist - 10)
+        love.graphics.line(self.x, self.y + arrowDist, self.x, self.y + arrowDist + 10)
+        love.graphics.line(self.x - arrowDist, self.y, self.x - arrowDist - 10, self.y)
+        love.graphics.line(self.x + arrowDist, self.y, self.x + arrowDist + 10, self.y)
+    end
 
     -- Atom attraction visualization
     if self.element and self.attractionForce > 0 then
@@ -4397,7 +4425,6 @@ function love.update(dt)
         end
     end
 
-    -- Remove dead molecules
     for i = #molecules, 1, -1 do
         if not molecules[i].alive or molecules[i].health <= 0 then
             if camera.followTarget == molecules[i] then
@@ -4425,21 +4452,25 @@ function love.update(dt)
         if love.keyboard.isDown("up") then camera.y = camera.y - camSpeed * dt end
         if love.keyboard.isDown("down") then camera.y = camera.y + camSpeed * dt end
     end
-
-    if love.keyboard.isDown("+") or love.keyboard.isDown("=") then
-        camera.zoom = math.min(camera.zoom + 1 * dt, camera.maxZoom)
-    end
-    if love.keyboard.isDown("-") or love.keyboard.isDown("_") then
-        camera.zoom = math.max(camera.zoom - 1 * dt, camera.minZoom)
-    end
 	
-	if camera.zoom ~= oldZoom then
-        local screenCenterX = love.graphics.getWidth() / 2
-        local screenCenterY = love.graphics.getHeight() / 2
-        local worldCenterX = camera.x + screenCenterX / oldZoom
-        local worldCenterY = camera.y + screenCenterY / oldZoom
-        camera.x = worldCenterX - screenCenterX / camera.zoom
-        camera.y = worldCenterY - screenCenterY / camera.zoom
+    if pilotedMolecule and pilotedMolecule.alive then
+        local molConfig = config.molecules[pilotedMolecule.type]
+        local speedMult = molConfig.speedMultiplier or 1
+        local controlSpeed = WANDER_SPEED * speedMult
+        
+        if love.keyboard.isDown("up") then pilotedMolecule.vy = pilotedMolecule.vy - controlSpeed * dt end
+        if love.keyboard.isDown("down") then pilotedMolecule.vy = pilotedMolecule.vy + controlSpeed * dt end
+        if love.keyboard.isDown("left") then pilotedMolecule.vx = pilotedMolecule.vx - controlSpeed * dt end
+        if love.keyboard.isDown("right") then pilotedMolecule.vx = pilotedMolecule.vx + controlSpeed * dt end
+        
+        local friction = 0.95
+        pilotedMolecule.vx = pilotedMolecule.vx * friction
+        pilotedMolecule.vy = pilotedMolecule.vy * friction
+        
+        local targetX = pilotedMolecule.x - love.graphics.getWidth() / (2 * camera.zoom)
+        local targetY = pilotedMolecule.y - love.graphics.getHeight() / (2 * camera.zoom)
+        camera.x = camera.x + (targetX - camera.x) * 5 * dt
+        camera.y = camera.y + (targetY - camera.y) * 5 * dt
     end
 end
 
@@ -4604,9 +4635,9 @@ function drawUI()
         y = y + 20
     end
 
-    love.graphics.print("Arrow keys: Move  |  +/- : Zoom  |  ESC: Unfollow | G: Show population graph", 10, y)
+    love.graphics.print("Scroll: Zoom  |  ESC: Release control | G: Graph | D: Debug | 0: Reset zoom", 10, y)
     y = y + 20
-    love.graphics.print("Middle-click: Focus on molecule  |  ` : Console", 10, y)
+    love.graphics.print("Right-click: Pilot molecule (Arrows)  |  Middle-click: Follow  |  ` : Console", 10, y)
 end
 
 function drawMoleculeTooltip(molecule)
@@ -5157,12 +5188,32 @@ function love.keypressed(key)
     
     if key == "escape" then
         camera.followTarget = nil
+		pilotedMolecule = nil
     end
     if key == "0" then
         camera.zoom = config.camera.defaultZoom
     end
     if key == "g" then
         showGraph = not showGraph
+    end
+end
+
+function love.wheelmoved(x, y)
+    local zoomSpeed = 0.15
+    local oldZoom = camera.zoom
+    
+    if y > 0 then
+        camera.zoom = math.min(camera.zoom * 1.1, camera.maxZoom)
+    elseif y < 0 then
+        camera.zoom = math.max(camera.zoom * 0.9, camera.minZoom)
+    end
+
+    if camera.zoom ~= oldZoom then
+        local mouseX, mouseY = love.mouse.getPosition()
+        local worldX = camera.x + mouseX / oldZoom
+        local worldY = camera.y + mouseY / oldZoom
+        camera.x = worldX - mouseX / camera.zoom
+        camera.y = worldY - mouseY / camera.zoom
     end
 end
 
@@ -5174,6 +5225,38 @@ function love.mousepressed(x, y, button)
     if TimeSlider.mousepressed(x, y, button) then
         return
     end
+	
+	if button == 2 then
+        local worldX = camera.x + x / camera.zoom
+        local worldY = camera.y + y / camera.zoom
+        local closest = nil
+        local closestDist = 50 / camera.zoom
+
+        for _, mol in ipairs(molecules) do
+            if mol.alive then
+                local dx = mol.x - worldX
+                local dy = mol.y - worldY
+                local dist = math.sqrt(dx * dx + dy * dy)
+                if dist < closestDist and dist < mol.radius + 20 then
+                    closest = mol
+                    closestDist = dist
+                end
+            end
+        end
+
+        if closest then
+            if pilotedMolecule == closest then
+                pilotedMolecule = nil
+            else
+                pilotedMolecule = closest
+                camera.followTarget = closest
+                playTrackSound()
+            end
+        else
+            pilotedMolecule = nil
+        end
+    end
+	
     if button == 3 then
         local worldX = camera.x + x / camera.zoom
         local worldY = camera.y + y / camera.zoom
@@ -5195,7 +5278,7 @@ function love.mousepressed(x, y, button)
         if closest then
             camera.followTarget = (camera.followTarget == closest) and nil or closest
             if camera.followTarget == closest then
-                playTrackSound()  -- SOUND when locking on!
+                playTrackSound()
             end
         else
             camera.followTarget = nil
