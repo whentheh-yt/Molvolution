@@ -241,71 +241,8 @@ function Console.execute(command, context)
         Console.log("  explode <x> <y> <radius> - Detonate area")
         Console.log("  nuke - Kill 90% of molecules")
         Console.log("  stats - Show detailed statistics")
-        
     elseif cmd == "clear" then
         Console.output = {}
-        
-    elseif cmd == "spawn" then
-        local molType = args[2]
-        local count = tonumber(args[3]) or 1
-        
-        if not molType then
-            Console.log("Usage: spawn <type> [count] or spawn * [count]")
-            return
-        end
-        
-        if molType == "*" then
-            local spawned = 0
-            local failed = 0
-            
-            for moleculeType, _ in pairs(context.config.molecules) do
-                for i = 1, count do
-                    local x = math.random(100, context.config.world.width - 100)
-                    local y = math.random(100, context.config.world.height - 100)
-                    local mol = context.Molecule:new(moleculeType, x, y)
-                    
-                    if mol then
-                        table.insert(context.molecules, mol)
-                        spawned = spawned + 1
-                    else
-                        failed = failed + 1
-                    end
-                end
-            end
-            
-            Console.log("Spawned " .. spawned .. " molecules (" .. count .. " of each type)")
-            if failed > 0 then
-                Console.log("Failed to spawn " .. failed .. " molecules")
-            end
-            return
-        end
-        
-        if not context.config.molecules[molType] then
-            Console.log("Unknown molecule type: " .. molType)
-            return
-        end
-        
-        local spawned = 0
-        local failed = 0
-        
-        for i = 1, count do
-            local x = math.random(100, context.config.world.width - 100)
-            local y = math.random(100, context.config.world.height - 100)
-            local mol = context.Molecule:new(molType, x, y)
-            
-            if mol then
-                table.insert(context.molecules, mol)
-                spawned = spawned + 1
-            else
-                failed = failed + 1
-            end
-        end
-        
-        Console.log("Spawned " .. spawned .. " " .. molType)
-        if failed > 0 then
-            Console.log("Failed to spawn " .. failed .. " " .. molType)
-        end
-        
     elseif cmd == "kill" then
         local molType = args[2]
         
@@ -458,7 +395,7 @@ function Console.execute(command, context)
         local count = tonumber(args[3]) or 1
         
         if Console.rxnMode and molType and molType:match("^%$") then
-            local varName = molType:sub(2)  -- Remove $
+            local varName = molType:sub(2)
             molType = Console.variables[varName]
         end
         if Console.rxnMode and type(count) == "string" and count:match("^%$") then

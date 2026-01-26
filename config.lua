@@ -2,7 +2,7 @@ local config = {}
 
 config.game = {
     title = "Molvolution",
-    version = "New Years 2026 Build 1.2.301",
+    version = "New Years 2026 Build 1.2.326",
     window = {
         width = 1200,
         height = 800,
@@ -245,6 +245,68 @@ config.molecules = {
         radius = 56,
         speedMultiplier = 0.50,
         waxy = true  -- Starting to get waxy at this length
+    },
+	undecane = {
+        health = 300,
+        radius = 60,
+        speedMultiplier = 0.45,
+        waxy = true
+    },
+    dodecane = {
+        health = 320,
+        radius = 64,
+        speedMultiplier = 0.42,
+        waxy = true
+    },
+    tridecane = {
+        health = 340,
+        radius = 68,
+        speedMultiplier = 0.40,
+        waxy = true
+    },
+    tetradecane = {
+        health = 360,
+        radius = 72,
+        speedMultiplier = 0.38,
+        waxy = true
+    },
+    pentadecane = {
+        health = 380,
+        radius = 76,
+        speedMultiplier = 0.36,
+        waxy = true
+    },
+    hexadecane = {
+        health = 400,
+        radius = 80,
+        speedMultiplier = 0.34,
+        waxy = true,
+        cetane = true  -- Diesel fuel rating standard!
+    },
+    heptadecane = {
+        health = 420,
+        radius = 84,
+        speedMultiplier = 0.32,
+        waxy = true
+    },
+    octadecane = {
+        health = 440,
+        radius = 88,
+        speedMultiplier = 0.30,
+        waxy = true
+    },
+    nonadecane = {
+        health = 460,
+        radius = 92,
+        speedMultiplier = 0.28,
+        very_waxy = true
+    },
+    icosane = {
+        health = 480,
+        radius = 96,
+        speedMultiplier = 0.26,
+        very_waxy = true,
+        basically_solid = true
     },
 
     cyclopropane = {
@@ -1579,6 +1641,16 @@ config.initialSpawns = {
     octane = 6,
     nonane = 4,
     decane = 3,
+	undecane = 2,
+    dodecane = 2,
+    tridecane = 1,
+    tetradecane = 1,
+    pentadecane = 1,
+    hexadecane = 1,
+    heptadecane = 1,
+    octadecane = 1,
+    nonadecane = 1,
+    icosane = 1,
 	nitric_acid = 4,
     nitrous_oxide = 6,
     hydrogen_cyanide = 3,
