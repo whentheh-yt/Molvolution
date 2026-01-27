@@ -2409,6 +2409,23 @@ local structures = {
         bonds = {{1, 2}, {1, 3}, {1, 4}, {1, 5}, {6, 7, double = true}, {6, 8, double = true}, {6, 9}},
         ionic = true
     },
+	protonated_methane = {
+        atoms = {
+            {element = "C", x = 0, y = 0, color = ELEMENT_COLORS.C},
+            {element = "H", x = 0, y = -15, color = ELEMENT_COLORS.H},
+            {element = "H", x = 14, y = -5, color = ELEMENT_COLORS.H},
+            {element = "H", x = 9, y = 12, color = ELEMENT_COLORS.H},
+            {element = "H", x = -9, y = 12, color = ELEMENT_COLORS.H},
+            {element = "H", x = -14, y = -5, color = ELEMENT_COLORS.H}
+        },
+        bonds = {
+            {1, 2}, {1, 3}, {1, 4}, {1, 5}, {1, 6}
+        },
+        ion = true,
+        charge = 1,
+        fluxional = true,
+        interstellar = true
+    },
 }
 
 return {

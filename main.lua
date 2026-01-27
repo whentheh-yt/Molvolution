@@ -56,6 +56,8 @@
 -- January 24 2026 15:25   - Added 8 new molecules. (New Years 2026 Build 1.2.301)
 -- ----------------------- -
 -- January 26 2026 20:11   - Added undecane-icosane and moved structures to libs/structures.lua. (New Years 2026 Build 1.2.326)
+-- ----------------------- -
+-- January 27 2026 15:00   - A small update even for being sick: added protonated methane. (New Years 2026 Build 1.2.333)
 
 local config = require("config")
 local Console = require("libs/console")
@@ -965,6 +967,10 @@ local deathFragmentations = {
         {type = "water", count = 2},
         {type = "oxygen", count = 0.5}
     },
+	protonated_methane = {
+        {type = "methane", count = 1},
+        {type = "hydrogen_atom", count = 1}
+    },
 }
 
 local spawnFragments
@@ -1793,7 +1799,6 @@ function Molecule:update(dt)
         self.vx = math.cos(self.wanderAngle) * (WANDER_SPEED * 0.4)
         self.vy = math.sin(self.wanderAngle) * (WANDER_SPEED * 0.4)
         self.rotationSpeed = 8
-    
     elseif self.type == "dioxygen_difluoride" then
         local preyTypes = {}
         for molType, _ in pairs(config.molecules) do
@@ -2103,6 +2108,52 @@ function Molecule:update(dt)
             self.vy = math.sin(self.wanderAngle) * WANDER_SPEED * 0.7
             self.rotationSpeed = 0.2
     	end
+	elseif self.type == "protonated_methane" then
+        local preyTypes = {"hydroxide", "ammonia", "water", "methane", "ethylene",
+                           "nitrogen_atom", "oxygen_atom", "fluorine_atom"}
+        
+        local closest = nil
+        local detectionMult = molConfig.detectionMultiplier or 1
+        local closestDist = DETECTION_RANGE * detectionMult
+        
+        for _, mol in ipairs(molecules) do
+            for _, preyType in ipairs(preyTypes) do
+                if mol.type == preyType and mol.alive then
+                    local dx = mol.x - self.x
+                    local dy = mol.y - self.y
+                    local dist = math.sqrt(dx * dx + dy * dy)
+                    if dist < closestDist then
+                        closest = mol
+                        closestDist = dist
+                        break
+                    end
+                end
+            end
+        end
+        
+        if closest then
+            local dx = closest.x - self.x
+            local dy = closest.y - self.y
+            local dist = math.sqrt(dx * dx + dy * dy)
+            local speedMult = molConfig.speedMultiplier or 1
+            local speed = HUNT_SPEED * speedMult
+            self.vx = (dx / dist) * speed
+            self.vy = (dy / dist) * speed
+            self.rotationSpeed = 6  -- Spins fast!
+            
+            local damage = molConfig.damage or 50
+            if dist < self.radius + closest.radius then
+                closest.health = closest.health - damage * dt
+                if closest.health <= 0 then
+                    closest.alive = false
+                end
+            end
+        else
+            self.wanderAngle = self.wanderAngle + (math.random() - 0.5) * 0.12
+            self.vx = math.cos(self.wanderAngle) * WANDER_SPEED * 1.3
+            self.vy = math.sin(self.wanderAngle) * WANDER_SPEED * 1.3
+            self.rotationSpeed = 3
+        end
     elseif self.type == "buckminsterfullerene" then
         self.wanderAngle = self.wanderAngle + (math.random() - 0.5) * 0.02
         self.vx = math.cos(self.wanderAngle) * (WANDER_SPEED * 0.4)
@@ -2135,6 +2186,20 @@ function Molecule:draw()
         local pulse = (math.sin(love.timer.getTime() * 8) + 1) * 0.5
         love.graphics.setColor(0, 1, 0, 0.2 + pulse * 0.2)
         love.graphics.circle("fill", self.x, self.y, self.radius + 8)
+    end
+	
+	if self.type == "protonated_methane" and struct.fluxional then
+        local time = love.timer.getTime() * 8 + (self.x + self.y) * 0.01
+        
+        for i = 2, 6 do
+            local baseAngle = ((i - 2) / 5) * math.pi * 2
+            local wobble = math.sin(time * (i * 0.7)) * 0.3
+            local angle = baseAngle + wobble
+            local distance = 15 + math.sin(time * i * 1.3) * 2
+            
+            struct.atoms[i].x = math.cos(angle) * distance
+            struct.atoms[i].y = math.sin(angle) * distance
+        end
     end
 	
 	if self.type == "sulfur_mustard" then
@@ -3244,6 +3309,11 @@ function drawMoleculeTooltip(molecule)
     elseif molecule.type == "ammonium_nitrate" then
         table.insert(lines, "NH₄NO₃ - Innocent fertilizer")
         table.insert(lines, "...until it meets explosives")
+	elseif molecule.type == "protonated_methane" then
+        table.insert(lines, "CH₅⁺ - Fluxional carbocation")
+        table.insert(lines, "5 hydrogens scrambling constantly!")
+        table.insert(lines, "Found in interstellar space")
+        table.insert(lines, "Hunts electrons desperately")
 	end
 
     -- Atom info

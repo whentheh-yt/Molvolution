@@ -2,7 +2,7 @@ local config = {}
 
 config.game = {
     title = "Molvolution",
-    version = "New Years 2026 Build 1.2.326",
+    version = "New Years 2026 Build 1.2.333",
     window = {
         width = 1200,
         height = 800,
@@ -36,6 +36,18 @@ config.molecules = {
         radius = 20,
         spawnKey = "space"
     },
+	protonated_methane = {
+        health = 60,
+        radius = 18,
+        damage = 70,
+        speedMultiplier = 1.3,
+        detectionMultiplier = 1.4,
+        ion = true,
+        charge = 1,
+        fluxional = true,
+        interstellar = true
+    },
+	
     -- FLUOROMETHANES
     fluoromethane = {
         health = 110,
@@ -1556,6 +1568,7 @@ config.molecules = {
 
 config.initialSpawns = {
     methane = 20,
+	protonated_methane = 4,
 
     -- Fluoromethanes (stable)
     fluoromethane = 8,
