@@ -58,6 +58,7 @@
 -- January 26 2026 20:11   - Added undecane-icosane and moved structures to libs/structures.lua. (New Years 2026 Build 1.2.326)
 -- ----------------------- -
 -- January 27 2026 15:00   - A small update even for being sick: added protonated methane. (New Years 2026 Build 1.2.333)
+-- January 27 2026 21:17   - No longer sick - and added MORE carboxyl acids!!! (New Years 2026 Build 1.2.351)
 
 local config = require("config")
 local Console = require("libs/console")
@@ -970,6 +971,40 @@ local deathFragmentations = {
 	protonated_methane = {
         {type = "methane", count = 1},
         {type = "hydrogen_atom", count = 1}
+    },
+	formic_acid = {
+        {type = "co2", count = 1},
+        {type = "hydrogen_atom", count = 2}
+    },
+    
+    acetic_acid = {
+        {type = "co2", count = 1},
+        {type = "methane", count = 0.5},
+        {type = "water", count = 0.5}
+    },
+    
+    propionic_acid = {
+        {type = "co2", count = 1},
+        {type = "ethylene", count = 0.5},
+        {type = "water", count = 0.5}
+    },
+    
+    butyric_acid = {
+        {type = "co2", count = 1},
+        {type = "propane", count = 0.5},
+        {type = "water", count = 0.5}
+    },
+    
+    valeric_acid = {
+        {type = "co2", count = 1},
+        {type = "butane", count = 0.5},
+        {type = "water", count = 0.5}
+    },
+    
+    caproic_acid = {
+        {type = "co2", count = 1},
+        {type = "pentane", count = 0.5},
+        {type = "water", count = 0.5}
     },
 }
 
@@ -2154,6 +2189,58 @@ function Molecule:update(dt)
             self.vy = math.sin(self.wanderAngle) * WANDER_SPEED * 1.3
             self.rotationSpeed = 3
         end
+	elseif self.type:match("ic_acid$") then
+        local preyTypes = {"ammonia", "hydroxide", "sodium_hydroxide", "lithium_hydroxide",
+                           "methane", "ethylene", "propane", "ethanol", "benzene"}
+        
+        local detectionMult = molConfig.detectionMultiplier or 1.0
+        if self.type == "formic_acid" then
+            detectionMult = 1.1
+        elseif self.type == "acetic_acid" then
+            detectionMult = 1.05
+        end
+        
+        local closest = nil
+        local closestDist = DETECTION_RANGE * detectionMult
+        
+        for _, mol in ipairs(molecules) do
+            for _, preyType in ipairs(preyTypes) do
+                if mol.type == preyType and mol.alive then
+                    local dx = mol.x - self.x
+                    local dy = mol.y - self.y
+                    local dist = math.sqrt(dx * dx + dy * dy)
+                    if dist < closestDist then
+                        closest = mol
+                        closestDist = dist
+                        break
+                    end
+                end
+            end
+        end
+        
+        if closest then
+            local dx = closest.x - self.x
+            local dy = closest.y - self.y
+            local dist = math.sqrt(dx * dx + dy * dy)
+            local speedMult = molConfig.speedMultiplier or 1
+            local speed = HUNT_SPEED * speedMult
+            self.vx = (dx / dist) * speed
+            self.vy = (dy / dist) * speed
+            self.rotationSpeed = 1.5
+            
+            local damage = molConfig.damage or 45
+            if dist < self.radius + closest.radius then
+                closest.health = closest.health - damage * dt
+                if closest.health <= 0 then
+                    closest.alive = false
+                end
+            end
+        else
+            self.wanderAngle = self.wanderAngle + (math.random() - 0.5) * 0.06
+            self.vx = math.cos(self.wanderAngle) * WANDER_SPEED
+            self.vy = math.sin(self.wanderAngle) * WANDER_SPEED
+            self.rotationSpeed = 0.4
+        end
     elseif self.type == "buckminsterfullerene" then
         self.wanderAngle = self.wanderAngle + (math.random() - 0.5) * 0.02
         self.vx = math.cos(self.wanderAngle) * (WANDER_SPEED * 0.4)
@@ -2983,6 +3070,9 @@ function drawMoleculeTooltip(molecule)
                 table.insert(lines, string.format("Time to decay: %.1fs", math.max(0, 5 - molecule.unstableTimer)))
             end
         end
+	elseif molecule.type:match("ic_acid$") then
+        table.insert(lines, "[Carboxylic acid]")
+        table.insert(lines, "Organic acid with -COOH group")
 	elseif molecule.type == "xenon" then
         table.insert(lines, "Noble gas - anesthetic properties")
         table.insert(lines, "Can form compounds with fluorine!")
@@ -3310,10 +3400,22 @@ function drawMoleculeTooltip(molecule)
         table.insert(lines, "NH₄NO₃ - Innocent fertilizer")
         table.insert(lines, "...until it meets explosives")
 	elseif molecule.type == "protonated_methane" then
-        table.insert(lines, "CH₅⁺ - Fluxional carbocation")
+        table.insert(lines, "Fluxional carbocation")
         table.insert(lines, "5 hydrogens scrambling constantly!")
         table.insert(lines, "Found in interstellar space")
         table.insert(lines, "Hunts electrons desperately")
+	elseif molecule.type == "formic_acid" then
+        table.insert(lines, "HCOOH - Simplest carboxylic acid")
+        table.insert(lines, "Found in ant venom!")
+    elseif molecule.type == "acetic_acid" then
+        table.insert(lines, "Vinegar!")
+        table.insert(lines, "5% solution = table vinegar")
+    elseif molecule.type == "butyric_acid" then
+        table.insert(lines, "Used in stink bombs")
+    elseif molecule.type == "valeric_acid" then
+        table.insert(lines, "Even WORSE than butyric")
+    elseif molecule.type == "caproic_acid" then
+        table.insert(lines, "Named after 'caper' = goat!")
 	end
 
     -- Atom info

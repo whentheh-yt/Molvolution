@@ -206,6 +206,114 @@ function generateAlkaneStructure(carbonCount)
     return structure
 end
 
+function generateCarboxylicAcidStructure(carbonCount)
+    local structure = {
+        atoms = {},
+        bonds = {}
+    }
+    
+    local spacing = 20
+    local totalWidth = (carbonCount - 1) * spacing
+    local startX = -totalWidth / 2
+
+    for i = 1, carbonCount do
+        local x = startX + (i - 1) * spacing
+        table.insert(structure.atoms, {
+            element = "C",
+            x = x,
+            y = 0,
+            color = ELEMENT_COLORS.C
+        })
+    end
+
+    for i = 1, carbonCount - 1 do
+        table.insert(structure.bonds, {i, i + 1})
+    end
+
+    local lastCarbonIndex = carbonCount
+    local carboxylCarbonIndex = carbonCount + 1
+    local lastX = startX + (carbonCount - 1) * spacing
+
+    table.insert(structure.atoms, {
+        element = "C",
+        x = lastX + 20,
+        y = 0,
+        color = ELEMENT_COLORS.C
+    })
+    table.insert(structure.bonds, {lastCarbonIndex, carboxylCarbonIndex})
+
+    table.insert(structure.atoms, {
+        element = "O",
+        x = lastX + 20,
+        y = -15,
+        color = ELEMENT_COLORS.O
+    })
+    table.insert(structure.bonds, {carboxylCarbonIndex, carboxylCarbonIndex + 1, double = true})
+
+    table.insert(structure.atoms, {
+        element = "O",
+        x = lastX + 32,
+        y = 8,
+        color = ELEMENT_COLORS.O
+    })
+    table.insert(structure.bonds, {carboxylCarbonIndex, carboxylCarbonIndex + 2})
+    
+    table.insert(structure.atoms, {
+        element = "H",
+        x = lastX + 42,
+        y = 8,
+        color = ELEMENT_COLORS.H
+    })
+    table.insert(structure.bonds, {carboxylCarbonIndex + 2, carboxylCarbonIndex + 3})
+    
+    local hIndex = carboxylCarbonIndex + 4
+    for i = 1, carbonCount do
+        local x = startX + (i - 1) * spacing
+        local numH = 2
+        
+        if i == 1 then
+            numH = 3
+        elseif i == carbonCount then
+            numH = 0
+        end
+        
+        if numH >= 1 then
+            table.insert(structure.atoms, {
+                element = "H",
+                x = x,
+                y = -12,
+                color = ELEMENT_COLORS.H
+            })
+            table.insert(structure.bonds, {i, hIndex})
+            hIndex = hIndex + 1
+        end
+        
+        if numH >= 2 then
+            table.insert(structure.atoms, {
+                element = "H",
+                x = x,
+                y = 12,
+                color = ELEMENT_COLORS.H
+            })
+            table.insert(structure.bonds, {i, hIndex})
+            hIndex = hIndex + 1
+        end
+        
+        if numH >= 3 then
+            table.insert(structure.atoms, {
+                element = "H",
+                x = x - 10,
+                y = 0,
+                color = ELEMENT_COLORS.H
+            })
+            table.insert(structure.bonds, {i, hIndex})
+            hIndex = hIndex + 1
+        end
+    end
+    
+    return structure
+end
+
 local structures = {
     butane = {
         atoms = {
@@ -400,6 +508,17 @@ local structures = {
     octadecane = generateAlkaneStructure(18),
     nonadecane = generateAlkaneStructure(19),
     icosane = generateAlkaneStructure(20),
+	
+    formic_acid = generateCarboxylicAcidStructure(1),
+    acetic_acid = generateCarboxylicAcidStructure(2),
+    propionic_acid = generateCarboxylicAcidStructure(3),
+    butyric_acid = generateCarboxylicAcidStructure(4),
+    valeric_acid = generateCarboxylicAcidStructure(5),
+    caproic_acid = generateCarboxylicAcidStructure(6),
+	enanthic_acid = generateCarboxylicAcidStructure(7),
+    caprylic_acid = generateCarboxylicAcidStructure(8),
+    pelargonic_acid = generateCarboxylicAcidStructure(9),
+    capric_acid = generateCarboxylicAcidStructure(10),
 	
     -- FLUOROMETHANES
     fluoromethane = {

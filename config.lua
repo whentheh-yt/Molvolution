@@ -2,7 +2,7 @@ local config = {}
 
 config.game = {
     title = "Molvolution",
-    version = "New Years 2026 Build 1.2.333",
+    version = "New Years 2026 Build 1.2.351",
     window = {
         width = 1200,
         height = 800,
@@ -46,6 +46,95 @@ config.molecules = {
         charge = 1,
         fluxional = true,
         interstellar = true
+    },
+	
+    formic_acid = {
+        health = 70,
+        radius = 18,
+        damage = 55,
+        speedMultiplier = 1.0,
+        detectionMultiplier = 1.1,
+        acid = true,
+        ant_venom = true
+    },
+    
+    acetic_acid = {
+        health = 80,
+        radius = 20,
+        damage = 50,
+        speedMultiplier = 0.95,
+        detectionMultiplier = 1.05,
+        acid = true,
+        vinegar = true
+    },
+    
+    propionic_acid = {
+        health = 85,
+        radius = 22,
+        damage = 48,
+        speedMultiplier = 0.92,
+        acid = true,
+        preservative = true
+    },
+    
+    butyric_acid = {
+        health = 90,
+        radius = 24,
+        damage = 45,
+        speedMultiplier = 0.90,
+        acid = true,
+        smells_like_vomit = true
+    },
+    
+    valeric_acid = {
+        health = 95,
+        radius = 26,
+        damage = 43,
+        speedMultiplier = 0.88,
+        acid = true,
+        smells_like_feet = true
+    },
+    
+    caproic_acid = {
+        health = 100,
+        radius = 28,
+        damage = 40,
+        speedMultiplier = 0.85,
+        acid = true,
+        goat_smell = true
+    },
+    
+    enanthic_acid = {
+        health = 105,
+        radius = 30,
+        damage = 38,
+        speedMultiplier = 0.82,
+        acid = true
+    },
+    
+    caprylic_acid = {
+        health = 110,
+        radius = 32,
+        damage = 36,
+        speedMultiplier = 0.80,
+        acid = true
+    },
+    
+    pelargonic_acid = {
+        health = 115,
+        radius = 34,
+        damage = 34,
+        speedMultiplier = 0.78,
+        acid = true
+    },
+    
+    capric_acid = {
+        health = 120,
+        radius = 36,
+        damage = 32,
+        speedMultiplier = 0.75,
+        acid = true,
+        waxy = true
     },
 	
     -- FLUOROMETHANES
@@ -1765,6 +1854,18 @@ config.initialSpawns = {
     chlorine_dioxide = 3,
     sulfur_mustard = 1,  -- War crime in a bottle
     ammonium_nitrate = 8,
+	
+	-- Carboxyl acids
+    formic_acid = 6,
+    acetic_acid = 8,
+    propionic_acid = 5,
+    butyric_acid = 4,
+    valeric_acid = 3,
+    caproic_acid = 2,
+    enanthic_acid = 2,
+    caprylic_acid = 2,
+    pelargonic_acid = 1,
+    capric_acid = 1,
 }
 
 config.visual = {
