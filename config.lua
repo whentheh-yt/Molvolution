@@ -2,7 +2,7 @@ local config = {}
 
 config.game = {
     title = "Molvolution",
-    version = "New Years 2026 Build 1.2.351",
+    version = "Valetine's Day Build 1.3.200",
     window = {
         width = 1200,
         height = 800,
@@ -1653,6 +1653,163 @@ config.molecules = {
         fertilizer = true,
         explosive_when_triggered = true
     },
+	
+	methyl_formate = {
+        health = 80,
+        radius = 20,
+        speedMultiplier = 1.0,
+        ester = true,
+        smells_fruity = true,
+        flammable = true
+    },
+    
+    ethyl_acetate = {
+        health = 90,
+        radius = 24,
+        speedMultiplier = 0.95,
+        ester = true,
+        nail_polish_remover = true,
+        smells_fruity = true,
+        flammable = true
+    },
+    
+    methyl_acetate = {
+        health = 85,
+        radius = 22,
+        speedMultiplier = 0.98,
+        ester = true,
+        smells_fruity = true,
+        flammable = true
+    },
+    
+    propyl_propanoate = {
+        health = 100,
+        radius = 28,
+        speedMultiplier = 0.88,
+        ester = true,
+        smells_fruity = true,
+        flammable = true
+    },
+    
+    butyl_acetate = {
+        health = 95,
+        radius = 26,
+        speedMultiplier = 0.90,
+        ester = true,
+        smells_like_bananas = true,
+        flammable = true,
+        paint_thinner = true
+    },
+    
+    dimethyl_ether = {
+        health = 70,
+        radius = 18,
+        speedMultiplier = 1.15,
+        ether = true,
+        flammable = true,
+        compressed_gas = true
+    },
+    
+    diethyl_ether = {
+        health = 100,
+        radius = 26,
+        speedMultiplier = 0.92,
+        ether = true,
+        anesthetic = true,
+        extremely_flammable = true,
+        forms_peroxides = true,
+        sweet_smell = true
+    },
+    
+    methyl_ethyl_ether = {
+        health = 85,
+        radius = 22,
+        speedMultiplier = 1.05,
+        ether = true,
+        flammable = true
+    },
+    
+    dipropyl_ether = {
+        health = 110,
+        radius = 30,
+        speedMultiplier = 0.85,
+        ether = true,
+        flammable = true
+    },
+    
+    dibutyl_ether = {
+        health = 120,
+        radius = 34,
+        speedMultiplier = 0.80,
+        ether = true,
+        flammable = true,
+        solvent = true
+    },
+
+    silane = {
+        health = 60,
+        radius = 18,
+        speedMultiplier = 1.2,
+        damage = 100,
+        detectionMultiplier = 1.8,
+        pyrophoric = true,
+        extremely_reactive = true,
+        semiconductor_use = true
+    },
+    
+    disilane = {
+        health = 75,
+        radius = 24,
+        speedMultiplier = 1.1,
+        damage = 110,
+        detectionMultiplier = 1.9,
+        pyrophoric = true,
+        extremely_reactive = true,
+        unstable = true
+    },
+    
+    trisilane = {
+        health = 90,
+        radius = 30,
+        speedMultiplier = 1.0,
+        damage = 120,
+        detectionMultiplier = 2.0,
+        pyrophoric = true,
+        extremely_reactive = true,
+        unstable = true
+    },
+    
+    tetrasilane = {
+        health = 100,
+        radius = 36,
+        speedMultiplier = 0.95,
+        damage = 125,
+        detectionMultiplier = 2.1,
+        pyrophoric = true,
+        extremely_reactive = true,
+        very_unstable = true
+    },
+    
+    pentasilane = {
+        health = 110,
+        radius = 42,
+        speedMultiplier = 0.90,
+        damage = 130,
+        detectionMultiplier = 2.2,
+        pyrophoric = true,
+        extremely_reactive = true,
+        very_unstable = true
+    },
+    
+    silicon_atom = {
+        health = 15,
+        radius = 8,
+        speedMultiplier = 1.1,
+        peaceful = true,
+        atom = true,
+        valence = 4,
+        semiconductor = true
+    },
 }
 
 config.initialSpawns = {
@@ -1866,6 +2023,25 @@ config.initialSpawns = {
     caprylic_acid = 2,
     pelargonic_acid = 1,
     capric_acid = 1,
+	
+	ethyl_acetate = 8,
+    methyl_formate = 6,
+    butyl_acetate = 5,
+    propyl_propanoate = 4,
+    methyl_acetate = 6,
+
+    diethyl_ether = 6,
+    dimethyl_ether = 8,
+    methyl_ethyl_ether = 5,
+    dipropyl_ether = 4,
+    dibutyl_ether = 3,
+    
+    silane = 4,
+    disilane = 3,
+    trisilane = 2,
+    tetrasilane = 1,
+    pentasilane = 1,
+    silicon_atom = 5,
 }
 
 config.visual = {

@@ -314,6 +314,298 @@ function generateCarboxylicAcidStructure(carbonCount)
     return structure
 end
 
+function generateEsterStructure(leftCarbons, rightCarbons)
+    local structure = {
+        atoms = {},
+        bonds = {}
+    }
+    
+    local spacing = 20
+    local leftWidth = (leftCarbons - 1) * spacing
+    local startX = -leftWidth / 2 - 20
+
+    for i = 1, leftCarbons do
+        local x = startX + (i - 1) * spacing
+        table.insert(structure.atoms, {
+            element = "C",
+            x = x,
+            y = 0,
+            color = ELEMENT_COLORS.C
+        })
+    end
+    
+    for i = 1, leftCarbons - 1 do
+        table.insert(structure.bonds, {i, i + 1})
+    end
+
+    local carbonylIndex = leftCarbons + 1
+    local carbonylX = startX + leftCarbons * spacing
+    table.insert(structure.atoms, {
+        element = "C",
+        x = carbonylX,
+        y = 0,
+        color = ELEMENT_COLORS.C
+    })
+    table.insert(structure.bonds, {leftCarbons, carbonylIndex})
+
+    table.insert(structure.atoms, {
+        element = "O",
+        x = carbonylX,
+        y = -15,
+        color = ELEMENT_COLORS.O
+    })
+    table.insert(structure.bonds, {carbonylIndex, carbonylIndex + 1, double = true})
+
+    local esterOIndex = carbonylIndex + 2
+    table.insert(structure.atoms, {
+        element = "O",
+        x = carbonylX + 12,
+        y = 8,
+        color = ELEMENT_COLORS.O
+    })
+    table.insert(structure.bonds, {carbonylIndex, esterOIndex})
+
+    local rightStartIndex = esterOIndex + 1
+    local rightStartX = carbonylX + 24
+    for i = 1, rightCarbons do
+        local x = rightStartX + (i - 1) * spacing
+        table.insert(structure.atoms, {
+            element = "C",
+            x = x,
+            y = 0,
+            color = ELEMENT_COLORS.C
+        })
+    end
+    
+    table.insert(structure.bonds, {esterOIndex, rightStartIndex})
+    for i = 1, rightCarbons - 1 do
+        table.insert(structure.bonds, {rightStartIndex + i - 1, rightStartIndex + i})
+    end
+
+    local hIndex = rightStartIndex + rightCarbons
+
+    for i = 1, leftCarbons do
+        local x = startX + (i - 1) * spacing
+        local numH = (i == 1) and 3 or 2
+        
+        if i == 1 then
+            table.insert(structure.atoms, {element = "H", x = x - 10, y = 0, color = ELEMENT_COLORS.H})
+            table.insert(structure.bonds, {i, hIndex})
+            hIndex = hIndex + 1
+        end
+        
+        table.insert(structure.atoms, {element = "H", x = x, y = -12, color = ELEMENT_COLORS.H})
+        table.insert(structure.bonds, {i, hIndex})
+        hIndex = hIndex + 1
+        
+        table.insert(structure.atoms, {element = "H", x = x, y = 12, color = ELEMENT_COLORS.H})
+        table.insert(structure.bonds, {i, hIndex})
+        hIndex = hIndex + 1
+    end
+
+    for i = 1, rightCarbons do
+        local idx = rightStartIndex + i - 1
+        local x = rightStartX + (i - 1) * spacing
+        local numH = (i == rightCarbons) and 3 or 2
+        
+        table.insert(structure.atoms, {element = "H", x = x, y = -12, color = ELEMENT_COLORS.H})
+        table.insert(structure.bonds, {idx, hIndex})
+        hIndex = hIndex + 1
+        
+        table.insert(structure.atoms, {element = "H", x = x, y = 12, color = ELEMENT_COLORS.H})
+        table.insert(structure.bonds, {idx, hIndex})
+        hIndex = hIndex + 1
+        
+        if i == rightCarbons then
+            table.insert(structure.atoms, {element = "H", x = x + 10, y = 0, color = ELEMENT_COLORS.H})
+            table.insert(structure.bonds, {idx, hIndex})
+            hIndex = hIndex + 1
+        end
+    end
+    
+    return structure
+end
+
+function generateEtherStructure(leftCarbons, rightCarbons)
+    local structure = {
+        atoms = {},
+        bonds = {}
+    }
+    
+    local spacing = 20
+    local totalCarbons = leftCarbons + rightCarbons
+    local totalWidth = totalCarbons * spacing + 12
+    local startX = -totalWidth / 2
+
+    for i = 1, leftCarbons do
+        local x = startX + (i - 1) * spacing
+        table.insert(structure.atoms, {
+            element = "C",
+            x = x,
+            y = 0,
+            color = ELEMENT_COLORS.C
+        })
+    end
+    
+    for i = 1, leftCarbons - 1 do
+        table.insert(structure.bonds, {i, i + 1})
+    end
+
+    local oIndex = leftCarbons + 1
+    local oX = startX + leftCarbons * spacing
+    table.insert(structure.atoms, {
+        element = "O",
+        x = oX,
+        y = 0,
+        color = ELEMENT_COLORS.O
+    })
+    table.insert(structure.bonds, {leftCarbons, oIndex})
+
+    local rightStartIndex = oIndex + 1
+    local rightStartX = oX + 12
+    for i = 1, rightCarbons do
+        local x = rightStartX + (i - 1) * spacing
+        table.insert(structure.atoms, {
+            element = "C",
+            x = x,
+            y = 0,
+            color = ELEMENT_COLORS.C
+        })
+    end
+    
+    table.insert(structure.bonds, {oIndex, rightStartIndex})
+    for i = 1, rightCarbons - 1 do
+        table.insert(structure.bonds, {rightStartIndex + i - 1, rightStartIndex + i})
+    end
+
+    local hIndex = rightStartIndex + rightCarbons
+
+    for i = 1, leftCarbons do
+        local x = startX + (i - 1) * spacing
+        local numH = (i == 1) and 3 or 2
+        
+        if i == 1 then
+            table.insert(structure.atoms, {element = "H", x = x - 10, y = 0, color = ELEMENT_COLORS.H})
+            table.insert(structure.bonds, {i, hIndex})
+            hIndex = hIndex + 1
+        end
+        
+        table.insert(structure.atoms, {element = "H", x = x, y = -12, color = ELEMENT_COLORS.H})
+        table.insert(structure.bonds, {i, hIndex})
+        hIndex = hIndex + 1
+        
+        table.insert(structure.atoms, {element = "H", x = x, y = 12, color = ELEMENT_COLORS.H})
+        table.insert(structure.bonds, {i, hIndex})
+        hIndex = hIndex + 1
+    end
+
+    for i = 1, rightCarbons do
+        local idx = rightStartIndex + i - 1
+        local x = rightStartX + (i - 1) * spacing
+        local numH = (i == rightCarbons) and 3 or 2
+        
+        table.insert(structure.atoms, {element = "H", x = x, y = -12, color = ELEMENT_COLORS.H})
+        table.insert(structure.bonds, {idx, hIndex})
+        hIndex = hIndex + 1
+        
+        table.insert(structure.atoms, {element = "H", x = x, y = 12, color = ELEMENT_COLORS.H})
+        table.insert(structure.bonds, {idx, hIndex})
+        hIndex = hIndex + 1
+        
+        if i == rightCarbons then
+            table.insert(structure.atoms, {element = "H", x = x + 10, y = 0, color = ELEMENT_COLORS.H})
+            table.insert(structure.bonds, {idx, hIndex})
+            hIndex = hIndex + 1
+        end
+    end
+    
+    return structure
+end
+
+function generateSilaneStructure(siliconCount)
+    local structure = {
+        atoms = {},
+        bonds = {}
+    }
+    
+    local spacing = 22
+    local totalWidth = (siliconCount - 1) * spacing
+    local startX = -totalWidth / 2
+
+    for i = 1, siliconCount do
+        local x = startX + (i - 1) * spacing
+        table.insert(structure.atoms, {
+            element = "Si",
+            x = x,
+            y = 0,
+            color = ELEMENT_COLORS.Si
+        })
+    end
+    
+    for i = 1, siliconCount - 1 do
+        table.insert(structure.bonds, {i, i + 1})
+    end
+    
+    local hIndex = siliconCount + 1
+    for i = 1, siliconCount do
+        local x = startX + (i - 1) * spacing
+        local numH = 2
+        
+        if i == 1 or i == siliconCount then
+            numH = 3
+        end
+        
+        if numH == 3 then
+            table.insert(structure.atoms, {
+                element = "H",
+                x = x + (i == 1 and -7 or 7),
+                y = -12,
+                color = ELEMENT_COLORS.H
+            })
+            table.insert(structure.bonds, {i, hIndex})
+            hIndex = hIndex + 1
+            
+            table.insert(structure.atoms, {
+                element = "H",
+                x = x + (i == 1 and -7 or 7),
+                y = 12,
+                color = ELEMENT_COLORS.H
+            })
+            table.insert(structure.bonds, {i, hIndex})
+            hIndex = hIndex + 1
+            
+            table.insert(structure.atoms, {
+                element = "H",
+                x = x + (i == 1 and -14 or 14),
+                y = 0,
+                color = ELEMENT_COLORS.H
+            })
+            table.insert(structure.bonds, {i, hIndex})
+            hIndex = hIndex + 1
+        else
+            table.insert(structure.atoms, {
+                element = "H",
+                x = x,
+                y = -12,
+                color = ELEMENT_COLORS.H
+            })
+            table.insert(structure.bonds, {i, hIndex})
+            hIndex = hIndex + 1
+            
+            table.insert(structure.atoms, {
+                element = "H",
+                x = x,
+                y = 12,
+                color = ELEMENT_COLORS.H
+            })
+            table.insert(structure.bonds, {i, hIndex})
+            hIndex = hIndex + 1
+        end
+    end
+    
+    return structure
+end
+
 local structures = {
     butane = {
         atoms = {
@@ -2544,6 +2836,28 @@ local structures = {
         charge = 1,
         fluxional = true,
         interstellar = true
+    },
+	methyl_formate = generateEsterStructure(1, 1),
+    ethyl_acetate = generateEsterStructure(2, 2),
+    methyl_acetate = generateEsterStructure(2, 1),
+    propyl_propanoate = generateEsterStructure(3, 3),
+    butyl_acetate = generateEsterStructure(2, 4),
+
+    dimethyl_ether = generateEtherStructure(1, 1),
+    diethyl_ether = generateEtherStructure(2, 2),
+    methyl_ethyl_ether = generateEtherStructure(1, 2),
+    dipropyl_ether = generateEtherStructure(3, 3),
+    dibutyl_ether = generateEtherStructure(4, 4),
+
+    silane = generateSilaneStructure(1),
+    disilane = generateSilaneStructure(2),
+    trisilane = generateSilaneStructure(3),
+    tetrasilane = generateSilaneStructure(4),
+    pentasilane = generateSilaneStructure(5),
+    
+    silicon_atom = {
+        atoms = {{element = "Si", x = 0, y = 0, color = ELEMENT_COLORS.Si}},
+        bonds = {}
     },
 }
 

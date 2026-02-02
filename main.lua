@@ -59,6 +59,11 @@
 -- ----------------------- -
 -- January 27 2026 15:00   - A small update even for being sick: added protonated methane. (New Years 2026 Build 1.2.333)
 -- January 27 2026 21:17   - No longer sick - and added MORE carboxyl acids!!! (New Years 2026 Build 1.2.351)
+-- ----------------------- -
+-- February 2 2026 20:57   - Added:
+--                         -    • Esters, ethers and silanes
+--                         -    • Ion charges now mean something
+--                           (Valetine's Day Build 1.3.200)
 
 local config = require("config")
 local Console = require("libs/console")
@@ -1006,6 +1011,88 @@ local deathFragmentations = {
         {type = "pentane", count = 0.5},
         {type = "water", count = 0.5}
     },
+	
+	ethyl_acetate = {
+        {type = "acetic_acid", count = 0.5},
+        {type = "ethanol", count = 0.5},
+        {type = "carbon_atom", count = 2},
+        {type = "oxygen_atom", count = 1}
+    },
+    
+    methyl_formate = {
+        {type = "formic_acid", count = 0.5},
+        {type = "methanol", count = 0.5},
+        {type = "carbon_atom", count = 1}
+    },
+    
+    methyl_acetate = {
+        {type = "acetic_acid", count = 0.5},
+        {type = "methanol", count = 0.5},
+        {type = "carbon_atom", count = 1}
+    },
+    
+    butyl_acetate = {
+        {type = "acetic_acid", count = 0.5},
+        {type = "butane", count = 0.5},
+        {type = "oxygen_atom", count = 1}
+    },
+    
+    diethyl_ether = {
+        {type = "ethanol", count = 1},
+        {type = "ethylene", count = 0.5},
+        {type = "oxygen_atom", count = 1}
+    },
+    
+    dimethyl_ether = {
+        {type = "methanol", count = 1},
+        {type = "methane", count = 0.5},
+        {type = "oxygen_atom", count = 1}
+    },
+    
+    methyl_ethyl_ether = {
+        {type = "methanol", count = 0.5},
+        {type = "ethanol", count = 0.5},
+        {type = "oxygen_atom", count = 0.5}
+    },
+    
+    dipropyl_ether = {
+        {type = "propane", count = 1.5},
+        {type = "oxygen_atom", count = 1}
+    },
+    
+    dibutyl_ether = {
+        {type = "butane", count = 1.5},
+        {type = "oxygen_atom", count = 1}
+    },
+    
+    silane = {
+        {type = "silicon_atom", count = 1},
+        {type = "hydrogen_atom", count = 4}
+    },
+    
+    disilane = {
+        {type = "silane", count = 1},
+        {type = "silicon_atom", count = 1},
+        {type = "hydrogen_atom", count = 2}
+    },
+    
+    trisilane = {
+        {type = "disilane", count = 1},
+        {type = "silicon_atom", count = 1},
+        {type = "hydrogen_atom", count = 2}
+    },
+    
+    tetrasilane = {
+        {type = "trisilane", count = 1},
+        {type = "silicon_atom", count = 1},
+        {type = "hydrogen_atom", count = 2}
+    },
+    
+    pentasilane = {
+        {type = "tetrasilane", count = 1},
+        {type = "silicon_atom", count = 1},
+        {type = "hydrogen_atom", count = 2}
+    },
 }
 
 local spawnFragments
@@ -1082,6 +1169,29 @@ function Molecule:update(dt)
                         local intensity = 1 - (dist / radiationRange)
                         local damage = 5 * intensity * source.intensity * dt
                         radiationDamage = radiationDamage + damage
+                    end
+                end
+            end
+        end
+    end
+	
+	if config.molecules[self.type].ion then
+        local myCharge = structures[self.type].charge or 0
+        
+        for _, mol in ipairs(molecules) do
+            if mol ~= self and mol.alive and config.molecules[mol.type].ion then
+                local otherCharge = structures[mol.type].charge or 0
+
+                if myCharge * otherCharge ~= 0 then
+                    local dx = mol.x - self.x
+                    local dy = mol.y - self.y
+                    local dist = math.sqrt(dx * dx + dy * dy)
+                    
+                    if dist < 300 and dist > 0 then
+                        local force = (myCharge * otherCharge) / (dist * dist) * 5000
+                   
+                        self.vx = self.vx - (dx / dist) * force * dt
+                        self.vy = self.vy - (dy / dist) * force * dt
                     end
                 end
             end
@@ -3070,6 +3180,28 @@ function drawMoleculeTooltip(molecule)
                 table.insert(lines, string.format("Time to decay: %.1fs", math.max(0, 5 - molecule.unstableTimer)))
             end
         end
+	elseif molecule.type == "ethyl_acetate" then
+        table.insert(lines, "Nail polish remover smell!")
+	elseif molecule.type == "butyl_acetate" then
+		table.insert(lines, "Smells like BANANAS!")
+    elseif molecule.type:match("_ether") then
+        table.insert(lines, "[Ether]")
+        if molecule.type == "diethyl_ether" then
+            table.insert(lines, "Classic anesthetic!")
+            table.insert(lines, "EXTREMELY flammable")
+            if (molecule.unstableTimer or 0) > 30 then
+                table.insert(lines, "Forming explosive peroxides!")
+            end
+        end
+        table.insert(lines, "Sweet smell, very flammable")
+    elseif molecule.type:match("silane") then
+        table.insert(lines, "[Silane - Silicon compound]")
+        table.insert(lines, "PYROPHORIC - combusts in air!")
+        table.insert(lines, "Used in semiconductors")
+        table.insert(lines, "Hunts: oxygen, water, CO2")
+        if molecule.type == "silane" then
+            table.insert(lines, "SiH4 - simplest silane")
+		end
 	elseif molecule.type:match("ic_acid$") then
         table.insert(lines, "[Carboxylic acid]")
         table.insert(lines, "Organic acid with -COOH group")
@@ -3416,6 +3548,11 @@ function drawMoleculeTooltip(molecule)
         table.insert(lines, "Even WORSE than butyric")
     elseif molecule.type == "caproic_acid" then
         table.insert(lines, "Named after 'caper' = goat!")
+	    elseif molecule.type:match("_acetate") or molecule.type:match("_formate") then
+        table.insert(lines, "[Ester]")
+    elseif molecule.type == "silicon_atom" then
+        table.insert(lines, "Semiconductor element")
+        table.insert(lines, "Computer chip material!")
 	end
 
     -- Atom info
